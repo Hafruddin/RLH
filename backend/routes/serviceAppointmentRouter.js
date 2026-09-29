@@ -1,6 +1,6 @@
 // routes/serviceAppointmentRouter.js
 import express from "express";
-import { clerkMiddleware, requireAuth } from "@clerk/express";
+import { clerkMiddleware, requireAuth } from "../utils/clerkShim.js";
 
 import {
   getServiceAppointments,

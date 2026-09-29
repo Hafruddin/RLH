@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import Appointment from "../models/Appointment.js";
 import Doctor from "../models/Doctor.js";
 import dotenv from "dotenv";
-import { getAuth } from "@clerk/express";
+import { getAuth } from "../utils/clerkShim.js";
 import {
   createMockAppointment,
   getMockAppointments,

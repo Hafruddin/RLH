@@ -1,7 +1,7 @@
 // controllers/serviceAppointmentController.js
 import ServiceAppointment from "../models/serviceAppointment.js";
 import Service from "../models/Service.js";
-import { getAuth } from "@clerk/express";
+import { getAuth } from "../utils/clerkShim.js";
 
 const stripeKey = process.env.STRIPE_SECRET_KEY || null;
 let _stripe = null;
