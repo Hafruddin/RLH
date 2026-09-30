@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { homeDoctorsStyles, iconSize } from "../../assets/dummyStyles";
 import { fallbackDoctors } from "../../utils/fallbackDoctors";
 import { getDoctorImage, handleImageError } from "../../utils/doctorImages";
+import { formatExperience } from "../../utils/dateTime";
 
 const HomeDoctors = ({ apiBase, previewCount = 8 }) => {
   const API_BASE = apiBase || import.meta.env.VITE_API_URL || "http://localhost:4000";
@@ -216,7 +217,7 @@ const HomeDoctors = ({ apiBase, previewCount = 8 }) => {
                   <div className={homeDoctorsStyles.experienceContainer}>
                     <div className={homeDoctorsStyles.experienceBadge}>
                       <Medal className={`${iconSize.small} h-4`} />
-                      <span>{doctor.experience} years Experience</span>
+                      <span>{formatExperience(doctor.experience)}</span>
                     </div>
                   </div>
 

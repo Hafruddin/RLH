@@ -20,6 +20,12 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { fallbackDoctors } from "../../utils/fallbackDoctors";
 import { getDoctorImage, handleImageError } from "../../utils/doctorImages";
+import {
+  formatExperience,
+  getAvailableSlots,
+  getHospitalDateString,
+  isPastDate,
+} from "../../utils/dateTime";
 
 // Clerk client hooks
 import { useAuth, useUser } from "@clerk/clerk-react";
@@ -52,28 +58,16 @@ function getScheduleDates(schedule) {
     })
     .filter(Boolean);
 
-  // Normalize compare by date-only (use UTC to avoid timezone time-of-day issues)
-  const dateOnlyValue = (d) =>
-    Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
-
-  const today = new Date();
-  const todayVal = dateOnlyValue(today);
+  // Use IST today string for comparison
+  const todayStr = getHospitalDateString(); // "YYYY-MM-DD" in IST
 
   const past = parsed
-    .filter((p) => dateOnlyValue(p.date) < todayVal)
-    .sort(
-      (a, b) =>
-        // most recent past first (descending)
-        dateOnlyValue(b.date) - dateOnlyValue(a.date),
-    );
+    .filter((p) => p.key < todayStr)
+    .sort((a, b) => (a.key > b.key ? -1 : 1)); // most recent past first
 
   const future = parsed
-    .filter((p) => dateOnlyValue(p.date) >= todayVal)
-    .sort(
-      (a, b) =>
-        // earliest first (ascending)
-        dateOnlyValue(a.date) - dateOnlyValue(b.date),
-    );
+    .filter((p) => p.key >= todayStr)
+    .sort((a, b) => (a.key < b.key ? -1 : 1)); // earliest first
 
   // Return array of Date objects in desired order
   return [...past, ...future].map((p) => p.date);
@@ -202,8 +196,8 @@ export default function DoctorDetail() {
 
   const slots = useMemo(() => {
     if (!selectedDate || !doctor?.schedule) return [];
-    const key = selectedDate.toISOString().split("T")[0];
-    return doctor.schedule && doctor.schedule[key] ? doctor.schedule[key] : [];
+    const key = selectedDate.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+    return getAvailableSlots(doctor.schedule, key);
   }, [selectedDate, doctor]);
 
   // Mobile input handlers: only digits, max 10
@@ -445,20 +439,11 @@ export default function DoctorDetail() {
 
               <div className={doctorDetailStyles.statsGrid}>
                 <div className={doctorDetailStyles.statBox}>
-                  <Heart
-                    className={`${doctorDetailStyles.statIcon} ${doctorDetailStyles.heartIcon}`}
-                  />
-                  <div className={doctorDetailStyles.statValue}>
-                    {doctor.success}%
-                  </div>
-                  <div className={doctorDetailStyles.statLabel}>Success</div>
-                </div>
-                <div className={doctorDetailStyles.statBox}>
                   <Award
                     className={`${doctorDetailStyles.statIcon} ${doctorDetailStyles.awardIcon}`}
                   />
                   <div className={doctorDetailStyles.statValue}>
-                    {doctor.experience} Years
+                    {formatExperience(doctor.experience)}
                   </div>
                   <div className={doctorDetailStyles.statLabel}>Experience</div>
                 </div>

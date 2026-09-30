@@ -12,6 +12,7 @@ import {
 import { doctorsPageStyles } from "../../assets/dummyStyles";
 import { fallbackDoctors } from "../../utils/fallbackDoctors";
 import { getDoctorImage, handleImageError } from "../../utils/doctorImages";
+import { formatExperience } from "../../utils/dateTime";
 
 const DoctorsPage = ({ apiBase }) => {
   const API_BASE = apiBase || import.meta.env.VITE_API_URL || "http://localhost:4000";
@@ -277,7 +278,7 @@ const DoctorsPage = ({ apiBase }) => {
 
                   <div className={doctorsPageStyles.experienceBadge}>
                     <Medal className={doctorsPageStyles.experienceIcon} />
-                    <span>{doctor.experience || "—"} years Experience</span>
+                    <span>{formatExperience(doctor.experience)}</span>
                   </div>
 
                   {doctor.available ? (

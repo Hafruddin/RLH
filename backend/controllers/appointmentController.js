@@ -334,6 +334,37 @@ export const createAppointment = async (req, res) => {
       return res.status(400).json({ success: false, message: "fee must be a valid number" });
     }
 
+    // Past date/time validation (IST-aware)
+    const nowIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+    const todayISTStr = nowIST.toISOString().split("T")[0].replace(/T.*/, "");
+    // Build YYYY-MM-DD for today in IST
+    const istYear = nowIST.getFullYear();
+    const istMonth = String(nowIST.getMonth() + 1).padStart(2, "0");
+    const istDay = String(nowIST.getDate()).padStart(2, "0");
+    const todayStr = `${istYear}-${istMonth}-${istDay}`;
+
+    const apptDateStr = String(date).trim();
+    if (apptDateStr < todayStr) {
+      return res.status(400).json({ success: false, message: "Cannot book appointments for past dates." });
+    }
+    if (apptDateStr === todayStr && time) {
+      // Parse the slot time and add 15-min buffer
+      const slotUpper = String(time).trim().toUpperCase();
+      const match = slotUpper.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/);
+      if (match) {
+        let [, hStr, mStr, meridiem] = match;
+        let slotH = Number(hStr);
+        const slotM = Number(mStr);
+        if (meridiem === "PM" && slotH !== 12) slotH += 12;
+        if (meridiem === "AM" && slotH === 12) slotH = 0;
+        const slotTotal = slotH * 60 + slotM;
+        const nowTotal = nowIST.getHours() * 60 + nowIST.getMinutes() + 15;
+        if (slotTotal <= nowTotal) {
+          return res.status(400).json({ success: false, message: "This time slot has already passed. Please select a future time slot." });
+        }
+      }
+    }
+
     // Duplicate booking prevention
     const existingBooking = await Appointment.findOne({
       doctorId,
