@@ -15,6 +15,7 @@ import ServiceAppointments from "./pages/ServiceAppointments/ServiceAppointments
 import Hero from "./components/Hero/Hero";
 import NexusMasterLayout from "./components/Nexus/NexusMasterLayout";
 import NexusVoiceAgent from "./components/Voice/NexusVoiceAgent";
+import HospitalLiveOpdMonitor from "./pages/LiveOpd/HospitalLiveOpdMonitor";
 
 function RequireAuth({ children }) {
   const { isLoaded, isSignedIn } = useUser();
@@ -71,6 +72,7 @@ const App = () => {
     <>
       <Routes>
       <Route path="/" element={<NexusMasterLayout />} />
+      <Route path="/live-opd" element={<HospitalLiveOpdMonitor />} />
       <Route path="/hero" element={<Hero />} />
       <Route path="/nexus" element={<NexusMasterLayout />} />
       <Route

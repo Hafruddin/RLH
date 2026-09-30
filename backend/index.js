@@ -27,6 +27,7 @@ import nexusRouter from "./routes/nexusRouter.js";
 import voiceRouter from "./routes/voiceRouter.js";
 import voiceToolsRouter from "./routes/voiceToolsRouter.js";
 import n8nRouter from "./routes/n8nRouter.js";
+import opdRouter from "./routes/opdRouter.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -114,6 +115,7 @@ app.use("/api/nexus", nexusRouter);
 app.use("/api", nexusRouter);           // convenience mount
 app.use("/api/voice", voiceRouter);
 app.use("/api/voice-tools", voiceToolsRouter);
+app.use("/api/opd", opdRouter);
 
 // N8N / Service-to-service routes (protected by x-mnx-service-key)
 app.use("/api/n8n", n8nRouter);

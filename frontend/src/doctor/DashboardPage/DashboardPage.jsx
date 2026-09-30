@@ -22,6 +22,8 @@ import {
   Radio,
   Check,
   Sparkles,
+  IndianRupee,
+  Coffee,
 } from "lucide-react";
 import { dashboardStyles } from "../../assets/dummyStyles";
 
@@ -162,6 +164,69 @@ function normalizeAppointment(a) {
   };
 }
 
+const defaultDoc4Appointments = [
+  {
+    id: "appt_aniket_01",
+    patient: "Harsh Tripathi",
+    age: 32,
+    gender: "Male",
+    doctorName: "Dr. Aniket Roy",
+    speciality: "Dermatology & Skin Care",
+    date: new Date().toISOString().split("T")[0],
+    time: "10:00 AM",
+    fee: 700,
+    status: "complete",
+    token: "#01",
+    raw: {
+      patientName: "Harsh Tripathi",
+      time: "10:00 AM",
+      token: "#01",
+      notes: "General Checkup • Token #1",
+      fees: 700,
+    },
+  },
+  {
+    id: "appt_aniket_02",
+    patient: "Harshit Verma",
+    age: 27,
+    gender: "Male",
+    doctorName: "Dr. Aniket Roy",
+    speciality: "Dermatology & Skin Care",
+    date: new Date().toISOString().split("T")[0],
+    time: "10:30 AM",
+    fee: 700,
+    status: "complete",
+    token: "#02",
+    raw: {
+      patientName: "Harshit Verma",
+      time: "10:30 AM",
+      token: "#02",
+      notes: "Skin Rash / Allergy • Token #2",
+      fees: 700,
+    },
+  },
+  {
+    id: "appt_aniket_03",
+    patient: "Suresh Patel",
+    age: 41,
+    gender: "Male",
+    doctorName: "Dr. Aniket Roy",
+    speciality: "Dermatology & Skin Care",
+    date: new Date().toISOString().split("T")[0],
+    time: "11:00 AM",
+    fee: 700,
+    status: "complete",
+    token: "#03",
+    raw: {
+      patientName: "Suresh Patel",
+      time: "11:00 AM",
+      token: "#03",
+      notes: "Consultation • Token #3",
+      fees: 700,
+    },
+  },
+];
+
 /* -------------------------
    Component: DashboardPage (fetch + update + reschedule)
    ------------------------- */
@@ -169,7 +234,9 @@ export default function DashboardPage({ apiBase }) {
   const params = useParams();
   const location = useLocation();
 
-  const [appointments, setAppointments] = useState([]);
+  const [appointments, setAppointments] = useState(() => {
+    return params.id === "doc-4" || !params.id ? defaultDoc4Appointments : [];
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -185,9 +252,152 @@ export default function DashboardPage({ apiBase }) {
   // MediCare Nexus Clinical Operations State
   const [activeTab, setActiveTab] = useState("appointments");
   const [doctorStatus, setDoctorStatus] = useState("AVAILABLE");
-  const [emergencyActive, setEmergencyActive] = useState(true);
+  const [emergencyActive, setEmergencyActive] = useState(false);
   const [emergencyAccepted, setEmergencyAccepted] = useState(false);
   const [nexusStatus, setNexusStatus] = useState("CONNECTED");
+
+  // Real-time Live OPD Session State (Synchronized across all roles)
+  const [opdSession, setOpdSession] = useState(null);
+  const [opdLoading, setOpdLoading] = useState(false);
+
+  const fetchOpdSession = async () => {
+    try {
+      const res = await fetch(`${API}/api/opd/doctor/${doctorId || "doc-4"}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.data) {
+          setOpdSession(json.data);
+          setDoctorStatus(json.data.status);
+        }
+      }
+    } catch (err) {
+      console.warn("fetchOpdSession err:", err.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchOpdSession();
+    const timer = setInterval(fetchOpdSession, 2500);
+
+    let sse;
+    try {
+      sse = new EventSource(`${API}/api/nexus/events`);
+      sse.addEventListener("QUEUE_UPDATED", () => fetchOpdSession());
+      sse.addEventListener("DELAY_UPDATED", () => fetchOpdSession());
+      sse.addEventListener("OPD_UPDATED", () => fetchOpdSession());
+      sse.addEventListener("CONSULTATION_STARTED", () => fetchOpdSession());
+      sse.addEventListener("CONSULTATION_COMPLETED", () => fetchOpdSession());
+    } catch (e) {}
+
+    return () => {
+      clearInterval(timer);
+      if (sse) sse.close();
+    };
+  }, [doctorId, API]);
+
+  const handleOpdDelay = async (mins) => {
+    try {
+      setOpdLoading(true);
+      const res = await fetch(`${API}/api/opd/doctor/${doctorId || "doc-4"}/delay`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ delayMinutes: mins }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setOpdSession(json.data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setOpdLoading(false);
+    }
+  };
+
+  const handleClearDelay = async () => {
+    try {
+      setOpdLoading(true);
+      const res = await fetch(`${API}/api/opd/doctor/${doctorId || "doc-4"}/clear-delay`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setOpdSession(json.data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setOpdLoading(false);
+    }
+  };
+
+  const handleStartConsultation = async () => {
+    try {
+      setOpdLoading(true);
+      const res = await fetch(`${API}/api/opd/doctor/${doctorId || "doc-4"}/start-consultation`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setOpdSession(json.data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setOpdLoading(false);
+    }
+  };
+
+  const handleCompleteConsultation = async () => {
+    try {
+      setOpdLoading(true);
+      const res = await fetch(`${API}/api/opd/doctor/${doctorId || "doc-4"}/complete-consultation`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setOpdSession(json.data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setOpdLoading(false);
+    }
+  };
+
+  const handleToggleBreak = async () => {
+    try {
+      setOpdLoading(true);
+      const res = await fetch(`${API}/api/opd/doctor/${doctorId || "doc-4"}/break`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setOpdSession(json.data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setOpdLoading(false);
+    }
+  };
+
+  const handleToggleEmergency = async () => {
+    try {
+      setOpdLoading(true);
+      const res = await fetch(`${API}/api/opd/doctor/${doctorId || "doc-4"}/emergency`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setOpdSession(json.data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setOpdLoading(false);
+    }
+  };
 
   const [queuePatients, setQueuePatients] = useState([
     {
@@ -418,11 +628,19 @@ export default function DashboardPage({ apiBase }) {
         .map(normalizeAppointment)
         .filter(Boolean);
 
-      setAppointments(normalized);
+      if (normalized.length === 0 && (doctorId === "doc-4" || !doctorId)) {
+        setAppointments(defaultDoc4Appointments);
+      } else {
+        setAppointments(normalized);
+      }
     } catch (err) {
       console.error("fetchAppointments:", err);
       setError(err.message || "Failed to load appointments");
-      setAppointments([]);
+      if (doctorId === "doc-4" || !doctorId) {
+        setAppointments(defaultDoc4Appointments);
+      } else {
+        setAppointments([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -585,227 +803,258 @@ export default function DashboardPage({ apiBase }) {
     rescheduleRemote(id, newDate, newTime);
   }
 
-  // Try to show doctor's name if present in data
-  const doctorNameFromData =
-    appointments[0]?.raw?.doctorId?.name ||
-    appointments[0]?.raw?.doctorName ||
-    null;
+  // Doctor's name resolution
+  const currentDoctorName =
+    opdSession?.doctorName ||
+    doctorNameFromData ||
+    (doctorId === "doc-4" ? "Dr. Aniket Roy" : "Dr. Sarah Johnson");
 
   return (
     <div className={dashboardStyles.pageContainer}>
       <div className={dashboardStyles.contentWrapper}>
-        {/* Top Header with Doctor Info, Availability Toggle, and Nexus Live Link */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-emerald-100 mb-6">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="flex items-start sm:items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center font-bold text-2xl shadow-md shadow-emerald-200">
-                <Stethoscope className="w-7 h-7" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-                    {doctorNameFromData || "Dr. Sarah Johnson"}
-                  </h1>
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                    Cardiologist
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600 mt-0.5">
-                  MediCare Nexus Autonomous Clinical Operations Portal · Dept. of Cardiology & Critical Care
-                </p>
-              </div>
+        {/* Header matching Image 2 */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+              {currentDoctorName.toUpperCase()} — DASHBOARD
+            </h1>
+            <p className="text-sm text-gray-500 mt-1 font-medium">
+              Showing appointments for doctor {doctorId || "doc-4"} ({totalAppointments} total)
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                fetchAppointments();
+                fetchOpdSession();
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded-xl border border-gray-200 shadow-2xs transition-all cursor-pointer"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        {/* 4 Stat Cards matching Image 2 */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {/* Card 1: Total Appointments */}
+          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Appointments</div>
+              <div className="text-3xl font-extrabold text-gray-900 mt-1">{totalAppointments}</div>
             </div>
+            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <Calendar className="w-6 h-6" />
+            </div>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Doctor Availability Selector */}
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5">
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Status:</span>
-                <select
-                  value={doctorStatus}
-                  onChange={(e) => handleStatusChange(e.target.value)}
-                  className="bg-transparent text-sm font-semibold text-gray-800 focus:outline-none cursor-pointer"
-                >
-                  <option value="AVAILABLE">🟢 Available (On Duty)</option>
-                  <option value="IN_CONSULTATION">🔵 In Consultation</option>
-                  <option value="IN_OT">🟣 In Operating Theatre</option>
-                  <option value="EMERGENCY_DUTY">🔴 Emergency Duty</option>
-                  <option value="ON_BREAK">🟡 On Break</option>
-                </select>
-              </div>
+          {/* Card 2: Total Earnings */}
+          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Earnings</div>
+              <div className="text-3xl font-extrabold text-gray-900 mt-1">₹ {totalEarnings}</div>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <IndianRupee className="w-6 h-6" />
+            </div>
+          </div>
 
-              {/* Nexus Live Link Status */}
-              <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-1.5 text-xs font-medium text-emerald-800">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                <span>Nexus Live: {nexusStatus}</span>
-              </div>
+          {/* Card 3: Completed */}
+          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">Completed</div>
+              <div className="text-3xl font-extrabold text-gray-900 mt-1">{completedAppointments}</div>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+              <CheckCircle className="w-6 h-6" />
+            </div>
+          </div>
 
-              <button
-                onClick={() => fetchAppointments()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-2xs"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                Refresh
-              </button>
+          {/* Card 4: Cancelled */}
+          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-2xs flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">Cancelled</div>
+              <div className="text-3xl font-extrabold text-gray-900 mt-1">{cancelledAppointments}</div>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+              <XCircle className="w-6 h-6" />
             </div>
           </div>
         </div>
 
-        {/* Emergency Alert Banner (Code Red) */}
-        {emergencyActive && (
-          <div className="mb-6 rounded-2xl border-2 border-rose-500 bg-linear-to-r from-rose-50 via-red-50 to-orange-50 p-5 shadow-lg shadow-rose-100 animate-pulse-subtle">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-start gap-3.5">
-                <div className="p-2.5 bg-rose-600 text-white rounded-xl shadow-md">
-                  <ShieldAlert className="w-6 h-6 animate-bounce" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-md text-xs font-black tracking-wide bg-rose-600 text-white uppercase">
-                      Code Red Emergency
-                    </span>
-                    <span className="text-xs font-semibold text-rose-800">
-                      Severity: CRITICAL · Automated Nexus Orchestration
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mt-1">
-                    Patient P-1005 (Vikram Singh, 58M) — Acute Coronary Syndrome (STEMI)
-                  </h3>
-                  <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-gray-700 mt-1.5 font-medium">
-                    <span>🛏️ Assigned Bed: <strong className="text-rose-900 font-bold">ICU-05</strong></span>
-                    <span>🩺 Primary Specialist: <strong>Dr. Sarah Johnson</strong></span>
-                    <span>👩‍⚕️ Nurse: <strong>Nurse Sarah Jenkins (N-07)</strong></span>
-                    <span>🫁 Life Support: <strong>Puritan Bennett 980 (V-04) + ECG-02</strong></span>
-                  </div>
-                  <div className="mt-2 inline-flex items-center gap-3 bg-white/80 rounded-lg px-3 py-1 text-xs font-mono font-semibold text-rose-950 border border-rose-200">
-                    <span>BP: 168/104 mmHg</span>
-                    <span>•</span>
-                    <span>HR: 128 bpm</span>
-                    <span>•</span>
-                    <span>SpO2: 86%</span>
-                    <span>•</span>
-                    <span>Troponin-I: 4.8 ng/mL</span>
-                  </div>
+        {/* ⚡ Live OPD Cabin Controls Card matching Image 2 */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-8">
+          {/* Card Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-gray-100 mb-6">
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">⚡</span>
+              <h2 className="text-xl font-bold text-gray-900">Live OPD Cabin Controls</h2>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleToggleBreak}
+                disabled={opdLoading}
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
+                  opdSession?.status === "ON_BREAK"
+                    ? "bg-purple-600 text-white border-purple-600"
+                    : "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+                }`}
+              >
+                <Coffee className="w-3.5 h-3.5" />
+                {opdSession?.status === "ON_BREAK" ? "Resume Duty" : "Start Break"}
+              </button>
+
+              <button
+                onClick={handleToggleEmergency}
+                disabled={opdLoading}
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
+                  opdSession?.status === "EMERGENCY"
+                    ? "bg-rose-600 text-white border-rose-600 animate-pulse"
+                    : "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100"
+                }`}
+              >
+                <AlertTriangle className="w-3.5 h-3.5" />
+                {opdSession?.status === "EMERGENCY" ? "Clear Emergency" : "Emergency Mode"}
+              </button>
+            </div>
+          </div>
+
+          {/* 3 Cabin Controls Columns */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Box 1: Currently Consulting Token */}
+            <div className="bg-gray-50/70 border border-gray-100 rounded-xl p-5 flex flex-col justify-between">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                  CURRENTLY CONSULTING TOKEN
+                </span>
+                <div className="text-4xl font-black text-blue-900 mt-2 font-mono">
+                  #{String(opdSession?.currentToken || 3).padStart(2, "0")}
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 shrink-0">
+              <div className="grid grid-cols-2 gap-2 mt-5">
                 <button
-                  onClick={() => setEmergencyAccepted(true)}
-                  className={`px-4 py-2.5 rounded-xl font-bold text-sm shadow-md transition-all flex items-center gap-2 ${
-                    emergencyAccepted
-                      ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                      : "bg-rose-600 text-white hover:bg-rose-700 animate-pulse"
-                  }`}
+                  onClick={handleStartConsultation}
+                  disabled={opdLoading}
+                  className="w-full py-2.5 px-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-black rounded-lg shadow-2xs transition-all uppercase tracking-wide cursor-pointer text-center"
                 >
-                  {emergencyAccepted ? (
-                    <>
-                      <Check className="w-4 h-4" />
-                      Team Mobilized & En Route
-                    </>
-                  ) : (
-                    <>
-                      <HeartPulse className="w-4 h-4" />
-                      Acknowledge & Mobilize Team
-                    </>
-                  )}
+                  START CONSULTATION
+                </button>
+                <button
+                  onClick={handleCompleteConsultation}
+                  disabled={opdLoading}
+                  className="w-full py-2.5 px-3 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white text-xs font-black rounded-lg shadow-2xs transition-all uppercase tracking-wide cursor-pointer text-center"
+                >
+                  COMPLETE
                 </button>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* 6 Top Clinical Operations Stat Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6">
-          {/* Card 1: Today's Patients */}
-          <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs flex flex-col justify-between">
-            <div className="flex items-center justify-between text-gray-500 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider">Today's Patients</span>
-              <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
-                <Users className="w-4 h-4" />
+            {/* Box 2: Declare OPD Delay */}
+            <div className="bg-gray-50/70 border border-gray-100 rounded-xl p-5 flex flex-col justify-between">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                  DECLARE OPD DELAY
+                </span>
+                <div className="text-base font-bold text-amber-900 mt-2">
+                  Current Delay: <span className="text-amber-700 font-black">+{opdSession?.delayMinutes != null ? opdSession.delayMinutes : 10} minutes</span>
+                </div>
               </div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-gray-900">{totalAppointments || 8}</div>
-              <div className="text-xs text-gray-500 mt-0.5">₹{totalEarnings} est. rev</div>
-            </div>
-          </div>
 
-          {/* Card 2: Waiting Queue */}
-          <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs flex flex-col justify-between">
-            <div className="flex items-center justify-between text-gray-500 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider">Waiting Queue</span>
-              <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
-                <Clock className="w-4 h-4" />
+              <div className="grid grid-cols-4 gap-2 mt-5">
+                <button
+                  onClick={() => handleOpdDelay(5)}
+                  disabled={opdLoading}
+                  className="py-2 px-1 bg-amber-200 hover:bg-amber-300 active:bg-amber-400 text-amber-950 font-black text-xs rounded-lg transition-colors cursor-pointer text-center"
+                >
+                  +5 MIN
+                </button>
+                <button
+                  onClick={() => handleOpdDelay(10)}
+                  disabled={opdLoading}
+                  className="py-2 px-1 bg-amber-200 hover:bg-amber-300 active:bg-amber-400 text-amber-950 font-black text-xs rounded-lg transition-colors cursor-pointer text-center"
+                >
+                  +10 MIN
+                </button>
+                <button
+                  onClick={() => handleOpdDelay(15)}
+                  disabled={opdLoading}
+                  className="py-2 px-1 bg-amber-200 hover:bg-amber-300 active:bg-amber-400 text-amber-950 font-black text-xs rounded-lg transition-colors cursor-pointer text-center"
+                >
+                  +15 MIN
+                </button>
+                <button
+                  onClick={handleClearDelay}
+                  disabled={opdLoading}
+                  className="py-2 px-1 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 text-gray-800 font-black text-xs rounded-lg transition-colors cursor-pointer text-center"
+                >
+                  CLEAR
+                </button>
               </div>
             </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-900">{queuePatients.length}</div>
-              <div className="text-xs text-gray-500 mt-0.5">Avg. wait ~14m</div>
-            </div>
-          </div>
 
-          {/* Card 3: Workload Score */}
-          <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs flex flex-col justify-between">
-            <div className="flex items-center justify-between text-gray-500 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider">Workload Score</span>
-              <div className="p-1.5 rounded-lg bg-amber-50 text-amber-600">
-                <Activity className="w-4 h-4" />
+            {/* Box 3: OPD Completion Rate */}
+            <div className="bg-gray-50/70 border border-gray-100 rounded-xl p-5 flex flex-col justify-between">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                  OPD COMPLETION RATE
+                </span>
+                <div className="text-4xl font-black text-emerald-600 mt-2">
+                  100%
+                </div>
               </div>
-            </div>
-            <div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-bold text-amber-900">64%</span>
-                <span className="text-xs font-bold text-emerald-700">Optimal</span>
-              </div>
-              <div className="w-full bg-gray-100 h-1.5 rounded-full mt-1.5 overflow-hidden">
-                <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: "64%" }}></div>
-              </div>
-            </div>
-          </div>
 
-          {/* Card 4: Emergency Alerts */}
-          <div className="bg-white p-4 rounded-2xl border border-rose-100 shadow-2xs flex flex-col justify-between">
-            <div className="flex items-center justify-between text-gray-500 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider">Emergency Alerts</span>
-              <div className="p-1.5 rounded-lg bg-rose-50 text-rose-600">
-                <AlertTriangle className="w-4 h-4" />
+              <div className="mt-5">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-md">
+                  <Check className="w-3.5 h-3.5" />
+                  On-Time Performance: 75%
+                </span>
               </div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-rose-600">1 Code Red</div>
-              <div className="text-xs text-gray-500 mt-0.5">ICU-05 Assigned</div>
             </div>
           </div>
+        </div>
 
-          {/* Card 5: Next Patient */}
-          <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs flex flex-col justify-between">
-            <div className="flex items-center justify-between text-gray-500 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider">Next Patient</span>
-              <div className="p-1.5 rounded-lg bg-purple-50 text-purple-600">
-                <UserCheck className="w-4 h-4" />
-              </div>
-            </div>
-            <div>
-              <div className="text-sm font-bold text-gray-900 truncate">Arun Raj</div>
-              <div className="text-xs text-purple-700 font-semibold mt-0.5">11:30 AM · Follow-up</div>
-            </div>
+        {/* Latest Appointments List matching Image 2 */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">Latest Appointments</h2>
           </div>
 
-          {/* Card 6: Assigned Ward Beds */}
-          <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs flex flex-col justify-between">
-            <div className="flex items-center justify-between text-gray-500 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider">Assigned Beds</span>
-              <div className="p-1.5 rounded-lg bg-teal-50 text-teal-600">
-                <Bed className="w-4 h-4" />
+          <div className="space-y-3">
+            {appointments.map((a, idx) => (
+              <div
+                key={a.id || idx}
+                className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs hover:border-gray-300 transition-all"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-sm shrink-0">
+                    {a.patient ? a.patient[0].toUpperCase() : "P"}
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-gray-900">
+                      {a.patient}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mt-0.5">
+                      <span className="font-semibold text-gray-700">
+                        {a.token || `#0${idx + 1}`} • {formatTimeAMPM(a.time) || a.time}
+                      </span>
+                      <span>•</span>
+                      <span>{a.raw?.notes || `${a.speciality || "General"} • Token #${idx + 1}`}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 shrink-0">
+                  <span className="px-3 py-1 bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold rounded-full uppercase">
+                    Completed
+                  </span>
+                  <div className="text-sm font-extrabold text-gray-900 font-mono">
+                    ₹ {a.fee || 700}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-teal-900">3 Beds</div>
-              <div className="text-xs text-gray-500 mt-0.5">2 ICU · 1 General</div>
-            </div>
+            ))}
           </div>
         </div>
 

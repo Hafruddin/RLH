@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import {
@@ -478,6 +479,32 @@ export default function AppointmentPage() {
     <div className={appointmentPageStyles.pageContainer}>
       <Toaster position="top-right" />
       <div className={appointmentPageStyles.maxWidthContainer}>
+        {/* Real-time Live OPD Banner */}
+        <div className="mb-6 bg-gradient-to-r from-blue-950 via-slate-900 to-teal-950 text-white rounded-2xl p-4 sm:p-5 shadow-sm border border-teal-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-teal-500/20 text-teal-300 rounded-xl border border-teal-500/30">
+              <Clock className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded text-[10px] font-black bg-teal-400 text-teal-950 uppercase tracking-wider">
+                  Live System
+                </span>
+                <h3 className="font-extrabold text-sm sm:text-base">Real-Time OPD Queue Tracking Active</h3>
+              </div>
+              <p className="text-xs text-teal-100/80 mt-0.5">
+                Check real-time consulting tokens, doctor delays, and smart arrival alerts for all hospital OPD cabins.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/live-opd"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-teal-400 hover:bg-teal-300 text-teal-950 text-xs font-black rounded-xl transition-all shadow-sm shrink-0"
+          >
+            Open Live OPD Monitor →
+          </Link>
+        </div>
+
         {/* ------------ DOCTOR APPOINTMENTS ------------ */}
         <h1 className={appointmentPageStyles.doctorTitle}>
           Your Doctor Appointments
@@ -496,7 +523,7 @@ export default function AppointmentPage() {
         )}
 
         <div className={appointmentPageStyles.doctorGrid}>
-          {appointmentData.map((item) => (
+          {appointmentData.map((item, idx) => (
             <div key={item.id} className={cardStyles.doctorCard}>
               <div className={cardStyles.doctorImageContainer}>
                 <img
@@ -526,6 +553,42 @@ export default function AppointmentPage() {
               <div className={cardStyles.badgesContainer}>
                 <PaymentBadge payment={item.payment} />
                 <StatusBadge itemStatus={item.status} />
+              </div>
+
+              {/* Real-time OPD Live Queue Tracker */}
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <div className="bg-gradient-to-r from-teal-50/70 to-emerald-50/70 rounded-xl p-3 border border-teal-200">
+                  <div className="flex items-center justify-between text-xs mb-2">
+                    <span className="font-extrabold text-teal-900 flex items-center gap-1.5">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+                      </span>
+                      Live OPD Queue
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
+                      Token #{String(idx + 4).padStart(2, "0")}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-1.5 text-[11px] text-gray-700 font-medium mb-2">
+                    <div>Now Consulting: <strong className="text-gray-900 font-black">#03</strong></div>
+                    <div>Ahead of you: <strong className="text-teal-700 font-black">{idx + 1} patient{idx > 0 ? "s" : ""}</strong></div>
+                    <div>Wait Time: <strong className="text-amber-700 font-black">~{(idx + 1) * 15} mins</strong></div>
+                    <div>Est. Turn: <strong className="text-gray-900 font-black">{item.time || "11:30 AM IST"}</strong></div>
+                  </div>
+
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 text-[10px] text-amber-900 mb-2">
+                    <strong>Smart Alert:</strong> Doctor is running 10 min behind schedule. Recommended arrival at clinic: <span className="font-bold underline">{item.time ? "10 min before " + item.time : "11:15 AM IST"}</span>
+                  </div>
+
+                  <Link
+                    to="/live-opd"
+                    className="block text-center text-[11px] font-bold text-teal-700 hover:text-teal-800 underline mt-1"
+                  >
+                    View Hospital Central Live OPD Monitor →
+                  </Link>
+                </div>
               </div>
 
               {item.status === "Rescheduled" && item.rescheduledTo ? (

@@ -16,6 +16,7 @@ import Login from "./pages/Login/Login";
 import DHome from "./pages/DHome/DHome";
 import List from "./pages/List/List";
 import EditProfile from "./pages/EditProfile/EditProfile";
+import HospitalLiveOpdMonitor from "./pages/LiveOpd/HospitalLiveOpdMonitor";
 
 // Lucide icon
 import { CircleChevronUp } from "lucide-react";
@@ -89,6 +90,7 @@ const App = () => {
           <Route path="/services" element={<Service />} />
           <Route path="/services/:id" element={<ServiceDetailPage />} />
           <Route path="/appointments" element={<Appointments />} />
+          <Route path="/live-opd" element={<HospitalLiveOpdMonitor />} />
           <Route path="/doctor-admin/login" element={<Login />} />
 
           {/* ✅ STRIPE PAYMENT ROUTES */}

@@ -719,8 +719,8 @@ export const getAppointmentsByDoctor = async (req, res) => {
     const page = Math.max(1, parseInt(pageRaw, 10) || 1);
     const skip = (page - 1) * limit;
 
-    // Failsafe: Fallback to mock data if MongoDB is disconnected
-    if (mongoose.connection.readyState !== 1) {
+    // Failsafe: Fallback to mock data if MongoDB is disconnected or doctorId is not an ObjectId (e.g. doc-4)
+    if (mongoose.connection.readyState !== 1 || !mongoose.Types.ObjectId.isValid(doctorId)) {
       const mockList = getMockAppointments({ doctorId });
       return res.json({ success: true, appointments: mockList, meta: { page: 1, limit, total: mockList.length, count: mockList.length } });
     }
