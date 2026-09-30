@@ -1,0 +1,38 @@
+# render.yaml — Render.com deployment config for MediCare Nexus backend
+# Deploy at: https://dashboard.render.com → New Web Service → Connect GitHub → select Hafruddin/RLH
+
+services:
+  - type: web
+    name: medicare-nexus-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      # Set these in Render dashboard → Environment tab (never commit values):
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: MNX_SERVICE_KEY
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: FRONTEND_URL
+        value: https://medi-nexus-rhl.netlify.app
+    healthCheckPath: /api/health

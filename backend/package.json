@@ -1,11 +1,15 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "description": "",
+  "name": "medicare-nexus-backend",
+  "version": "1.0.5",
+  "description": "MediCare Nexus — Autonomous Hospital Resource Orchestration API",
   "main": "index.js",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
-    "start": "nodemon index.js",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "seed": "node seeder.js",
     "reset-demo": "node -e 'import(\"./services/seedService.js\").then(async s => { await s.seedNexusData(); process.exit(0); });'"
   },
@@ -24,8 +28,10 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.1",
     "multer": "^2.0.2",
-    "nodemon": "^3.1.11",
     "stripe": "^20.0.0",
     "validator": "^13.15.23"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
   }
 }
