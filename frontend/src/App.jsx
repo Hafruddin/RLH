@@ -21,6 +21,7 @@ import EditProfile from "./pages/EditProfile/EditProfile";
 import { CircleChevronUp } from "lucide-react";
 import VerifyPaymentPage from "../VerifyPaymetPage";
 import VerifyServicePaymentPage from "../VerifyServicePaymentPage";
+import NexusVoiceAgent from "./components/Voice/NexusVoiceAgent";
 
 /* ================= Scroll To Top ================= */
 const ScrollToTop = () => {
@@ -113,6 +114,7 @@ const App = () => {
         </Routes>
       </div>
 
+      <NexusVoiceAgent />
       <ScrollButton />
     </>
   );

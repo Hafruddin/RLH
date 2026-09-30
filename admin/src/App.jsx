@@ -14,6 +14,7 @@ import ListService from "./pages/ListService/ListService";
 import ServiceAppointments from "./pages/ServiceAppointments/ServiceAppointments";
 import Hero from "./components/Hero/Hero";
 import NexusMasterLayout from "./components/Nexus/NexusMasterLayout";
+import NexusVoiceAgent from "./components/Voice/NexusVoiceAgent";
 
 function RequireAuth({ children }) {
   const { isLoaded, isSignedIn } = useUser();
@@ -67,7 +68,8 @@ function RequireAuth({ children }) {
 
 const App = () => {
   return (
-    <Routes>
+    <>
+      <Routes>
       <Route path="/" element={<NexusMasterLayout />} />
       <Route path="/hero" element={<Hero />} />
       <Route path="/nexus" element={<NexusMasterLayout />} />
@@ -132,6 +134,8 @@ const App = () => {
         }
       />
     </Routes>
+    <NexusVoiceAgent />
+  </>
   );
 };
 

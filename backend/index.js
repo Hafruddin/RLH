@@ -15,6 +15,8 @@ import doctorRouter from './routes/doctorRouter.js';
 import serviceRouter from './routes/serviceRoutes.js';
 import serviceAppointmentRouter from './routes/serviceAppointmentRouter.js';
 import nexusRouter from './routes/nexusRouter.js';
+import voiceRouter from './routes/voiceRouter.js';
+import voiceToolsRouter from './routes/voiceToolsRouter.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -56,6 +58,8 @@ app.use("/api/services", serviceRouter);
 app.use("/api/service-appointments", serviceAppointmentRouter);
 app.use("/api/nexus", nexusRouter);
 app.use("/api", nexusRouter); // also mount top-level for convenience
+app.use("/api/voice", voiceRouter);
+app.use("/api/voice-tools", voiceToolsRouter);
 
 // Auto-seed Nexus Demo data when MongoDB connects
 mongoose.connection.once("open", async () => {

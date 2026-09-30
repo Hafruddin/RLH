@@ -38,6 +38,7 @@ import ForecastingView from "./ForecastingView";
 import SimulationStudio from "./SimulationStudio";
 import EhrTimelineView from "./EhrTimelineView";
 import NexusCopilot from "./NexusCopilot";
+import VoiceAgentMonitorView from "./VoiceAgentMonitorView";
 import logoImg from "../../assets/logo.png";
 
 export default function NexusMasterLayout() {
@@ -56,7 +57,8 @@ export default function NexusMasterLayout() {
     { id: "forecasting", label: "Demand Forecasting", icon: TrendingUp, badge: "+4h" },
     { id: "simulation", label: "Simulation Studio", icon: Sliders, badge: "What-If" },
     { id: "ehr", label: "EHR & FHIR R4", icon: Layers, badge: "FHIR" },
-    { id: "copilot", label: "Nexus AI Copilot", icon: Cpu, badge: "AI" }
+    { id: "copilot", label: "Nexus AI Copilot", icon: Cpu, badge: "AI" },
+    { id: "voice-monitor", label: "AI Agent Monitor", icon: Bot, badge: "Voice 🎙" }
   ];
 
   return (
@@ -169,6 +171,7 @@ export default function NexusMasterLayout() {
         {activeTab === "simulation" && <SimulationStudio />}
         {activeTab === "ehr" && <EhrTimelineView />}
         {activeTab === "copilot" && <NexusCopilot />}
+        {activeTab === "voice-monitor" && <VoiceAgentMonitorView />}
       </main>
 
       {/* Footer */}
