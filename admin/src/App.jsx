@@ -1,6 +1,6 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useClerk } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
 
 // Import your pages
@@ -17,33 +17,52 @@ import NexusMasterLayout from "./components/Nexus/NexusMasterLayout";
 
 function RequireAuth({ children }) {
   const { isLoaded, isSignedIn } = useUser();
+  const clerk = useClerk();
+  const [demoBypass, setDemoBypass] = React.useState(false);
 
   if (!isLoaded) return null; // prevent flicker
-  if (!isSignedIn)
-    return (
-      <div className="min-h-screen font-mono flex items-center justify-center bg-linear-to-b from-emerald-50 via-green-50 to-emerald-100 px-4">
-        <div className="text-center">
-          {/* Animated text */}
-          <p className="text-emerald-800 font-semibold text-lg sm:text-2xl mb-4 animate-fade-in">
-            Please sign in to view this page
-          </p>
+  if (isSignedIn || demoBypass) return children;
 
-          {/* Button on new line */}
-          <div className="flex justify-center">
-            <Link
-              to="/"
-              className="px-4 py-2 text-sm rounded-full bg-emerald-600 text-white shadow-sm
-                       hover:bg-emerald-700 hover:shadow-md
-                       transition-all duration-300 ease-in-out
-                       animate-bounce-subtle"
-            >
-              HOME
-            </Link>
-          </div>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-b from-emerald-50 via-green-50 to-emerald-100 px-4">
+      <div className="max-w-md w-full bg-white p-8 rounded-3xl shadow-xl border border-emerald-100 text-center animate-fade-in">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center shadow-inner">
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Admin Portal Authentication
+        </h2>
+        <p className="text-sm text-gray-600 mb-6">
+          Sign in with Clerk to access hospital operations, appointments, and resource management.
+        </p>
+
+        <div className="space-y-3">
+          <button
+            onClick={() => clerk.openSignIn()}
+            className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>🔐 Sign In with Clerk</span>
+          </button>
+
+          <button
+            onClick={() => setDemoBypass(true)}
+            className="w-full py-2.5 px-4 rounded-xl border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-bold text-sm transition-all cursor-pointer"
+          >
+            ⚡ Quick Demo Access (Bypass)
+          </button>
+
+          <Link
+            to="/"
+            className="block text-xs font-semibold text-gray-500 hover:text-gray-800 pt-2"
+          >
+            ← Return to Command Center
+          </Link>
         </div>
       </div>
-    );
-  return children;
+    </div>
+  );
 }
 
 const App = () => {
