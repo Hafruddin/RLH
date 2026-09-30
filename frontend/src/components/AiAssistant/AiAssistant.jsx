@@ -6,13 +6,53 @@ import {
   Sparkles,
   Send,
   X,
-  User,
   Heart,
   ChevronRight,
   ClipboardList,
 } from "lucide-react";
 
-// Mapping of patient symptoms/keywords to doctor specializations and diagnostic tests
+// ─── Greeting / small-talk patterns ───────────────────────────────────────────
+const GREETING_PATTERNS = [
+  /^hi+[!?.]*$/i,
+  /^hello+[!?.]*$/i,
+  /^hey+[!?.]*$/i,
+  /^hii+[!?.]*$/i,
+  /^helo+[!?.]*$/i,
+  /^good\s*(morning|afternoon|evening|night)[!?.]*$/i,
+  /^namaste[!?.]*$/i,
+  /^vanakkam[!?.]*$/i,
+  /^namaskar[!?.]*$/i,
+  /^sup[!?.]*$/i,
+  /^what'?s up[!?.]*$/i,
+  /^howdy[!?.]*$/i,
+];
+
+const THANKS_PATTERNS = [
+  /^thank(s| you)+[!?.]*$/i,
+  /^thx[!?.]*$/i,
+  /^ty[!?.]*$/i,
+  /^great[!?.]*$/i,
+  /^awesome[!?.]*$/i,
+  /^ok(ay)?[!?.]*$/i,
+  /^ok thank[s!.]*$/i,
+];
+
+const HOW_ARE_YOU_PATTERNS = [
+  /how are you/i,
+  /how r u/i,
+  /how do you do/i,
+  /are you (ok|fine|good|well)/i,
+];
+
+const HELP_PATTERNS = [
+  /what can you (do|help)/i,
+  /how (can|do) (you|i)/i,
+  /help me/i,
+  /what (do|does) (you|this) do/i,
+  /i need help/i,
+];
+
+// ─── Symptom → specialization mapping ─────────────────────────────────────────
 const specializationMapping = {
   Cardiologist: {
     keywords: ["heart", "chest pain", "cardiac", "pulse", "rhythm", "breathless", "palpitation", "coronary", "blood pressure", "hypertension"],
@@ -117,55 +157,86 @@ const specializationMapping = {
 };
 
 const serviceMappings = [
-  {
-    name: "Complete Blood Count (CBC)",
-    keywords: ["blood cell", "blood count", "cbc", "anemia", "infection blood", "weakness blood"],
-    recommendedSpecialty: "General Physician"
-  },
-  {
-    name: "Lipid Profile",
-    keywords: ["cholesterol", "lipid", "fat blood", "coronary fat", "heart fat"],
-    recommendedSpecialty: "Cardiologist"
-  },
-  {
-    name: "Thyroid Profile (T3, T4, TSH)",
-    keywords: ["thyroid", "tsh", "t3", "t4", "goiter", "hormone thyroid"],
-    recommendedSpecialty: "General Physician"
-  },
-  {
-    name: "Liver Function Test (LFT)",
-    keywords: ["liver", "bilirubin", "lft", "jaundice", "hepatitis"],
-    recommendedSpecialty: "Gastroenterologist"
-  },
-  {
-    name: "Kidney Function Test (KFT)",
-    keywords: ["kidney check", "creatinine", "kft", "urea", "renal test"],
-    recommendedSpecialty: "Nephrologist"
-  },
-  {
-    name: "X-Ray Chest",
-    keywords: ["chest x-ray", "lung x-ray", "pneumonia chest", "x-ray ribs"],
-    recommendedSpecialty: "Pulmonologist"
-  },
-  {
-    name: "Ultrasound Whole Abdomen",
-    keywords: ["ultrasound", "abdomen scan", "stomach scan", "kidney stone ultrasound", "gallbladder ultrasound"],
-    recommendedSpecialty: "Gastroenterologist"
-  },
-  {
-    name: "HbA1c (Glycated Haemoglobin)",
-    keywords: ["diabetes blood", "sugar average", "hba1c", "glycated", "3 month sugar"],
-    recommendedSpecialty: "General Physician"
-  }
+  { name: "Complete Blood Count (CBC)", keywords: ["blood cell", "blood count", "cbc", "anemia", "infection blood", "weakness blood"], recommendedSpecialty: "General Physician" },
+  { name: "Lipid Profile", keywords: ["cholesterol", "lipid", "fat blood", "coronary fat", "heart fat"], recommendedSpecialty: "Cardiologist" },
+  { name: "Thyroid Profile (T3, T4, TSH)", keywords: ["thyroid", "tsh", "t3", "t4", "goiter", "hormone thyroid"], recommendedSpecialty: "General Physician" },
+  { name: "Liver Function Test (LFT)", keywords: ["liver", "bilirubin", "lft", "jaundice", "hepatitis"], recommendedSpecialty: "Gastroenterologist" },
+  { name: "Kidney Function Test (KFT)", keywords: ["kidney check", "creatinine", "kft", "urea", "renal test"], recommendedSpecialty: "Nephrologist" },
+  { name: "X-Ray Chest", keywords: ["chest x-ray", "lung x-ray", "pneumonia chest", "x-ray ribs"], recommendedSpecialty: "Pulmonologist" },
+  { name: "Ultrasound Whole Abdomen", keywords: ["ultrasound", "abdomen scan", "stomach scan", "kidney stone ultrasound", "gallbladder ultrasound"], recommendedSpecialty: "Gastroenterologist" },
+  { name: "HbA1c (Glycated Haemoglobin)", keywords: ["diabetes blood", "sugar average", "hba1c", "glycated", "3 month sugar"], recommendedSpecialty: "General Physician" }
 ];
 
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+function isGreeting(text) {
+  const t = text.trim();
+  return GREETING_PATTERNS.some((p) => p.test(t));
+}
+
+function isThanks(text) {
+  const t = text.trim();
+  return THANKS_PATTERNS.some((p) => p.test(t));
+}
+
+function isHowAreYou(text) {
+  return HOW_ARE_YOU_PATTERNS.some((p) => p.test(text));
+}
+
+function isAskingForHelp(text) {
+  return HELP_PATTERNS.some((p) => p.test(text));
+}
+
+function getGreetingReply() {
+  const hour = new Date().getHours();
+  const timeGreet =
+    hour < 12 ? "Good morning" :
+    hour < 17 ? "Good afternoon" :
+    "Good evening";
+
+  return `${timeGreet}! 👋 Welcome to **MediCare Nexus**.
+
+I'm your AI Health Assistant. I can help you:
+
+🩺 **Find the right specialist** based on your symptoms
+🔬 **Recommend diagnostic tests**
+📅 **Guide you to book appointments**
+
+Please describe your health concern or symptoms, and I'll point you in the right direction!`;
+}
+
+function getThanksReply() {
+  return `You're welcome! 😊
+
+If you have more health questions or need to find a doctor, just type your symptoms anytime. Stay healthy! 🌿`;
+}
+
+function getHowAreYouReply() {
+  return `I'm doing great, thank you for asking! 😊
+
+I'm here to help you with your health concerns. Please describe your symptoms and I'll recommend the right specialist and diagnostic tests for you.`;
+}
+
+function getHelpReply() {
+  return `I can help you with the following:
+
+🩺 **Find Specialists** — Describe your symptoms and I'll recommend the right doctor
+🔬 **Diagnostic Tests** — I'll suggest relevant lab or imaging tests
+📅 **Book Appointments** — I'll direct you to the booking page
+
+Just type what you're experiencing — for example:
+• *"I have chest pain and shortness of breath"*
+• *"My child has fever and cough"*
+• *"I need a blood sugar test"*`;
+}
+
+// ─── Component ─────────────────────────────────────────────────────────────────
 export default function AiAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState("");
   const [messages, setMessages] = useState([
     {
       sender: "bot",
-      text: "Hello! I am your Medicare AI Assistant. 🩺\n\nDescribe your symptoms or health concern below, and I will recommend diagnostic tests and matching doctors for you.",
+      text: "Hello! I'm your MediCare AI Assistant. 🩺\n\nDescribe your symptoms or health concern below, and I'll recommend the right specialist and diagnostic tests for you.",
     },
   ]);
 
@@ -176,27 +247,25 @@ export default function AiAssistant() {
   // Load doctors and services from backend
   useEffect(() => {
     const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000";
-    
-    // Fetch doctors
+
     fetch(`${API_BASE}/api/doctors`)
       .then((res) => res.json())
       .then((json) => {
         const items = json?.data || json?.doctors || [];
         setDoctorsList(items);
       })
-      .catch((err) => console.error("Error fetching doctors for AI:", err));
+      .catch((err) => console.error("AI: failed to fetch doctors", err));
 
-    // Fetch services
     fetch(`${API_BASE}/api/services`)
       .then((res) => res.json())
       .then((json) => {
         const items = json?.data || [];
         setServicesList(items);
       })
-      .catch((err) => console.error("Error fetching services for AI:", err));
+      .catch((err) => console.error("AI: failed to fetch services", err));
   }, []);
 
-  // Scroll to bottom when messages update
+  // Scroll to bottom
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -213,14 +282,58 @@ export default function AiAssistant() {
     // Add user message
     setMessages((prev) => [...prev, { sender: "user", text: queryText }]);
 
-    // Analyze symptoms
     const q = queryText.toLowerCase();
+
+    // ── 1. Detect greetings / small-talk FIRST — no medical recommendation ──
+    if (isGreeting(queryText)) {
+      setTimeout(() => {
+        setMessages((prev) => [...prev, { sender: "bot", text: getGreetingReply() }]);
+      }, 400);
+      return;
+    }
+
+    if (isThanks(queryText)) {
+      setTimeout(() => {
+        setMessages((prev) => [...prev, { sender: "bot", text: getThanksReply() }]);
+      }, 400);
+      return;
+    }
+
+    if (isHowAreYou(queryText)) {
+      setTimeout(() => {
+        setMessages((prev) => [...prev, { sender: "bot", text: getHowAreYouReply() }]);
+      }, 400);
+      return;
+    }
+
+    if (isAskingForHelp(queryText)) {
+      setTimeout(() => {
+        setMessages((prev) => [...prev, { sender: "bot", text: getHelpReply() }]);
+      }, 400);
+      return;
+    }
+
+    // ── 2. Too short — ask for more detail ──────────────────────────────────
+    if (queryText.length < 4) {
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: "bot",
+            text: "Could you please describe your health concern in a bit more detail? For example: *\"I have a headache and fever\"* or *\"chest pain when I breathe\"*.",
+          },
+        ]);
+      }, 400);
+      return;
+    }
+
+    // ── 3. Symptom / test analysis ───────────────────────────────────────────
     let matchedSpec = null;
     let maxScore = 0;
     let matchedTestName = null;
     let matchedServiceObj = null;
 
-    // 1. Check if user described a specific test/service first
+    // Check for specific test/service keywords first
     let foundServiceMatch = null;
     for (const service of serviceMappings) {
       for (const keyword of service.keywords) {
@@ -236,13 +349,11 @@ export default function AiAssistant() {
       matchedTestName = foundServiceMatch.name;
       matchedSpec = foundServiceMatch.recommendedSpecialty;
     } else {
-      // 2. Perform symptom keyword matching to find specialization
+      // Keyword score matching
       Object.keys(specializationMapping).forEach((spec) => {
         let score = 0;
         specializationMapping[spec].keywords.forEach((keyword) => {
-          if (q.includes(keyword)) {
-            score += 1;
-          }
+          if (q.includes(keyword)) score += 1;
         });
         if (score > maxScore) {
           maxScore = score;
@@ -251,30 +362,39 @@ export default function AiAssistant() {
       });
     }
 
-    // 3. Determine recommended test
+    // If no symptom matched at all — ask for clarification instead of defaulting
+    if (!matchedSpec || maxScore === 0) {
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            sender: "bot",
+            text: `I'm not sure I understood your concern. Could you describe your symptoms in more detail?\n\nFor example:\n• "I have chest pain and shortness of breath"\n• "I've had a headache for 3 days"\n• "I need a blood test for diabetes"\n\nI'll then recommend the right specialist and tests for you.`,
+          },
+        ]);
+      }, 500);
+      return;
+    }
+
+    // Determine recommended test
     if (matchedSpec && !matchedTestName) {
       matchedTestName = specializationMapping[matchedSpec].test;
     }
 
-    // Default Fallback
-    if (!matchedSpec) {
-      matchedSpec = "General Physician";
-      matchedTestName = "Complete Blood Count (CBC)";
-    }
-
-    // 4. Find matched service object from fetched services
+    // Find matched service object
     if (matchedTestName && servicesList.length > 0) {
       matchedServiceObj = servicesList.find((s) =>
         (s.name || "").toLowerCase().includes(matchedTestName.toLowerCase())
       );
     }
 
-    // 5. Get recommended doctors list
+    // Get recommended doctors
     const recommendedDocs = doctorsList
       .filter((d) => {
         const spec = (d.specialization || d.speciality || "").toLowerCase();
         return spec === matchedSpec.toLowerCase();
       })
+      .slice(0, 3)
       .map((d) => {
         const id = d._id || d.id;
         const available =
@@ -290,15 +410,21 @@ export default function AiAssistant() {
         };
       });
 
-    // 6. Formulate Bot Reply
+    // Formulate reply
     setTimeout(() => {
       let botText = "";
       if (foundServiceMatch) {
-        botText = `Based on your request, I recommend booking the **${matchedTestName}** test. For this check, consulting a **${matchedSpec}** is advised. Here are our specialists:`;
+        botText = `I recommend booking the **${matchedTestName}** test for your concern.\n\nFor this check, consulting a **${matchedSpec}** is advised.`;
+        if (recommendedDocs.length > 0) {
+          botText += "\n\nHere are our available specialists:";
+        }
       } else {
-        botText = `Based on your description, I recommend consulting a **${matchedSpec}** (specialist in ${
-          specializationMapping[matchedSpec]?.symptoms || "general medicine"
-        }).\n\nI also advise getting a **${matchedTestName}** test done.`;
+        botText = `Based on your symptoms, I recommend consulting a **${matchedSpec}** — a specialist in ${
+          specializationMapping[matchedSpec]?.symptoms || "this condition"
+        }.\n\nI also suggest getting a **${matchedTestName}** test done for a thorough evaluation.`;
+        if (recommendedDocs.length > 0) {
+          botText += "\n\nHere are our available specialists:";
+        }
       }
 
       setMessages((prev) => [
@@ -313,12 +439,14 @@ export default function AiAssistant() {
     }, 600);
   };
 
+  // ─── Render ─────────────────────────────────────────────────────────────────
   return (
     <>
-      {/* Floating Action Button (FAB) */}
+      {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 left-6 z-[9999] w-14 h-14 rounded-full flex items-center justify-center 
+        style={{ bottom: "max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 0.75rem))" }}
+        className="fixed left-6 z-[9999] w-14 h-14 rounded-full flex items-center justify-center 
         bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xl hover:shadow-2xl 
         transition-all duration-300 transform hover:scale-110 active:scale-95 group focus:outline-none"
         title="AI Health Assistant"
@@ -332,20 +460,20 @@ export default function AiAssistant() {
             <Sparkles size={12} className="absolute -top-2 -right-2 text-yellow-300 animate-pulse" />
           </div>
         )}
-        {/* Pulse effect */}
         {!isOpen && (
           <span className="absolute inset-0 rounded-full bg-emerald-500 opacity-20 animate-ping z-[-1]" />
         )}
       </button>
 
-      {/* Assistant panel */}
+      {/* Assistant Panel */}
       <div
-        className={`fixed bottom-24 left-6 z-[9999] w-[370px] h-[520px] max-w-[calc(100vw-2rem)]
+        style={{ bottom: "max(6rem, calc(env(safe-area-inset-bottom, 0px) + 5.25rem))" }}
+        className={`fixed left-6 z-[9999] w-[370px] h-[520px] max-w-[calc(100vw-2rem)]
         bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.18)] 
         border border-emerald-100/50 flex flex-col overflow-hidden transition-all duration-300 origin-bottom-left
         ${isOpen ? "scale-100 opacity-100 pointer-events-auto" : "scale-75 opacity-0 pointer-events-none"}`}
       >
-        {/* Panel Header */}
+        {/* Header */}
         <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
@@ -353,7 +481,7 @@ export default function AiAssistant() {
             </div>
             <div>
               <h2 className="font-bold text-sm tracking-wide">MediCare AI</h2>
-              <p className="text-[10px] text-emerald-100/90 font-medium">Test & Doctor Assistant</p>
+              <p className="text-[10px] text-emerald-100/90 font-medium">Health &amp; Doctor Assistant</p>
             </div>
           </div>
           <button
@@ -365,11 +493,11 @@ export default function AiAssistant() {
           </button>
         </div>
 
-        {/* Message Area */}
+        {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-emerald-50/15">
           {messages.map((msg, idx) => (
             <div key={idx} className="flex flex-col">
-              {/* Message Bubble */}
+              {/* Bubble */}
               <div
                 className={`max-w-[85%] rounded-2xl p-3.5 text-xs leading-relaxed shadow-sm whitespace-pre-line
                 ${
@@ -381,7 +509,7 @@ export default function AiAssistant() {
                 {msg.text}
               </div>
 
-              {/* Recommended Test Card */}
+              {/* Diagnostic service card */}
               {msg.sender === "bot" && msg.matchedService && (
                 <div className="self-start w-[85%] bg-gradient-to-br from-emerald-50/80 to-teal-50/40 rounded-xl p-3.5 mt-2 border border-emerald-100 shadow-sm flex flex-col gap-2">
                   <div className="flex items-center gap-2">
@@ -411,7 +539,7 @@ export default function AiAssistant() {
                 </div>
               )}
 
-              {/* Recommended Doctors list */}
+              {/* Recommended doctors */}
               {msg.sender === "bot" && msg.recommendedDoctors && msg.recommendedDoctors.length > 0 && (
                 <div className="self-start w-[85%] mt-2 space-y-2">
                   <div className="flex items-center gap-1.5 px-1">
@@ -463,13 +591,13 @@ export default function AiAssistant() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input area */}
+        {/* Input */}
         <form onSubmit={handleSend} className="p-3 bg-white border-t border-emerald-50 flex items-center gap-2 shadow-inner">
           <input
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Describe your health issue..."
+            placeholder="Describe your health concern..."
             className="flex-1 border border-emerald-100 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:ring-2 
             focus:ring-emerald-500/80 focus:border-transparent bg-emerald-50/5 placeholder-slate-400 text-slate-700"
           />

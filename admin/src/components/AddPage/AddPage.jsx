@@ -58,7 +58,6 @@ export default function DoctorDetailPage() {
     location: "",
     about: "",
     fee: "",
-    success: "",
     patients: "",
     rating: "",
     schedule: {},
@@ -199,7 +198,6 @@ export default function DoctorDetailPage() {
       "location",
       "about",
       "fee",
-      "success",
       "patients",
       "rating",
       "email",
@@ -237,7 +235,6 @@ export default function DoctorDetailPage() {
       fd.append("location", form.location || "");
       fd.append("about", form.about || "");
       fd.append("fee", form.fee === "" ? "0" : String(form.fee));
-      fd.append("success", form.success || "");
       fd.append("patients", form.patients || "");
       fd.append("rating", form.rating === "" ? "0" : String(form.rating));
       fd.append("availability", form.availability || "Available");
@@ -471,13 +468,6 @@ export default function DoctorDetailPage() {
             placeholder="Patients"
             value={form.patients}
             onChange={(e) => setForm({ ...form, patients: e.target.value })}
-          />
-
-          <input
-            className={s.inputBase}
-            placeholder="Success Rate"
-            value={form.success}
-            onChange={(e) => setForm({ ...form, success: e.target.value })}
           />
 
           <input

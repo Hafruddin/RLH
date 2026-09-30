@@ -343,7 +343,7 @@ export default function AnimatedDoctorListResponsive({ apiBase }) {
                       </div>
 
                       <div className={doctorListStyles.doctorDetails}>
-                        {doc.specialization} • {doc.experience} years
+                        {doc.specialization} • {String(doc.experience || "").replace(/\s*years?/gi, "").trim()} years
                       </div>
                     </div>
 

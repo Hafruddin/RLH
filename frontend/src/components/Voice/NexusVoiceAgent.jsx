@@ -574,7 +574,10 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
   return (
     <>
       {/* 1. Global Floating Orb Button */}
-      <div className="fixed bottom-6 right-20 z-50 flex items-center gap-3">
+      <div
+        className="fixed z-50 flex items-center gap-3 right-4 sm:right-6 md:right-20"
+        style={{ bottom: "max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 0.75rem))" }}
+      >
         <button
           onClick={() => {
             setIsOpen(!isOpen);

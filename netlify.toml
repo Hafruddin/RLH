@@ -1,9 +1,6 @@
-# Root Netlify configuration for MediCare Nexus
-# By default, builds and deploys the Hospital Operations Command Center (Admin)
-# To deploy the Patient Care portal instead, change base to "frontend"
-
+# Root Netlify configuration for MediCare Nexus (Patient Care Portal)
 [build]
-  base = "admin"
+  base = "frontend"
   command = "npm run build"
   publish = "dist"
 

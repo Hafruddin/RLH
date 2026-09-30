@@ -1,1 +1,17 @@
 @import "tailwindcss";
+
+/* Suppress Netlify dev/platform HUD badge so it never covers buttons */
+iframe[src*="netlify"],
+div[data-netlify-hud],
+#netlify-hud,
+.netlify-hud,
+[data-nf-hud] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Safe-area utility */
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
