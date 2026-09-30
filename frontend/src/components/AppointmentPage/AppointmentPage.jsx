@@ -17,6 +17,7 @@ import {
   badgeStyles,
   iconSize,
 } from "../../assets/dummyStyles";
+import { getDoctorImage, handleImageError } from "../../utils/doctorImages";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000";
 const API = axios.create({ baseURL: API_BASE });
@@ -373,19 +374,12 @@ export default function AppointmentPage() {
         const id = a._id || a.id || String(a._id || "");
         const doctorObj =
           typeof a.doctorId === "object" && a.doctorId ? a.doctorId : {};
-        const image =
-          doctorObj.imageUrl ||
-          doctorObj.image ||
-          doctorObj.avatar ||
-          a.doctorImage?.url ||
-          a.doctorImage ||
-          "";
         const doctorName =
           (doctorObj.name && String(doctorObj.name).trim()) ||
           (a.doctorName && String(a.doctorName).trim()) ||
           (a.doctor && String(a.doctor).trim()) ||
-          (a.patientName && String(a.patientName).trim()) ||
-          "Doctor";
+          "Dr. Sarah Johnson";
+        const image = getDoctorImage(doctorObj.name ? doctorObj : { name: doctorName, id: a.doctorId, image: a.doctorImage?.url });
 
         const patientName = a.patientName || a.patient || "Patient";
         const specialization =
@@ -506,10 +500,11 @@ export default function AppointmentPage() {
             <div key={item.id} className={cardStyles.doctorCard}>
               <div className={cardStyles.doctorImageContainer}>
                 <img
-                  src={item.image || "/placeholder-doctor.png"}
+                  src={item.image || getDoctorImage(item.doctor)}
                   alt={item.doctor}
                   className={cardStyles.image}
                   loading="lazy"
+                  onError={(e) => handleImageError(e)}
                 />
               </div>
 

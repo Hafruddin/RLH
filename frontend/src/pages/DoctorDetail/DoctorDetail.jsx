@@ -19,6 +19,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { fallbackDoctors } from "../../utils/fallbackDoctors";
+import { getDoctorImage, handleImageError } from "../../utils/doctorImages";
 
 // Clerk client hooks
 import { useAuth, useUser } from "@clerk/clerk-react";
@@ -434,12 +435,11 @@ export default function DoctorDetail() {
                 <div className={doctorDetailStyles.avatarGlow}></div>
 
                 <img
-                  src={
-                    doctor.imageUrl || doctor.image || "/placeholder-doctor.jpg"
-                  }
+                  src={getDoctorImage(doctor)}
                   alt={doctor.name}
                   className={doctorDetailStyles.avatarImage}
                   style={{ objectPosition: "center" }}
+                  onError={(e) => handleImageError(e)}
                 />
               </div>
 

@@ -9,6 +9,7 @@ import {
   EyeClosed,
 } from "lucide-react";
 import { doctorListStyles } from "../../assets/dummyStyles";
+import { getDoctorImage, handleImageError } from "../../utils/doctorImages";
 
 function formatDateISO(iso) {
   if (!iso || typeof iso !== "string") return iso;
@@ -313,9 +314,10 @@ export default function AnimatedDoctorListResponsive({ apiBase }) {
             <article key={id} className={doctorListStyles.article}>
               <div className={doctorListStyles.articleContent}>
                 <img
-                  src={doc.imageUrl || doc.image || ""}
+                  src={getDoctorImage(doc)}
                   alt={doc.name}
                   className={doctorListStyles.doctorImage}
+                  onError={(e) => handleImageError(e)}
                 />
 
                 <div className={doctorListStyles.doctorInfoContainer}>

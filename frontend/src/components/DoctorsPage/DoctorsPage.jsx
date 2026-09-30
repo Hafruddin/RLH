@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { doctorsPageStyles } from "../../assets/dummyStyles";
 import { fallbackDoctors } from "../../utils/fallbackDoctors";
+import { getDoctorImage, handleImageError } from "../../utils/doctorImages";
 
 const DoctorsPage = ({ apiBase }) => {
   const API_BASE = apiBase || import.meta.env.VITE_API_URL || "http://localhost:4000";
@@ -46,8 +47,7 @@ const DoctorsPage = ({ apiBase }) => {
 
         const normalized = items.map((d) => {
           const id = d._id || d.id;
-          const image =
-            d.imageUrl || d.image || d.imageSmall || d.imageSrc || "";
+          const image = getDoctorImage(d);
           // availability may be a string or boolean; normalize to boolean
           let available = true;
           if (typeof d.availability === "string") {
@@ -245,14 +245,11 @@ const DoctorsPage = ({ apiBase }) => {
                     >
                       <div className={doctorsPageStyles.imageContainer}>
                         <img
-                          src={doctor.image || "/placeholder-doctor.jpg"}
+                          src={doctor.image || getDoctorImage(doctor)}
                           alt={doctor.name}
                           loading="lazy"
                           className={doctorsPageStyles.doctorImage}
-                          onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = "/placeholder-doctor.jpg";
-                          }}
+                          onError={(e) => handleImageError(e)}
                         />
                       </div>
                     </Link>
@@ -261,14 +258,11 @@ const DoctorsPage = ({ apiBase }) => {
                       className={`${doctorsPageStyles.imageContainer} ${doctorsPageStyles.imageContainerUnavailable}`}
                     >
                       <img
-                        src={doctor.image || "/placeholder-doctor.jpg"}
+                        src={doctor.image || getDoctorImage(doctor)}
                         alt={doctor.name}
                         loading="lazy"
                         className={doctorsPageStyles.doctorImageUnavailable}
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = "/placeholder-doctor.jpg";
-                        }}
+                        onError={(e) => handleImageError(e)}
                       />
                     </div>
                   )}

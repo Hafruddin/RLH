@@ -4,6 +4,7 @@ import { Medal, ChevronsRight, MousePointer2Off } from "lucide-react";
 import { Link } from "react-router-dom";
 import { homeDoctorsStyles, iconSize } from "../../assets/dummyStyles";
 import { fallbackDoctors } from "../../utils/fallbackDoctors";
+import { getDoctorImage, handleImageError } from "../../utils/doctorImages";
 
 const HomeDoctors = ({ apiBase, previewCount = 8 }) => {
   const API_BASE = apiBase || import.meta.env.VITE_API_URL || "http://localhost:4000";
@@ -36,8 +37,7 @@ const HomeDoctors = ({ apiBase, previewCount = 8 }) => {
         // normalize each doctor for the UI
         const normalized = items.map((d) => {
           const id = d._id || d.id;
-          const image =
-            d.imageUrl || d.image || d.imageSmall || d.imageSrc || "";
+          const image = getDoctorImage(d);
           // availability might be stored as string "Available"/"Unavailable" OR boolean
           const available =
             (typeof d.availability === "string"
@@ -176,28 +176,22 @@ const HomeDoctors = ({ apiBase, previewCount = 8 }) => {
                   >
                     <div className={homeDoctorsStyles.imageContainerAvailable}>
                       <img
-                        src={doctor.image || "/placeholder-doctor.jpg"}
+                        src={doctor.image || getDoctorImage(doctor)}
                         alt={doctor.name}
                         loading="lazy"
                         className={homeDoctorsStyles.image}
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = "/placeholder-doctor.jpg";
-                        }}
+                        onError={(e) => handleImageError(e)}
                       />
                     </div>
                   </Link>
                 ) : (
                   <div className={homeDoctorsStyles.imageContainerUnavailable}>
                     <img
-                      src={doctor.image || "/placeholder-doctor.jpg"}
+                      src={doctor.image || getDoctorImage(doctor)}
                       alt={doctor.name}
                       loading="lazy"
                       className={homeDoctorsStyles.image}
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = "/placeholder-doctor.jpg";
-                      }}
+                      onError={(e) => handleImageError(e)}
                     />
                     {/* optional small badge */}
                     <div className={homeDoctorsStyles.unavailableBadge}>

@@ -9,6 +9,7 @@ import {
   UserRoundCheck,
 } from "lucide-react";
 import { dashboardStyles as s } from "../../assets/dummyStyles";
+import { getDoctorImage, handleImageError } from "../../utils/doctorImages";
 
 /* ----------------------
   Config
@@ -43,11 +44,7 @@ function normalizeDoctor(doc) {
     doc.fee ?? doc.fees ?? doc.consultationFee ?? doc.consultation_fee ?? 0,
     0
   );
-  const image =
-    doc.imageUrl ||
-    doc.image ||
-    doc.avatar ||
-    `https://i.pravatar.cc/150?u=${id}`;
+  const image = getDoctorImage(doc);
 
   const appointments = {
     total:
@@ -354,9 +351,10 @@ export default function DashboardPage() {
                     <td className={s.tableCell + " " + s.tableCellFlex}>
                       <div className={s.verticalLine} />
                       <img
-                        src={d.image}
+                        src={d.image || getDoctorImage(d)}
                         alt={d.name}
                         className={s.doctorImage}
+                        onError={(e) => handleImageError(e)}
                       />
                       <div>
                         <div className={s.doctorName}>
@@ -446,9 +444,10 @@ function MobileDoctorCard({ d }) {
       <div className={s.mobileDoctorHeader}>
         <div className="flex items-center gap-3">
           <img
-            src={d.image}
+            src={d.image || getDoctorImage(d)}
             alt={d.name}
             className={s.mobileDoctorImage}
+            onError={(e) => handleImageError(e)}
           />
           <div>
             <div className={s.mobileDoctorName}>{d.name}</div>
