@@ -8,11 +8,14 @@ import {
   CircleChevronUp,
   CircleChevronDown,
   X,
+  Radio,
 } from "lucide-react";
 import { doctorsPageStyles } from "../../assets/dummyStyles";
 import { fallbackDoctors } from "../../utils/fallbackDoctors";
 import { getDoctorImage, handleImageError } from "../../utils/doctorImages";
 import { formatExperience } from "../../utils/dateTime";
+import { getDoctorOpdProfile, getStatusBadgeInfo } from "../../data/opdDemoData";
+import LiveOpdModal from "../LiveOpdModal/LiveOpdModal";
 
 const DoctorsPage = ({ apiBase }) => {
   const API_BASE = apiBase || import.meta.env.VITE_API_URL || "http://localhost:4000";
@@ -22,6 +25,16 @@ const DoctorsPage = ({ apiBase }) => {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [showAll, setShowAll] = useState(false);
+  const [selectedQueueDoctor, setSelectedQueueDoctor] = useState(null);
+  const [isQueueOpen, setIsQueueOpen] = useState(false);
+
+  const openQueue = (e, doc) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const prof = getDoctorOpdProfile(doc.id, doc.name);
+    setSelectedQueueDoctor(prof);
+    setIsQueueOpen(true);
+  };
 
   // Load doctors once
   useEffect(() => {
@@ -281,30 +294,61 @@ const DoctorsPage = ({ apiBase }) => {
                     <span>{formatExperience(doctor.experience)}</span>
                   </div>
 
-                  {doctor.available ? (
-                    <Link
-                      to={`/doctors/${doctor.id}`}
-                      state={{ doctor: doctor.raw || doctor }}
-                      className={doctorsPageStyles.bookButton}
-                      aria-label={`Book appointment with ${doctor.name}`}
-                    >
-                      <ChevronsRight
-                        className={doctorsPageStyles.bookButtonIcon}
-                      />
-                      Book Now
-                    </Link>
-                  ) : (
+                  {/* Realtime OPD Live Queue Status Badge */}
+                  {(() => {
+                    const prof = getDoctorOpdProfile(doctor.id, doctor.name);
+                    const statusInfo = getStatusBadgeInfo(prof.status);
+                    return (
+                      <div className="my-2 flex items-center justify-between gap-1 w-full px-1">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black border ${statusInfo.colorClass}`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${statusInfo.dotColor}`}></span>
+                          {statusInfo.badge}
+                        </span>
+                        <span className="text-[11px] font-mono font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
+                          Now: {prof.currentToken}
+                        </span>
+                      </div>
+                    );
+                  })()}
+
+                  <div className="flex items-center gap-2 w-full mt-2">
+                    {doctor.available ? (
+                      <Link
+                        to={`/doctors/${doctor.id}`}
+                        state={{ doctor: doctor.raw || doctor }}
+                        className={`${doctorsPageStyles.bookButton} flex-1`}
+                        aria-label={`Book appointment with ${doctor.name}`}
+                      >
+                        <ChevronsRight
+                          className={doctorsPageStyles.bookButtonIcon}
+                        />
+                        Book Now
+                      </Link>
+                    ) : (
+                      <button
+                        disabled
+                        className={`${doctorsPageStyles.notAvailableButton} flex-1`}
+                        aria-label={`${doctor.name} not available`}
+                      >
+                        <MousePointer2Off
+                          className={doctorsPageStyles.notAvailableIcon}
+                        />
+                        Not Available
+                      </button>
+                    )}
+
                     <button
-                      disabled
-                      className={doctorsPageStyles.notAvailableButton}
-                      aria-label={`${doctor.name} not available`}
+                      type="button"
+                      onClick={(e) => openQueue(e, doctor)}
+                      className="px-2.5 py-2.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold transition-all flex items-center gap-1 shrink-0 cursor-pointer shadow-2xs hover:shadow"
+                      title="View Live OPD Queue"
                     >
-                      <MousePointer2Off
-                        className={doctorsPageStyles.notAvailableIcon}
-                      />
-                      Not Available
+                      <Radio size={14} className="text-teal-600 animate-pulse" />
+                      <span className="hidden sm:inline">Live Queue</span>
                     </button>
-                  )}
+                  </div>
                 </div>
               ))
             ) : (
@@ -367,6 +411,13 @@ const DoctorsPage = ({ apiBase }) => {
           * { animation: none !important; transition: none !important; }
         }
       `}</style>
+
+      {/* Live OPD Queue Modal */}
+      <LiveOpdModal
+        isOpen={isQueueOpen}
+        onClose={() => setIsQueueOpen(false)}
+        doctorProfile={selectedQueueDoctor}
+      />
     </div>
   );
 };

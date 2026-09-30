@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { dashboardStyles } from "../../assets/dummyStyles";
 import { getDoctorOpdProfile } from "../../data/opdDemoData";
+import LiveOpdModal from "../../components/LiveOpdModal/LiveOpdModal";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000"; // override by passing apiBase prop
 
@@ -277,6 +278,7 @@ export default function DashboardPage({ apiBase }) {
     return getDoctorOpdProfile(params.id);
   });
   const [opdLoading, setOpdLoading] = useState(false);
+  const [isQueueModalOpen, setIsQueueModalOpen] = useState(false);
 
   const handleSetDoctorStatus = async (newStatus) => {
     try {
@@ -1050,12 +1052,22 @@ export default function DashboardPage({ apiBase }) {
                 {opdSession?.status === "EMERGENCY" ? "Clear Emergency" : "Emergency Mode"}
               </button>
 
+              <button
+                type="button"
+                onClick={() => setIsQueueModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-black shadow-2xs transition-all cursor-pointer"
+                title="View Patient Live Queue & Schedule"
+              >
+                <Radio className="w-3.5 h-3.5 text-teal-200 animate-pulse" />
+                <span>View Live Queue</span>
+              </button>
+
               <Link
                 to="/live-opd"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-50 border border-teal-200 text-teal-800 text-xs font-black hover:bg-teal-100 transition-colors shadow-2xs"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold transition-colors shadow-2xs"
+                title="Open Hospital Central Live OPD Monitor"
               >
-                <Radio className="w-3.5 h-3.5 text-teal-600 animate-pulse" />
-                <span>View Live Queue</span>
+                <span>Central Monitor ↗</span>
               </Link>
             </div>
           </div>
@@ -1657,6 +1669,16 @@ export default function DashboardPage({ apiBase }) {
           )}
         </div>
       </div>
+
+      {/* Live OPD Queue Modal */}
+      <LiveOpdModal
+        isOpen={isQueueModalOpen}
+        onClose={() => setIsQueueModalOpen(false)}
+        doctorProfile={{
+          ...getDoctorOpdProfile(doctorId || params.id, currentDoctorName),
+          ...(opdSession || {}),
+        }}
+      />
     </div>
   );
 }
