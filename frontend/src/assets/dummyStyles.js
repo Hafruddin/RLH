@@ -626,14 +626,23 @@ export const navbarStyles = {
   navItemInactive: "text-gray-700 hover:text-emerald-600",
   
   // Right side
-  rightContainer: "flex items-center gap-3",
+  rightContainer: "flex items-center gap-2 lg:gap-2.5",
   
   // Signed out buttons
+  doctorButton: "btn-add hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold text-gray-700 hover:text-emerald-700 transition-all duration-200",
+  doctorIcon: "w-4 h-4 text-emerald-600",
+  doctorText: "whitespace-nowrap font-medium",
+
+  adminButton: "btn-add hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold text-gray-700 hover:text-emerald-700 transition-all duration-200",
+  adminIcon: "w-4 h-4 text-emerald-600",
+  adminText: "whitespace-nowrap font-medium",
+
   doctorAdminButton: "btn-add hidden lg:inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-semibold transition-transform duration-200",
   doctorAdminIcon: "w-4 h-4",
   doctorAdminText: "hidden lg:text-xs lg:whitespace-nowrap sm:inline-block",
-  loginButton: "btn-login hidden lg:flex lg:text-sm items-center gap-2 bg-linear-to-r from-emerald-400 to-green-600 text-white px-6 py-2.5 rounded-full font-semibold hover:shadow-xl transition-all duration-300 cursor-default",
+  loginButton: "btn-login hidden lg:flex text-xs items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white px-4 py-2 rounded-full font-semibold hover:shadow-xl transition-all duration-300 cursor-pointer",
   loginIcon: "w-4 h-4",
+  loginText: "whitespace-nowrap font-medium",
   
   // Mobile toggle
   mobileToggle: "lg:hidden p-2.5 rounded-lg hover:bg-emerald-50 transition-colors",
@@ -646,9 +655,11 @@ export const navbarStyles = {
   mobileMenuItemInactive: "text-gray-700 hover:bg-emerald-50 hover:text-emerald-600",
   
   // Mobile signed out buttons
+  mobileDoctorButton: "w-full flex items-center justify-center gap-2 py-2.5 rounded-full border border-emerald-200 bg-white text-sm font-semibold text-gray-700 hover:bg-emerald-50 transition-all",
+  mobileAdminButton: "w-full flex items-center justify-center gap-2 py-2.5 rounded-full border border-emerald-200 bg-white text-sm font-semibold text-gray-700 hover:bg-emerald-50 transition-all",
   mobileDoctorAdminButton: "w-full flex items-center justify-center gap-2 py-2.5 rounded-full border border-emerald-200 bg-white text-sm font-semibold hover:bg-emerald-50 transition-all",
-  mobileLoginContainer: "w-full mt-3",
-  mobileLoginButton: "w-full cursor-default md:rounded-full flex items-center justify-center gap-2 bg-linear-to-r from-emerald-500 to-green-600 text-white py-2.5 rounded-lg font-semibold hover:shadow-lg transition-all",
+  mobileLoginContainer: "w-full mt-2",
+  mobileLoginButton: "w-full cursor-pointer md:rounded-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white py-2.5 rounded-lg font-semibold hover:shadow-lg transition-all",
   
   // Animation styles (to be added via style tag)
   animationStyles: `

@@ -5,7 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "seed": "node seeder.js",
+    "reset-demo": "node -e 'import(\"./services/seedService.js\").then(async s => { await s.seedNexusData(); process.exit(0); });'"
   },
   "author": "",
   "license": "ISC",

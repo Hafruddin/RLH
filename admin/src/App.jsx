@@ -49,7 +49,8 @@ function RequireAuth({ children }) {
 const App = () => {
   return (
     <Routes>
-      <Route path="/" element={<Hero />} />
+      <Route path="/" element={<NexusMasterLayout />} />
+      <Route path="/hero" element={<Hero />} />
       <Route path="/nexus" element={<NexusMasterLayout />} />
       <Route
         path="/h"

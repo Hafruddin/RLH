@@ -1,6 +1,6 @@
-// backend/controllers/nexusController.js
 import { nexusStore } from "../services/nexusStore.js";
 import { registerClient, broadcastEvent } from "../services/eventHub.js";
+import { seedNexusData } from "../services/seedService.js";
 
 /**
  * 1. Real-time Server-Sent Events (SSE) Stream
@@ -612,9 +612,14 @@ export const runSimulation = (req, res) => {
   }
 };
 
-export const resetSimulationDemo = (req, res) => {
+export const resetSimulationDemo = async (req, res) => {
   try {
     nexusStore.resetToDefaults();
+    try {
+      await seedNexusData();
+    } catch (e) {
+      console.warn("MongoDB seed during reset note:", e.message);
+    }
     broadcastEvent("systemReset", { timestamp: new Date().toISOString() });
     res.json({ success: true, message: "System state successfully reset to initial demo configuration." });
   } catch (error) {

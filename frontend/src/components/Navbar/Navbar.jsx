@@ -3,13 +3,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
-import { Menu, X, User as UserIcon, Key } from "lucide-react";
+import { Menu, X, Stethoscope, ShieldCheck, Key } from "lucide-react";
 
 // Clerk
 import { SignedIn, SignedOut, useClerk, UserButton } from "@clerk/clerk-react";
 import { navbarStyles } from "../../assets/dummyStyles";
 
 const STORAGE_KEY = "doctorToken_v1";
+const ADMIN_URL = import.meta.env.VITE_ADMIN_URL || "http://localhost:5174";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -104,10 +105,10 @@ export default function Navbar() {
               </div>
               <div className={navbarStyles.logoTextContainer}>
                 <h1 className={navbarStyles.logoTitle}>
-                  MediCare
+                  MediCare <span className="text-emerald-500 font-bold">Nexus</span>
                 </h1>
                 <p className={navbarStyles.logoSubtitle}>
-                  Healthcare Solutions
+                  Autonomous Hospital Operations
                 </p>
               </div>
             </Link>
@@ -136,30 +137,39 @@ export default function Navbar() {
 
             {/* Right side */}
             <div className={navbarStyles.rightContainer}>
-              {/* ================= PATIENT LOGGED OUT ================= */}
-              <SignedOut>
-                {/* Doctor Admin */}
-                <Link
-                  to="/doctor-admin/login"
-                  className={navbarStyles.doctorAdminButton}
-                >
-                  <UserIcon className={navbarStyles.doctorAdminIcon} />
-                  <span className={navbarStyles.doctorAdminText}>
-                    Doctor Admin
-                  </span>
-                </Link>
+              {/* 1. Doctor Login */}
+              <Link
+                to="/doctor-admin/login"
+                className={navbarStyles.doctorButton}
+                title="Doctor Login Portal"
+              >
+                <Stethoscope className={navbarStyles.doctorIcon} />
+                <span className={navbarStyles.doctorText}>Doctor</span>
+              </Link>
 
-                {/* Patient Login */}
+              {/* 2. Admin Login - Redirects to Admin Page */}
+              <a
+                href={ADMIN_URL}
+                className={navbarStyles.adminButton}
+                title="Redirect to Admin Dashboard"
+              >
+                <ShieldCheck className={navbarStyles.adminIcon} />
+                <span className={navbarStyles.adminText}>Admin</span>
+              </a>
+
+              {/* 3. Patient / User Login */}
+              <SignedOut>
                 <button
                   onClick={() => clerk.openSignIn()}
                   className={navbarStyles.loginButton}
+                  title="Patient / User Login"
                 >
                   <Key className={navbarStyles.loginIcon} />
-                  Login
+                  <span className={navbarStyles.loginText}>Login</span>
                 </button>
               </SignedOut>
 
-              {/* ================= PATIENT LOGGED IN ================= */}
+              {/* Patient Logged In */}
               <SignedIn>
                 <UserButton afterSignOutUrl="/" />
               </SignedIn>
@@ -200,27 +210,48 @@ export default function Navbar() {
                   </Link>
                 );
               })}
-              {/* Patient logged out */}
-              <SignedOut>
+
+              {/* 3 Logins in mobile menu */}
+              <div className="pt-3 border-t border-emerald-100 space-y-2">
                 <Link
                   to="/doctor-admin/login"
                   onClick={() => setIsOpen(false)}
-                  className={navbarStyles.mobileDoctorAdminButton}
+                  className={navbarStyles.mobileDoctorButton}
                 >
-                  Doctor Admin
+                  <Stethoscope className="w-4 h-4 text-emerald-600" />
+                  <span>Doctor Login</span>
                 </Link>
-                <div className={navbarStyles.mobileLoginContainer}>
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      clerk.openSignIn();
-                    }}
-                    className={navbarStyles.mobileLoginButton}
-                  >
-                    Login
-                  </button>
-                </div>
-              </SignedOut>
+
+                <a
+                  href={ADMIN_URL}
+                  onClick={() => setIsOpen(false)}
+                  className={navbarStyles.mobileAdminButton}
+                >
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <span>Admin Login</span>
+                </a>
+
+                <SignedOut>
+                  <div className={navbarStyles.mobileLoginContainer}>
+                    <button
+                      onClick={() => {
+                        setIsOpen(false);
+                        clerk.openSignIn();
+                      }}
+                      className={navbarStyles.mobileLoginButton}
+                    >
+                      <Key className="w-4 h-4 text-white" />
+                      <span>User Login</span>
+                    </button>
+                  </div>
+                </SignedOut>
+
+                <SignedIn>
+                  <div className="flex justify-center pt-2">
+                    <UserButton afterSignOutUrl="/" />
+                  </div>
+                </SignedIn>
+              </div>
             </div>
           )}
         </div>

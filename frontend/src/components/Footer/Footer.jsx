@@ -99,17 +99,17 @@ const Footer = () => {
               </div>
 
               <div>
-                <h2 className={footerStyles.companyName}>MediCare</h2>
+                <h2 className={footerStyles.companyName}>MediCare <span className="text-emerald-400 font-bold">Nexus</span></h2>
                 <p className={footerStyles.companyTagline}>
-                  Healthcare Solutions
+                  Autonomous Hospital Operations
                 </p>
               </div>
             </div>
 
             <p className={footerStyles.companyDescription}>
-              Your trusted partner in healthcare innovation. We're committed to
-              providing exceptional medical care with cutting-edge technology
-              and compassionate service.
+              MediCare Nexus: Autonomous Hospital Resource Orchestration Platform.
+              Sense. Predict. Orchestrate. Respond. Seamlessly coordinating beds, staff,
+              equipment, and critical care workflows in real-time.
             </p>
 
             <div className={footerStyles.contactContainer}>

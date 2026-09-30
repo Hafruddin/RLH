@@ -12,6 +12,9 @@ import ResourceAssignment from "../models/ResourceAssignment.js";
 import Forecast from "../models/Forecast.js";
 import Alert from "../models/Alert.js";
 import RTLSLocation from "../models/RTLSLocation.js";
+import Doctor from "../models/Doctor.js";
+import Appointment from "../models/Appointment.js";
+import { mockAppointments } from "../utils/mockDb.js";
 
 export async function seedNexusData() {
   console.log("🌱 [MediCare Nexus] Seeding complete demo data...");
@@ -393,7 +396,165 @@ export async function seedNexusData() {
       status: "UNREAD"
     }
   ];
-  await Alert.insertMany(initialAlerts);
+  // 11. Doctors & Appointments
+  try {
+    await Doctor.deleteMany({});
+    const initialDoctors = [
+      {
+        _id: "6a3820c82cecc9714b826111",
+        name: "Dr. Sarah Johnson",
+        email: "sarah@medicare.com",
+        password: "password123",
+        specialization: "Cardiologist",
+        experience: "12 years",
+        qualifications: "MBBS, MD (Cardiology)",
+        location: "City Hospital, Block A",
+        about: "Expert in heart rhythm, cardiac care, and coronary interventions.",
+        fee: 700,
+        availability: "Available",
+        rating: 4.9,
+        success: "98%",
+        patients: "2k+",
+      },
+      {
+        _id: "6a3820c82cecc9714b826112",
+        name: "Dr. Michael Chen",
+        email: "michael@medicare.com",
+        password: "password123",
+        specialization: "Neurologist",
+        experience: "15 years",
+        qualifications: "MBBS, DM (Neurology)",
+        location: "NeuroCare Center, 2nd Floor",
+        about: "Expert in migraine, stroke, epilepsy and neuro disorders.",
+        fee: 900,
+        availability: "Available",
+        rating: 4.5,
+        success: "89%",
+        patients: "1.8k+",
+      },
+      {
+        _id: "6a3820c82cecc9714b826113",
+        name: "Dr. Emily Rodriguez",
+        email: "emily@medicare.com",
+        password: "password123",
+        specialization: "Pediatrician",
+        experience: "8 years",
+        qualifications: "MBBS, DCH",
+        location: "Sunrise Pediatrics, Sector 12",
+        about: "Child specialist focusing on growth, nutrition, and immunity.",
+        fee: 500,
+        availability: "Available",
+        rating: 4.8,
+        success: "97%",
+        patients: "3.2k+",
+      },
+      {
+        _id: "6a3820c82cecc9714b826114",
+        name: "Dr. James Wilson",
+        email: "james@medicare.com",
+        password: "password123",
+        specialization: "Orthopedic Surgeon",
+        experience: "18 years",
+        qualifications: "MBBS, MS (Orthopedics)",
+        location: "OrthoPlus Clinic",
+        about: "Joint replacement & sports injury expert.",
+        fee: 1200,
+        availability: "Available",
+        rating: 4.6,
+        success: "92%",
+        patients: "1.5k+",
+      },
+      {
+        _id: "6a3820c82cecc9714b826115",
+        name: "Dr. Priya Sharma",
+        email: "priya@medicare.com",
+        password: "password123",
+        specialization: "Critical Care Specialist",
+        experience: "10 years",
+        qualifications: "MBBS, MD",
+        location: "ICU Floor 2",
+        about: "Critical care, intubation, ventilator management.",
+        fee: 600,
+        availability: "Available",
+        rating: 4.7,
+        success: "94%",
+        patients: "2.7k+",
+      },
+      {
+        _id: "6a3820c82cecc9714b826116",
+        name: "Dr. Robert Brown",
+        email: "robert@medicare.com",
+        password: "password123",
+        specialization: "General Physician",
+        experience: "20 years",
+        qualifications: "MBBS, MD",
+        location: "ER Triage",
+        about: "Emergency medicine and general triage care.",
+        fee: 1100,
+        availability: "Available",
+        rating: 4.7,
+        success: "91%",
+        patients: "4.1k+",
+      },
+      {
+        _id: "6a3820c82cecc9714b826117",
+        name: "Dr. Lisa Wang",
+        email: "lisa@medicare.com",
+        password: "password123",
+        specialization: "General Surgeon",
+        experience: "14 years",
+        qualifications: "MBBS, MS (Surgery)",
+        location: "Doctors Lounge",
+        about: "Emergency laparotomy and trauma surgery.",
+        fee: 800,
+        availability: "Available",
+        rating: 4.8,
+        success: "95%",
+        patients: "2.5k+",
+      },
+      {
+        _id: "6a3820c82cecc9714b826118",
+        name: "Dr. David Kim",
+        email: "david@medicare.com",
+        password: "password123",
+        specialization: "Cardiac Anesthetist",
+        experience: "11 years",
+        qualifications: "MBBS, MD (Anesthesia)",
+        location: "OT Complex",
+        about: "Cardiac anesthesia and airway management.",
+        fee: 950,
+        availability: "Available",
+        rating: 4.8,
+        success: "96%",
+        patients: "1.9k+",
+      }
+    ];
+    await Doctor.insertMany(initialDoctors);
 
-  console.log("✅ [MediCare Nexus] Seeding complete! All resources, beds, staff, OTs, diagnostics, and forecast models ready.");
+    await Appointment.deleteMany({});
+    const appointmentsToInsert = mockAppointments.map((a) => ({
+      owner: a.owner || "major_admin_id",
+      createdBy: a.createdBy || null,
+      patientName: a.patientName,
+      mobile: a.mobile,
+      age: a.age,
+      gender: a.gender,
+      doctorId: a.doctorId,
+      doctorName: a.doctorName,
+      speciality: a.speciality,
+      doctorImage: { url: "", publicId: "" },
+      date: a.date,
+      time: a.time,
+      fees: a.fees,
+      status: a.status,
+      payment: a.payment,
+      notes: a.notes,
+      createdAt: a.createdAt || new Date(),
+    }));
+    await Appointment.insertMany(appointmentsToInsert);
+  } catch (err) {
+    console.warn("⚠️ [seedService] Doctor/Appointment seed note:", err.message);
+  }
+
+  console.log("✅ [MediCare Nexus] Seeding complete! All resources, beds, staff, OTs, diagnostics, doctors, appointments, and forecast models ready.");
 }

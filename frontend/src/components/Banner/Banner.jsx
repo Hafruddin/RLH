@@ -43,8 +43,8 @@ const Banner = () => {
                 <div className={bannerStyles.titleContainer}>
                   {/* Responsive heading sizes: smaller on phones, same on desktop */}
                   <h1 className={bannerStyles.title}>
-                    Medi
-                    <span className={bannerStyles.titleGradient}>Care+</span>
+                    MediCare{" "}
+                    <span className={bannerStyles.titleGradient}>Nexus</span>
                   </h1>
 
                   {/* Stars */}
@@ -60,9 +60,9 @@ const Banner = () => {
 
               {/* Tagline */}
               <p className={bannerStyles.tagline}>
-                Premium Healthcare
-                <span className={`block ${bannerStyles.taglineHighlight}`}>
-                  At Your Fingertips
+                Sense. Predict. Orchestrate. Respond.
+                <span className={`block ${bannerStyles.taglineHighlight} text-sm sm:text-base font-semibold text-emerald-800 mt-1`}>
+                  Autonomous Hospital Resource Orchestration Platform
                 </span>
               </p>
 

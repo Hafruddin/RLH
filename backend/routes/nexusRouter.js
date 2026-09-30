@@ -67,9 +67,10 @@ nexusRouter.post("/orchestrator/reallocate", triggerReallocation);
 nexusRouter.get("/forecast", getForecasts);
 nexusRouter.post("/forecast/generate", generateForecasts);
 
-// What-If Simulation Studio
 nexusRouter.post("/simulation/run", runSimulation);
 nexusRouter.post("/simulation/reset", resetSimulationDemo);
+nexusRouter.post("/reset-demo", resetSimulationDemo);
+nexusRouter.post("/seed", resetSimulationDemo);
 
 // Alerts & Notifications
 nexusRouter.get("/alerts", getAlerts);
