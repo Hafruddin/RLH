@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { NavLink, useParams, useLocation } from "react-router-dom";
-import { Home, Calendar, Edit, Menu, X, LogOut } from "lucide-react";
+import { Home, Calendar, Edit, Menu, X, LogOut, Radio } from "lucide-react";
 import logo from "../../assets/logo.png";
 import { navbarStylesDr } from "../../assets/dummyStyles";
 
@@ -25,6 +25,7 @@ export default function Navbar() {
   const navItems = [
     { name: "Dashboard", to: `${basePath}`, Icon: Home },
     { name: "Appointments", to: `${basePath}/appointments`, Icon: Calendar },
+    { name: "View Live Queue", to: "/live-opd", Icon: Radio },
     { name: "Edit Profile", to: `${basePath}/profile/edit`, Icon: Edit },
   ];
 
@@ -73,6 +74,14 @@ export default function Navbar() {
 
         {/* Right side actions */}
         <div className={navbarStylesDr.rightActions}>
+          <NavLink
+            to="/live-opd"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 text-xs font-black hover:bg-teal-100 transition-colors shadow-2xs mr-2"
+          >
+            <Radio size={14} className="text-teal-600 animate-pulse" />
+            <span>View Live Queue</span>
+          </NavLink>
+
           {/* Logout button (desktop) */}
           <button
             className={navbarStylesDr.logoutButtonDesktop}

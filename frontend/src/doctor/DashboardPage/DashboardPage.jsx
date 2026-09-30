@@ -26,6 +26,7 @@ import {
   Coffee,
 } from "lucide-react";
 import { dashboardStyles } from "../../assets/dummyStyles";
+import { getDoctorOpdProfile } from "../../data/opdDemoData";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000"; // override by passing apiBase prop
 
@@ -233,32 +234,71 @@ const defaultDoc4Appointments = [
 export default function DashboardPage({ apiBase }) {
   const params = useParams();
   const location = useLocation();
+  const doctorId = params.id;
 
   const [appointments, setAppointments] = useState(() => {
-    return params.id === "doc-4" || !params.id ? defaultDoc4Appointments : [];
+    const prof = getDoctorOpdProfile(params.id);
+    return (prof.patients || []).map((p, idx) => ({
+      id: p.id || `appt_${idx}`,
+      patient: p.name,
+      doctorName: prof.name,
+      speciality: prof.specialization,
+      date: new Date().toISOString().split("T")[0],
+      time: p.time,
+      fee: p.fee || prof.fee || 700,
+      status: p.status === "Completed" ? "complete" : p.status === "In Consultation" ? "confirmed" : "pending",
+      token: p.token,
+      raw: {
+        patientName: p.name,
+        time: p.time,
+        token: p.token,
+        notes: p.notes,
+        fees: p.fee || prof.fee || 700,
+      },
+    }));
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // resolved API base and doctorId detection order:
-  // 1) prop doctorId
-  // 2) route param :doctorId
-  // 3) query string ?doctorId=
-  // resolved API base and doctorId detection order:
   location.search;
   const API = apiBase || API_BASE;
-  const doctorId = params.id;
 
   // MediCare Nexus Clinical Operations State
   const [activeTab, setActiveTab] = useState("appointments");
-  const [doctorStatus, setDoctorStatus] = useState("AVAILABLE");
+  const [doctorStatus, setDoctorStatus] = useState(() => {
+    return getDoctorOpdProfile(params.id).status || "AVAILABLE";
+  });
   const [emergencyActive, setEmergencyActive] = useState(false);
   const [emergencyAccepted, setEmergencyAccepted] = useState(false);
   const [nexusStatus, setNexusStatus] = useState("CONNECTED");
 
   // Real-time Live OPD Session State (Synchronized across all roles)
-  const [opdSession, setOpdSession] = useState(null);
+  const [opdSession, setOpdSession] = useState(() => {
+    return getDoctorOpdProfile(params.id);
+  });
   const [opdLoading, setOpdLoading] = useState(false);
+
+  const handleSetDoctorStatus = async (newStatus) => {
+    try {
+      setOpdLoading(true);
+      setDoctorStatus(newStatus);
+      const res = await fetch(`${API}/api/opd/doctor/${doctorId || "doc-4"}/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.data) setOpdSession(json.data);
+      } else {
+        setOpdSession((prev) => ({ ...(prev || {}), status: newStatus }));
+      }
+    } catch (e) {
+      setOpdSession((prev) => ({ ...(prev || {}), status: newStatus }));
+    } finally {
+      setOpdLoading(false);
+    }
+  };
 
   const fetchOpdSession = async () => {
     try {
@@ -628,19 +668,55 @@ export default function DashboardPage({ apiBase }) {
         .map(normalizeAppointment)
         .filter(Boolean);
 
-      if (normalized.length === 0 && (doctorId === "doc-4" || !doctorId)) {
-        setAppointments(defaultDoc4Appointments);
+      if (normalized.length === 0) {
+        const prof = getDoctorOpdProfile(doctorId);
+        setAppointments(
+          (prof.patients || []).map((p, idx) => ({
+            id: p.id || `appt_${idx}`,
+            patient: p.name,
+            doctorName: prof.name,
+            speciality: prof.specialization,
+            date: new Date().toISOString().split("T")[0],
+            time: p.time,
+            fee: p.fee || prof.fee || 700,
+            status: p.status === "Completed" ? "complete" : p.status === "In Consultation" ? "confirmed" : "pending",
+            token: p.token,
+            raw: {
+              patientName: p.name,
+              time: p.time,
+              token: p.token,
+              notes: p.notes,
+              fees: p.fee || prof.fee || 700,
+            },
+          }))
+        );
       } else {
         setAppointments(normalized);
       }
     } catch (err) {
       console.error("fetchAppointments:", err);
       setError(err.message || "Failed to load appointments");
-      if (doctorId === "doc-4" || !doctorId) {
-        setAppointments(defaultDoc4Appointments);
-      } else {
-        setAppointments([]);
-      }
+      const prof = getDoctorOpdProfile(doctorId);
+      setAppointments(
+        (prof.patients || []).map((p, idx) => ({
+          id: p.id || `appt_${idx}`,
+          patient: p.name,
+          doctorName: prof.name,
+          speciality: prof.specialization,
+          date: new Date().toISOString().split("T")[0],
+          time: p.time,
+          fee: p.fee || prof.fee || 700,
+          status: p.status === "Completed" ? "complete" : p.status === "In Consultation" ? "confirmed" : "pending",
+          token: p.token,
+          raw: {
+            patientName: p.name,
+            time: p.time,
+            token: p.token,
+            notes: p.notes,
+            fees: p.fee || prof.fee || 700,
+          },
+        }))
+      );
     } finally {
       setLoading(false);
     }
@@ -804,10 +880,18 @@ export default function DashboardPage({ apiBase }) {
   }
 
   // Doctor's name resolution
+  const doctorNameFromData =
+    appointments[0]?.raw?.doctorId?.name ||
+    appointments[0]?.raw?.doctorName ||
+    appointments[0]?.doctorName ||
+    null;
+
   const currentDoctorName =
     opdSession?.doctorName ||
+    opdSession?.name ||
     doctorNameFromData ||
-    (doctorId === "doc-4" ? "Dr. Aniket Roy" : "Dr. Sarah Johnson");
+    getDoctorOpdProfile(doctorId).name ||
+    "Dr. Doctor";
 
   return (
     <div className={dashboardStyles.pageContainer}>
@@ -823,14 +907,21 @@ export default function DashboardPage({ apiBase }) {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              to="/live-opd"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-black rounded-xl shadow-2xs transition-all cursor-pointer"
+            >
+              <Radio className="w-4 h-4 animate-pulse" />
+              <span>View Live Queue</span>
+            </Link>
             <button
               onClick={() => {
                 fetchAppointments();
                 fetchOpdSession();
               }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded-xl border border-gray-200 shadow-2xs transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-xl border border-gray-200 shadow-2xs transition-all cursor-pointer"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-3.5 h-3.5" />
               Refresh
             </button>
           </div>
@@ -885,19 +976,59 @@ export default function DashboardPage({ apiBase }) {
 
         {/* ⚡ Live OPD Cabin Controls Card matching Image 2 */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-8">
-          {/* Card Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-gray-100 mb-6">
+          {/* Card Header with Status Toggles and View Live Queue button */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-gray-100 mb-6">
             <div className="flex items-center gap-2.5">
               <span className="text-2xl">⚡</span>
-              <h2 className="text-xl font-bold text-gray-900">Live OPD Cabin Controls</h2>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Live OPD Cabin Controls</h2>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs text-gray-500 font-medium">Status:</span>
+                  <span className="text-xs font-black text-gray-800">
+                    {opdSession?.status === "AVAILABLE" && "🟢 Available"}
+                    {opdSession?.status === "IN_CONSULTATION" && "🔵 In Consultation"}
+                    {opdSession?.status === "EMERGENCY" && "🔴 Emergency Duty"}
+                    {opdSession?.status === "ON_BREAK" && "🟡 On Break"}
+                    {opdSession?.status === "DELAYED" && `🟠 Delayed (+${opdSession?.delayMinutes || 10}m)`}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
+
+            <div className="flex flex-wrap items-center gap-2">
               <button
+                type="button"
+                onClick={() => handleSetDoctorStatus("AVAILABLE")}
+                disabled={opdLoading}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black border transition-all cursor-pointer ${
+                  opdSession?.status === "AVAILABLE"
+                    ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
+                    : "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
+                }`}
+              >
+                🟢 Available
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSetDoctorStatus("IN_CONSULTATION")}
+                disabled={opdLoading}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black border transition-all cursor-pointer ${
+                  opdSession?.status === "IN_CONSULTATION"
+                    ? "bg-blue-600 text-white border-blue-600 shadow-2xs"
+                    : "bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100"
+                }`}
+              >
+                🔵 In Consultation
+              </button>
+
+              <button
+                type="button"
                 onClick={handleToggleBreak}
                 disabled={opdLoading}
-                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black border transition-all cursor-pointer ${
                   opdSession?.status === "ON_BREAK"
-                    ? "bg-purple-600 text-white border-purple-600"
+                    ? "bg-purple-600 text-white border-purple-600 shadow-2xs"
                     : "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
                 }`}
               >
@@ -906,17 +1037,26 @@ export default function DashboardPage({ apiBase }) {
               </button>
 
               <button
+                type="button"
                 onClick={handleToggleEmergency}
                 disabled={opdLoading}
-                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black border transition-all cursor-pointer ${
                   opdSession?.status === "EMERGENCY"
-                    ? "bg-rose-600 text-white border-rose-600 animate-pulse"
+                    ? "bg-rose-600 text-white border-rose-600 animate-pulse shadow-2xs"
                     : "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100"
                 }`}
               >
                 <AlertTriangle className="w-3.5 h-3.5" />
                 {opdSession?.status === "EMERGENCY" ? "Clear Emergency" : "Emergency Mode"}
               </button>
+
+              <Link
+                to="/live-opd"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-50 border border-teal-200 text-teal-800 text-xs font-black hover:bg-teal-100 transition-colors shadow-2xs"
+              >
+                <Radio className="w-3.5 h-3.5 text-teal-600 animate-pulse" />
+                <span>View Live Queue</span>
+              </Link>
             </div>
           </div>
 

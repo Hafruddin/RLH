@@ -106,6 +106,21 @@ opdRouter.post("/doctor/:id/emergency", (req, res) => {
   }
 });
 
+// POST set doctor status (AVAILABLE, IN_CONSULTATION, EMERGENCY, ON_BREAK, etc.)
+opdRouter.post("/doctor/:id/status", (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ success: false, message: "Status required" });
+    const session = opdStore.setStatus(req.params.id, status);
+    if (!session) {
+      return res.status(404).json({ success: false, message: "Doctor OPD session not found" });
+    }
+    res.json({ success: true, message: `Status updated to ${status}`, data: session });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // POST check in patient
 opdRouter.post("/check-in", (req, res) => {
   try {

@@ -15,9 +15,13 @@ import {
   Shield,
   Users,
   Phone,
+  Radio,
+  Eye,
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import LiveOpdModal from "../../components/LiveOpdModal/LiveOpdModal";
+import { getDoctorOpdProfile, getStatusBadgeInfo } from "../../data/opdDemoData";
 import { fallbackDoctors } from "../../utils/fallbackDoctors";
 import { getDoctorImage, handleImageError } from "../../utils/doctorImages";
 import {
@@ -106,6 +110,43 @@ export default function DoctorDetail() {
 
   const [paymentMethod, setPaymentMethod] = useState("Cash");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showQueueModal, setShowQueueModal] = useState(false);
+  const [liveOpdSession, setLiveOpdSession] = useState(null);
+
+  useEffect(() => {
+    async function loadOpd() {
+      try {
+        const res = await fetch(`${API_BASE}/api/opd/doctor/${id}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json?.data) setLiveOpdSession(json.data);
+        }
+      } catch (e) {}
+    }
+    loadOpd();
+    const interval = setInterval(loadOpd, 4000);
+    return () => clearInterval(interval);
+  }, [id]);
+
+  const opdProfile = useMemo(() => {
+    const base = getDoctorOpdProfile(id, doctor?.name);
+    if (liveOpdSession) {
+      return {
+        ...base,
+        status: liveOpdSession.status || base.status,
+        currentToken: liveOpdSession.currentToken || base.currentToken,
+        waitingCount: liveOpdSession.waitingCount != null ? liveOpdSession.waitingCount : base.waitingCount,
+        completedCount: liveOpdSession.completedCount != null ? liveOpdSession.completedCount : base.completedCount,
+        delayMinutes: liveOpdSession.delayMinutes != null ? liveOpdSession.delayMinutes : base.delayMinutes,
+        estTurn: liveOpdSession.estNextTurn || base.estTurn,
+      };
+    }
+    return base;
+  }, [id, doctor, liveOpdSession]);
+
+  const opdStatusInfo = useMemo(() => {
+    return getStatusBadgeInfo(opdProfile.status);
+  }, [opdProfile.status]);
 
   // Clerk hooks
   const { getToken, isLoaded: authLoaded } = useAuth();
@@ -519,6 +560,44 @@ export default function DoctorDetail() {
                 </div>
               </div>
 
+              {/* LIVE OPD QUEUE WIDGET WITH ICON & VIEW LIVE QUEUE BUTTON */}
+              <div className="mt-4 p-4 rounded-2xl bg-gradient-to-r from-teal-50/90 via-emerald-50/70 to-blue-50/90 border border-teal-200/90 shadow-2xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
+                      <Radio className="w-5 h-5 animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-black text-teal-950 uppercase tracking-wider bg-teal-200/80 px-2 py-0.5 rounded">
+                          Live OPD Status
+                        </span>
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-black border flex items-center gap-1.5 ${opdStatusInfo.colorClass}`}>
+                          <span className={`w-2 h-2 rounded-full ${opdStatusInfo.dotColor}`}></span>
+                          {opdStatusInfo.badge}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-700 mt-1 font-medium flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                        <span>Current Token: <strong className="text-blue-900 font-extrabold">{opdProfile.currentToken}</strong></span>
+                        <span>•</span>
+                        <span>Waiting: <strong className="text-teal-900 font-extrabold">{opdProfile.waitingCount} patients</strong></span>
+                        <span>•</span>
+                        <span>Est. Wait: <strong className="text-amber-800 font-extrabold">{opdProfile.estWait}</strong></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowQueueModal(true)}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white text-xs font-extrabold shadow-sm transition-all shrink-0 cursor-pointer"
+                  >
+                    <Users className="w-4 h-4" />
+                    <span>View Live Queue</span>
+                  </button>
+                </div>
+              </div>
+
               <div className={doctorDetailStyles.aboutContainer}>
                 <div className={doctorDetailStyles.aboutHeader}>
                   <BadgeInfo className={doctorDetailStyles.aboutIcon} />
@@ -537,11 +616,21 @@ export default function DoctorDetail() {
         {/* APPOINTMENT */}
         <div className={doctorDetailStyles.appointmentContainer}>
           <div className={doctorDetailStyles.appointmentContent}>
-            <div className={doctorDetailStyles.appointmentHeader}>
-              <CalendarCheck className={doctorDetailStyles.appointmentIcon} />
-              <h2 className={doctorDetailStyles.appointmentTitle}>
-                Book Your Appointment
-              </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 mb-2">
+              <div className={doctorDetailStyles.appointmentHeader}>
+                <CalendarCheck className={doctorDetailStyles.appointmentIcon} />
+                <h2 className={doctorDetailStyles.appointmentTitle}>
+                  Book Your Appointment
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowQueueModal(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 hover:bg-teal-100 text-teal-800 text-xs font-extrabold transition-colors cursor-pointer self-start sm:self-auto shadow-2xs"
+              >
+                <Radio className="w-3.5 h-3.5 text-teal-600 animate-pulse" />
+                <span>View Live Queue</span>
+              </button>
             </div>
 
             <div className={doctorDetailStyles.appointmentGrid}>
@@ -805,7 +894,13 @@ export default function DoctorDetail() {
             </div>
           </div>
         </div>
-      </div>{" "}
+      </div>
+
+      <LiveOpdModal
+        isOpen={showQueueModal}
+        onClose={() => setShowQueueModal(false)}
+        doctorProfile={opdProfile}
+      />
     </div>
   );
 }

@@ -334,6 +334,18 @@ class OpdStore {
     return doc;
   }
 
+  setStatus(id, status) {
+    const doc = this.getSession(id);
+    if (!doc) return null;
+    doc.status = status;
+    doc.estNextTurn = this.computeEstNextTurn(doc);
+    doc.lastUpdated = new Date().toISOString();
+
+    broadcastEvent("QUEUE_UPDATED", doc);
+    broadcastEvent("OPD_UPDATED", doc);
+    return doc;
+  }
+
   startConsultation(id) {
     const doc = this.getSession(id);
     if (!doc) return null;
