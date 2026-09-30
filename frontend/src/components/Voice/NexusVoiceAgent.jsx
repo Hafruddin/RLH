@@ -22,9 +22,9 @@ import {
   Cpu,
   Info
 } from "lucide-react";
-import { useConversation } from "@elevenlabs/react";
+import { ConversationProvider, useConversation } from "@elevenlabs/react";
 
-export default function NexusVoiceAgent({ initialContext = {}, defaultOpen = false }) {
+function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [voiceState, setVoiceState] = useState("IDLE"); // IDLE, CONNECTING, LISTENING, THINKING, SPEAKING, EXECUTING, SUCCESS, ERROR
   const [currentAgent, setCurrentAgent] = useState("concierge");
@@ -759,5 +759,13 @@ export default function NexusVoiceAgent({ initialContext = {}, defaultOpen = fal
         </div>
       )}
     </>
+  );
+}
+
+export default function NexusVoiceAgent(props) {
+  return (
+    <ConversationProvider>
+      <NexusVoiceAgentInner {...props} />
+    </ConversationProvider>
   );
 }
