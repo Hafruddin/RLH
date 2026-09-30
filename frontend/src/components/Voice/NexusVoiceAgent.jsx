@@ -23,6 +23,7 @@ import {
   Info
 } from "lucide-react";
 import { ConversationProvider, useConversation } from "@elevenlabs/react";
+import { normalizeSpokenText, getVoiceProfile, VOICE_PROFILES } from "../../utils/voiceTextNormalizer.js";
 
 function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -49,15 +50,15 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
 
   // Official 8-Language Configuration
   const LANGUAGE_CONFIG = [
-    { code: "auto", label: "Auto Detect (தானியங்கி / स्वतः)", locale: "en-US" },
-    { code: "en", label: "English", locale: "en-US", greeting: "Hello. I'm the MediCare Nexus voice assistant. How can I help you?" },
-    { code: "ta", label: "Tamil (தமிழ்)", locale: "ta-IN", greeting: "வணக்கம். நான் MediCare Nexus குரல் உதவியாளர். எப்படி உதவலாம்?" },
-    { code: "hi", label: "Hindi (हिंदी)", locale: "hi-IN", greeting: "नमस्ते। मैं MediCare Nexus वॉइस असिस्टेंट हूँ। मैं आपकी कैसे मदद कर सकता हूँ?" },
-    { code: "te", label: "Telugu (తెలుగు)", locale: "te-IN", greeting: "నమస్కారం. నేను MediCare Nexus వాయిస్ అసిస్టెంట్‌ని. నేను మీకు ఎలా సహాయపడగలను?" },
-    { code: "kn", label: "Kannada (ಕನ್ನಡ)", locale: "kn-IN", greeting: "ನಮಸ್ಕಾರ. ನಾನು MediCare Nexus ವಾಯ್ಸ್ ಅಸಿಸ್ಟೆಂಟ್. ನಾನು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?" },
-    { code: "ml", label: "Malayalam (മലയാളം)", locale: "ml-IN", greeting: "നമസ്കാരം. ഞാൻ MediCare Nexus വോയ്‌സ് അസിസ്റ്റന്റാണ്. എങ്ങനെ സഹായിക്കാം?" },
-    { code: "mr", label: "Marathi (मराठी)", locale: "mr-IN", greeting: "नमस्कार. मी MediCare Nexus व्हॉईस असिस्टंट आहे. मी आपल्याला कशी मदत करू शकतो?" },
-    { code: "bn", label: "Bengali (বাংলা)", locale: "bn-IN", greeting: "নমস্কার। আমি MediCare Nexus ভয়েস সহকারী। আমি আপনাকে কীভাবে সাহায্য করতে পারি?" }
+    { code: "auto", label: "Auto Detect (தானியங்கி / स्वतः)", locale: "en-US", nativeLabel: "Auto" },
+    { code: "en", label: "English", locale: "en-US", nativeLabel: "English", greeting: "Hello. I'm the MediCare Nexus voice assistant. How can I help you?" },
+    { code: "ta", label: "Tamil (தமிழ்)", locale: "ta-IN", nativeLabel: "தமிழ்", greeting: "வணக்கம். நான் MediCare Nexus குரல் உதவியாளர். எப்படி உதவலாம்?" },
+    { code: "hi", label: "Hindi (हिंदी)", locale: "hi-IN", nativeLabel: "हिन्दी", greeting: "नमस्ते। मैं MediCare Nexus वॉइस असिस्टेंट हूँ। मैं आपकी कैसे मदद कर सकता हूँ?" },
+    { code: "te", label: "Telugu (తెలుగు)", locale: "te-IN", nativeLabel: "తెలుగు", greeting: "నమస్కారం. నేను MediCare Nexus వాయిస్ అసిస్టెంట్‌ని. నేను మీకు ఎలా సహాయపడగలను?" },
+    { code: "kn", label: "Kannada (ಕನ್ನಡ)", locale: "kn-IN", nativeLabel: "ಕನ್ನಡ", greeting: "ನಮಸ್ಕಾರ. ನಾನು MediCare Nexus ವಾಯ್ಸ್ ಅಸಿಸ್ಟೆಂಟ್. ನಾನು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?" },
+    { code: "ml", label: "Malayalam (മലയാളം)", locale: "ml-IN", nativeLabel: "മലയാളം", greeting: "നമസ്കാരം. ഞാൻ MediCare Nexus വോയ്‌സ് അസിസ്റ്റന്റാണ്. എങ്ങനെ സഹായിക്കാം?" },
+    { code: "mr", label: "Marathi (मराठी)", locale: "mr-IN", nativeLabel: "मराठी", greeting: "नमस्कार. मी MediCare Nexus व्हॉईस असिस्टंट आहे. मी आपल्याला कशी मदत करू शकतो?" },
+    { code: "bn", label: "Bengali (বাংলা)", locale: "bn-IN", nativeLabel: "বাংলা", greeting: "নমস্কার। আমি MediCare Nexus ভয়েস সহকারী। আমি আপনাকে কীভাবে সাহায্য করতে পারি?" }
   ];
 
   const [messages, setMessages] = useState([
@@ -178,13 +179,17 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
     if (/[\u0C80-\u0CFF]/.test(text)) return "kn";
     if (/[\u0980-\u09FF]/.test(text)) return "bn";
     if (/[\u0900-\u097F]/.test(text)) {
-      if (/\b(आहे|झाले|पाहिजे|करा)\b/i.test(text)) return "mr";
+      if (/(आहे|झाले|पाहिजे|करा|नाही|काय|नमस्कार|कशी|कसा|आहात)/.test(text)) return "mr";
       return "hi";
     }
     const lower = text.toLowerCase();
     if (/\b(vanakkam|nalaiku|naalaiki|irukka|vendum|theriyuma|ippo|maruthuvar)\b/.test(lower)) return "ta";
     if (/\b(namaste|kal|chahiye|kripya|karo|bataiye|kitne)\b/.test(lower)) return "hi";
+    if (/\b(namaskaram|repu|kavali|cheppandi)\b/.test(lower)) return "te";
+    if (/\b(namaskara|nale|beku|heli)\b/.test(lower)) return "kn";
     if (/\b(namaskaram|nale|venam|und|parayumo)\b/.test(lower)) return "ml";
+    if (/\b(namaskar|udya|pahije|sang)\b/.test(lower)) return "mr";
+    if (/\b(nomoshkar|agami|dorkar|bolun)\b/.test(lower)) return "bn";
     return "en";
   }
 
@@ -250,7 +255,7 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
     let response = "";
     let action = null;
 
-    if (lower.includes("emergency") || lower.includes("p-1005") || lower.includes("அவசரம்") || lower.includes("इमरजेंसी") || lower.includes("അടിയന്തരം")) {
+    if (lower.includes("emergency") || lower.includes("p-1005") || lower.includes("அவசரம்") || lower.includes("इमरजेंसी") || lower.includes("అత్యవసరం") || lower.includes("ತುರ್ತು") || lower.includes("അടിയന്തരം") || lower.includes("आणीबाणी") || lower.includes("জরুরি")) {
       agent = "emergency";
       agentTitle = "Nexus Emergency Agent";
       action = {
@@ -261,29 +266,61 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
         response = "நோயாளி P-1005-க்கு அவசர சிகிச்சை செயல்படுத்தப்பட்டது. படுக்கை ICU-06, டாக்டர் சாரா, மற்றும் வென்டிலேட்டர் V-04 வெற்றிகரமாக ஒதுக்கப்பட்டன.";
       } else if (lang === "hi") {
         response = "मरीज P-1005 के लिए इमरजेंसी सक्रिय कर दी गई है। ICU-06 बेड, डॉक्टर सारा और वेंटिलेटर V-04 आवंटित कर दिए गए हैं।";
+      } else if (lang === "te") {
+        response = "రోగి P-1005 కోసం ఎమర్జెన్సీ కోడ్ రెడ్ ప్రారంభించబడింది. ICU-06 బెడ్, డాక్టర్ సారా, మరియు వెంటిలేటర్ V-04 కేటాయించబడ్డాయి.";
+      } else if (lang === "kn") {
+        response = "ರೋಗಿ P-1005 ಗಾಗಿ ತುರ್ತು ಕೋಡ್ ರೆಡ್ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ICU-06 ಬೆಡ್, ಡಾಕ್ಟರ್ ಸಾರಾ, ಮತ್ತು ವೆಂಟಿಲೇಟರ್ V-04 ಹಂಚಿಕೆ ಮಾಡಲಾಗಿದೆ.";
       } else if (lang === "ml") {
         response = "രോഗി P-1005 ന് അടിയന്തര കോഡ് റെഡ് സജീവമാക്കി. ഐസിയു-06 ബെഡ്ഡും വെന്റിലേറ്ററും അനുവദിച്ചു.";
+      } else if (lang === "mr") {
+        response = "रुग्ण P-1005 साठी आणीबाणी सक्रिय करण्यात आली आहे. ICU-06 बेड, डॉक्टर सारा आणि व्हेंटिलेटर V-04 वाटप केले गेले आहेत.";
+      } else if (lang === "bn") {
+        response = "রোগী P-1005 এর জন্য জরুরি কোড রেড সক্রিয় করা হয়েছে। ICU-06 বেড, ডাক্তার সারা এবং ভেন্টিলেটর V-04 বরাদ্দ করা হয়েছে।";
       } else {
         response = "Emergency Code Red activated for patient P-1005. Life-support resources allocated: Bed ICU-06, Dr. Sarah Johnson, Nurse N-07, and Ventilator V-04.";
       }
-    } else if (lower.includes("icu") || lower.includes("bed") || lower.includes("occupancy") || lower.includes("படுக்கை") || lower.includes("बेड") || lower.includes("കിടക്ക")) {
+    } else if (lower.includes("icu") || lower.includes("bed") || lower.includes("occupancy") || lower.includes("படுக்கை") || lower.includes("बेड") || lower.includes("పడక") || lower.includes("ಹಾಸಿಗೆ") || lower.includes("കിടക്ക") || lower.includes("खाट")) {
       agent = "bed";
       agentTitle = "Nexus Bed Agent";
-      if (lower.includes("reserve") || lower.includes("ஒதுக்கு") || lower.includes("बुक") || lower.includes("reserve icu-06")) {
+      if (lower.includes("reserve") || lower.includes("ஒதுக்கு") || lower.includes("बुक") || lower.includes("రిజర్వ్") || lower.includes("reserve icu-06")) {
         action = { type: "BED_RESERVED", details: "Bed ICU-06 reserved in WARD-ICU" };
         if (lang === "ta") {
           response = "படுக்கை ICU-06 தீவிர சிகிச்சைப் பிரிவில் (WARD-ICU) வெற்றிகரமாக ஒதுக்கப்பட்டது.";
+        } else if (lang === "hi") {
+          response = "बेड ICU-06 को आईसीयू वार्ड में सफलतापूर्वक आरक्षित कर दिया गया है।";
+        } else if (lang === "te") {
+          response = "బెడ్ ICU-06 ఐసియు వార్డులో విజయవంతంగా రిజర్వ్ చేయబడింది.";
+        } else if (lang === "kn") {
+          response = "ಬೆಡ್ ICU-06 ಅನ್ನು ಐಸಿಯು ವಾರ್ಡ್‌ನಲ್ಲಿ ಯಶಸ್ವಿಯಾಗಿ ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.";
+        } else if (lang === "ml") {
+          response = "ബെഡ് ICU-06 ഐസിയു വാർഡിൽ വിജയകരമായി റിസർവ്വ് ചെയ്തു.";
+        } else if (lang === "mr") {
+          response = "बेड ICU-06 आयसीयू वॉर्डमध्ये आरक्षित करण्यात आला आहे.";
+        } else if (lang === "bn") {
+          response = "বেড ICU-06 আইসিইউ ওয়ার্ডে সফলভাবে সংরক্ষিত হয়েছে।";
         } else {
           response = "Bed ICU-06 in WARD-ICU has been reserved and locked in the Command Center.";
         }
       } else {
         if (lang === "ta") {
           response = "தற்போது ICU-ல் 2 படுக்கைகள் தயாராக உள்ளன. மொத்த படுக்கை ஆக்கிரமிப்பு 78%. உங்களுக்கு ஏதேனும் படுக்கை ஒதுக்க வேண்டுமா?";
+        } else if (lang === "hi") {
+          response = "वर्तमान में आईसीयू में 2 बेड उपलब्ध हैं। कुल ऑक्यूपेंसी 78% है। क्या आपको बेड आरक्षित करना है?";
+        } else if (lang === "te") {
+          response = "ప్రస్తుతం ఐసియులో 2 బెడ్లు అందుబాటులో ఉన్నాయి. మొత్తం ఆక్యుపెన్సీ 78%.";
+        } else if (lang === "kn") {
+          response = "ಪ್ರಸ್ತುತ ಐಸಿಯುನಲ್ಲಿ 2 ಬೆಡ್‌ಗಳು ಲಭ್ಯವಿವೆ. ಒಟ್ಟು ಆಕ್ಯುಪೆನ್ಸಿ 78%.";
+        } else if (lang === "ml") {
+          response = "നിലവിൽ ഐസിയുവിൽ 2 ബെഡുകൾ ലഭ്യമാണ്. ആകെ ഒക്യുപൻസി 78%.";
+        } else if (lang === "mr") {
+          response = "सध्या आयसीयूमध्ये 2 बेड उपलब्ध आहेत. एकूण ऑक्युपन्सी 78% आहे.";
+        } else if (lang === "bn") {
+          response = "বর্তমানে আইসিইউতে 2 টি বেড প্রস্তুত রয়েছে। মোট অকুপেন্সি 78%।";
         } else {
           response = "Currently 2 ICU beds are immediately available. Overall hospital bed occupancy is 78%. Would you like me to reserve one?";
         }
       }
-    } else if (lower.includes("book") || lower.includes("appointment") || lower.includes("நேரம்") || lower.includes("முன்பதிவு") || lower.includes("बुक") || lower.includes("അപ്പോയിന്റ്മെന്റ്")) {
+    } else if (lower.includes("book") || lower.includes("appointment") || lower.includes("நேரம்") || lower.includes("முன்பதிவு") || lower.includes("बुक") || lower.includes("అపాయింట్‌మెంట్") || lower.includes("ಬುಕಿಂಗ್") || lower.includes("അപ്പോയിന്റ്മെന്റ്")) {
       agent = "appointment";
       agentTitle = "Nexus Appointment Agent";
       action = {
@@ -294,24 +331,56 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
         response = "Dr. Sarah Johnson உடன் உங்கள் முன்பதிவு நாளை காலை 10:30 AM-க்கு வெற்றிகரமாக பதிவு செய்யப்பட்டது.";
       } else if (lang === "hi") {
         response = "Dr. Sarah Johnson के साथ आपका अपॉइंटमेंट कल सुबह 10:30 बजे सफलतापूर्वक बुक हो गया है।";
+      } else if (lang === "te") {
+        response = "Dr. Sarah Johnson తో మీ అపాయింట్‌మెంట్ రేపు ఉదయం 10:30 గంటలకు ఖరారైంది.";
+      } else if (lang === "kn") {
+        response = "Dr. Sarah Johnson ಅವರೊಂದಿಗೆ ನಿಮ್ಮ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ನಾಳೆ ಬೆಳಿಗ್ಗೆ 10:30 ಕ್ಕೆ ನಿಗದಿಯಾಗಿದೆ.";
       } else if (lang === "ml") {
         response = "Dr. Sarah Johnson മായി നിങ്ങളുടെ അപ്പോയിന്റ്മെന്റ് നാളെ രാവിലെ 10:30 ന് സ്ഥിരീകരിച്ചു.";
+      } else if (lang === "mr") {
+        response = "Dr. Sarah Johnson यांच्यासोबत आपली भेट उद्या सकाळी 10:30 वाजता निश्चित झाली आहे.";
+      } else if (lang === "bn") {
+        response = "Dr. Sarah Johnson এর সাথে আপনার অ্যাপয়েন্টমেন্ট আগামীকাল সকাল 10:30 টায় নিশ্চিত হয়েছে।";
       } else {
         response = "Your appointment with Dr. Sarah Johnson is confirmed for tomorrow at 10:30 AM.";
       }
-    } else if (lower.includes("why") || lower.includes("reason") || lower.includes("காரணம்") || lower.includes("എന്തുകൊണ്ട്")) {
+    } else if (lower.includes("why") || lower.includes("reason") || lower.includes("காரணம்") || lower.includes("कारण") || lower.includes("ఎందుకు") || lower.includes("ಎಂತು") || lower.includes("എന്തുകൊണ്ട്")) {
       agent = "operations";
       agentTitle = "Nexus Operations Agent";
       if (lang === "ta") {
         response = "ICU-06 தேர்ந்தெடுக்கப்பட்டதற்கான காரணம்: இது ஆக்ஸிஜன் வசதியுடன் தயாராக இருந்தது, அவசர சிகிச்சைக்கு மிக அருகில் உள்ளது, மேலும் சிறப்பு மருத்துவ பணியாளர்கள் உடனடி கண்காணிப்பில் உள்ளனர்.";
+      } else if (lang === "hi") {
+        response = "ICU-06 को इसलिए चुना गया क्योंकि यह ऑक्सीजन आइसोलेशन से लैस है और इमरजेंसी बे के सबसे निकट है।";
+      } else if (lang === "te") {
+        response = "ICU-06 ఎంపిక చేయబడింది ఎందుకంటే ఇది ఆక్సిజన్ సదుపాయం కలిగి ఉంది మరియు అత్యవసర విభాగానికి సమీపంలో ఉంది.";
+      } else if (lang === "kn") {
+        response = "ICU-06 ಅನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ ಏಕೆಂದರೆ ಇದು ಆಕ್ಸಿಜನ್ ಸೌಲಭ್ಯ ಹೊಂದಿದೆ ಮತ್ತು ತುರ್ತು ವಿಭಾಗಕ್ಕೆ ಹತ್ತಿರದಲ್ಲಿದೆ.";
+      } else if (lang === "ml") {
+        response = "ICU-06 തിരഞ്ഞെടുത്തു കാരണം ഇത് ഓക്സിജൻ സജ്ജീകരണമുള്ളതും അടിയന്തര വിഭാഗത്തിന് ഏറ്റവും അടുത്തുള്ളതുമാണ്.";
+      } else if (lang === "mr") {
+        response = "ICU-06 ची निवड केली गेली कारण यात ऑक्सिजन सुविधा आहे आणि आणीबाणी विभागाच्या सर्वात जवळ आहे.";
+      } else if (lang === "bn") {
+        response = "ICU-06 নির্বাচন করা হয়েছে কারণ এটি অক্সিজেন সুবিধা সম্পন্ন এবং জরুরি বিভাগের সবচেয়ে কাছে অবস্থিত।";
       } else {
         response = "ICU-06 was selected by the autonomous orchestrator because it is fully prepped with negative pressure isolation, closest to the emergency resuscitation bay, and matched to Dr. Sarah's trauma roster.";
       }
-    } else if (lower.includes("forecast") || lower.includes("surge") || lower.includes("demand") || lower.includes("கணிப்பு")) {
+    } else if (lower.includes("forecast") || lower.includes("surge") || lower.includes("demand") || lower.includes("கணிப்பு") || lower.includes("पूर्वानुमान") || lower.includes("అంచనా")) {
       agent = "forecast";
       agentTitle = "Nexus Forecast Agent";
       if (lang === "ta") {
         response = "தற்போதைய அவசரப் பிரிவு சுமை 24 நோயாளிகள். அடுத்த இரண்டு மணி நேரத்தில் 38 நோயாளிகள் வரக்கூடும் என கணிக்கப்பட்டுள்ளது.";
+      } else if (lang === "hi") {
+        response = "वर्तमान इमरजेंसी में 24 मरीज हैं। अगले दो घंटों में 38 मरीजों के आने का अनुमान है।";
+      } else if (lang === "te") {
+        response = "ప్రస్తుత ఈఆర్ పరిమాణం 24 రోగులు. రాబోయే 2 గంటల్లో 38 రోగులు వచ్చే అవకాశం ఉంది.";
+      } else if (lang === "kn") {
+        response = "ಪ್ರಸ್ತುತ ಇಆರ್ ನಲ್ಲಿ 24 ರೋಗಿಗಳಿದ್ದಾರೆ. ಮುಂದಿನ 2 ಗಂಟೆಗಳಲ್ಲಿ 38 ರೋಗಿಗಳು ಬರುವ ಅಂದಾಜಿದೆ.";
+      } else if (lang === "ml") {
+        response = "നിലവിലെ എമർജൻസിയിൽ 24 രോഗികളുണ്ട്. അടുത്ത രണ്ട് മണിക്കൂറിൽ 38 രോഗികൾ വരാൻ സാധ്യതയുണ്ട്.";
+      } else if (lang === "mr") {
+        response = "सध्याच्या आपत्कालीन विभागात 24 रुग्ण आहेत. पुढील दोन तासांत 38 रुग्णांचा अंदाज आहे.";
+      } else if (lang === "bn") {
+        response = "বর্তমান ইমার্জেন্সিতে 24 জন রোগী আছেন। আগামী দুই ঘণ্টায় 38 জন রোগী আসার পূর্বাভাস রয়েছে।";
       } else {
         response = "Current ER volume is 24 patients. AI models forecast an influx of 38 patients in the next two hours with elevated demand risk.";
       }
@@ -398,7 +467,7 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
           ]);
 
           if (!isMuted) {
-            speakResponse(data.responseText, data.detectedLanguage || detectedLang);
+            speakResponse(data.spokenText || data.responseText, data.detectedLanguage || detectedLang);
           } else {
             setVoiceState("IDLE");
           }
@@ -450,10 +519,28 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
     if (!synthRef.current || isMuted) return;
 
     synthRef.current.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = getLangLocale(langCode || detectedLanguage);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
+    const lang = langCode || detectedLanguage;
+    const profile = getVoiceProfile(lang);
+    const normalizedText = normalizeSpokenText(text, lang);
+
+    const utterance = new SpeechSynthesisUtterance(normalizedText);
+    utterance.lang = profile.locale || getLangLocale(lang);
+    utterance.rate = profile.rate || 0.92; // Softer, slower, natural cadence (0.90-0.92)
+    utterance.pitch = profile.pitch || 1.0;
+
+    try {
+      const voices = synthRef.current.getVoices();
+      if (voices && voices.length > 0) {
+        const matched = voices.find(
+          (v) =>
+            v.lang.toLowerCase() === utterance.lang.toLowerCase() ||
+            v.lang.toLowerCase().startsWith(lang.toLowerCase())
+        );
+        if (matched) {
+          utterance.voice = matched;
+        }
+      }
+    } catch (_) {}
 
     utterance.onstart = () => setVoiceState("SPEAKING");
     utterance.onend = () => setVoiceState("IDLE");
@@ -480,6 +567,9 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
     SUCCESS: { color: "bg-emerald-600 text-white border-emerald-700", label: "Action Complete", dot: "bg-white" },
     ERROR: { color: "bg-rose-100 text-rose-800 border-rose-300", label: "Attention Needed", dot: "bg-rose-500" }
   };
+
+  const activeLangConfig = LANGUAGE_CONFIG.find((l) => l.code === detectedLanguage) || LANGUAGE_CONFIG[1];
+  const activeLanguageDisplay = activeLangConfig.nativeLabel;
 
   return (
     <>
@@ -513,8 +603,8 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
           <span className="text-sm font-semibold tracking-wide hidden sm:inline">
             Nexus Voice
           </span>
-          <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-            {detectedLanguage}
+          <span className="text-[10px] bg-white/20 px-2.5 py-0.5 rounded-full font-bold tracking-wide">
+            {activeLanguageDisplay}
           </span>
         </button>
       </div>
@@ -538,8 +628,8 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
                     <span className={`w-1.5 h-1.5 rounded-full ${stateBadgeConfig[voiceState].dot}`} />
                     {stateBadgeConfig[voiceState].label}
                   </span>
-                  <span className="text-[11px] text-gray-500 uppercase font-semibold">
-                    Lang: {detectedLanguage}
+                  <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded-md border border-emerald-200">
+                    {activeLanguageDisplay}
                   </span>
                 </div>
               </div>
