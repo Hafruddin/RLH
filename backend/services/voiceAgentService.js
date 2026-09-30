@@ -154,6 +154,8 @@ export function detectLanguage(text = "") {
   if (/[\u0C00-\u0C7F]/.test(text)) return "te";
   // Kannada Range 0C80-0CFF
   if (/[\u0C80-\u0CFF]/.test(text)) return "kn";
+  // Malayalam Range 0D00-0D7F
+  if (/[\u0D00-\u0D7F]/.test(text)) return "ml";
   // Bengali Range 0980-09FF
   if (/[\u0980-\u09FF]/.test(text)) return "bn";
 
@@ -162,6 +164,7 @@ export function detectLanguage(text = "") {
   if (/\b(vanakkam|nalaiku|naalaiki|irukka|vendum|theriyuma|ippo|maruthuvar)\b/.test(lower)) return "ta";
   if (/\b(namaste|kal|chahiye|kripya|karo|bataiye|kitne)\b/.test(lower)) return "hi";
   if (/\b(namaskaram|repu|kavali|cheppandi)\b/.test(lower)) return "te";
+  if (/\b(namaskaram|nale|venam|und|parayumo)\b/.test(lower)) return "ml";
 
   return "en";
 }
@@ -539,15 +542,25 @@ export async function processVoiceTurn({
   }
 
   // -------------------------------------------------------------
-  // DEFAULT / CONCIERGE GREETING
+  // DEFAULT / CONCIERGE GREETING (8 LANGUAGES)
   // -------------------------------------------------------------
   else {
     if (lang === "ta") {
-      responseText = "வணக்கம்! நான் மெடிகேர் நெக்ஸஸ் வாய்ஸ் அசிஸ்டென்ட். மருத்துவர் முன்பதிவு, அவசர சிகிச்சை, அல்லது ICU படுக்கை நிலையை அறிய நான் உங்களுக்கு எப்படி உதவலாம்?";
+      responseText = "வணக்கம். நான் MediCare Nexus குரல் உதவியாளர். எப்படி உதவலாம்?";
     } else if (lang === "hi") {
-      responseText = "नमस्ते! मैं मेडिकेयर नेक्सस वॉयस असिस्टेंट हूँ। डॉक्टर अपॉइंटमेंट, इमरजेंसी सहायता या आईसीयू बेड की जानकारी के लिए मैं आपकी क्या मदद कर सकता हूँ?";
+      responseText = "नमस्ते। मैं MediCare Nexus वॉइस असिस्टेंट हूँ। मैं आपकी कैसे मदद कर सकता हूँ?";
+    } else if (lang === "te") {
+      responseText = "నమస్కారం. నేను MediCare Nexus వాయిస్ అసిస్టెంట్‌ని. నేను మీకు ఎలా సహాయపడగలను?";
+    } else if (lang === "kn") {
+      responseText = "ನಮಸ್ಕಾರ. ನಾನು MediCare Nexus ವಾಯ್ಸ್ ಅಸಿಸ್ಟೆಂಟ್. ನಾನು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?";
+    } else if (lang === "ml") {
+      responseText = "നമസ്കാരം. ഞാൻ MediCare Nexus വോയ്‌സ് അസിസ്റ്റന്റാണ്. എങ്ങനെ സഹായിക്കാം?";
+    } else if (lang === "mr") {
+      responseText = "नमस्कार. मी MediCare Nexus व्हॉईस असिस्टंट आहे. मी आपल्याला कशी मदत करू शकतो?";
+    } else if (lang === "bn") {
+      responseText = "নমস্কার। আমি MediCare Nexus ভয়েস সহকারী। আমি আপনাকে কীভাবে সাহায্য করতে পারি?";
     } else {
-      responseText = "Hello! I am MediCare Nexus Voice Assistant. How can I assist you with doctor appointments, ICU beds, emergency response, or hospital operations?";
+      responseText = "Hello. I'm the MediCare Nexus voice assistant. How can I help you?";
     }
   }
 
