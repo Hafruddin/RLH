@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Search, X, Phone, Calendar } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { listPageStyles } from "../../assets/dummyStyles";
+import { getDoctorOpdProfile } from "../../data/opdDemoData";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
@@ -323,6 +324,34 @@ export default function ListPage() {
   const params = useParams();
   const doctorId = params.id;
 
+  // helper: build fallback appointments from opdDemoData
+  function getFallbackAppointments(docId) {
+    const prof = getDoctorOpdProfile(docId);
+    if (!prof || !Array.isArray(prof.patients) || prof.patients.length === 0) return [];
+    const today = new Date().toISOString().split("T")[0];
+    return prof.patients.map((p, idx) => ({
+      id: p.id || `appt_${idx + 1}`,
+      patient: p.name || "Patient",
+      age: p.age || 35,
+      gender: p.gender || "Other",
+      doctorName: prof.name,
+      doctorImage: "",
+      speciality: prof.specialization,
+      mobile: p.mobile || "9876543210",
+      date: today,
+      time: to24HourFromMaybe12(p.time || "10:00 AM"),
+      fee: Number(p.fee || prof.fee || 700),
+      status: p.status === "Completed" ? "complete" : p.status === "In Consultation" ? "confirmed" : "pending",
+      raw: {
+        patientName: p.name,
+        time: p.time,
+        token: p.token,
+        notes: p.notes,
+        fees: p.fee || prof.fee || 700,
+      },
+    }));
+  }
+
   // load appointments
   async function fetchAppointments() {
     setLoading(true);
@@ -348,11 +377,23 @@ export default function ListPage() {
       const normalized = (Array.isArray(list) ? list : [])
         .map(normalizeAppointment)
         .filter(Boolean);
-      setAppointments(normalized);
+
+      if (normalized.length === 0) {
+        const fallback = getFallbackAppointments(doctorId);
+        setAppointments(fallback);
+      } else {
+        setAppointments(normalized);
+      }
     } catch (err) {
-      console.error("fetchAppointments:", err);
-      setError(err.message || "Failed to load appointments");
-      setAppointments([]);
+      console.warn("fetchAppointments failed, loading local fallback appointments:", err);
+      const fallback = getFallbackAppointments(doctorId);
+      if (fallback.length > 0) {
+        setAppointments(fallback);
+        setError(null);
+      } else {
+        setError(err.message || "Failed to load appointments");
+        setAppointments([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -534,7 +575,7 @@ export default function ListPage() {
           <div className={listPageStyles.loadingContainer}>
             Loading appointments…
           </div>
-        ) : error ? (
+        ) : error && appointments.length === 0 ? (
           <div className={listPageStyles.errorContainer}>Error: {error}</div>
         ) : (
           <div className={listPageStyles.appointmentsGrid}>

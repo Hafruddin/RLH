@@ -12,14 +12,17 @@ const staffSchema = new mongoose.Schema(
     },
     specialization: { type: String, default: "General" },
     department: { type: String, default: "Emergency", index: true },
+    shift: { type: String, default: "Morning" },
     shiftStart: { type: String, default: "08:00" },
     shiftEnd: { type: String, default: "20:00" },
     status: {
       type: String,
-      enum: ["ON_DUTY", "OFF_DUTY", "ON_CALL", "IN_SURGERY", "BREAK"],
-      default: "ON_DUTY",
+      enum: ["AVAILABLE", "ON_DUTY", "ASSIGNED", "ON_BREAK", "ON_LEAVE", "OFF_DUTY", "ON_CALL", "IN_SURGERY", "BREAK", "UNAVAILABLE", "UNKNOWN"],
+      default: "AVAILABLE",
       index: true,
     },
+    currentAssignment: { type: String, default: "General Duty" },
+    availability: { type: String, default: "AVAILABLE" },
     workload: {
       type: String,
       enum: ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
@@ -31,6 +34,7 @@ const staffSchema = new mongoose.Schema(
     skills: [{ type: String }],
     emergencyEligible: { type: Boolean, default: true },
     contact: { type: String, default: "" },
+    lastUpdatedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

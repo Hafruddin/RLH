@@ -10,7 +10,14 @@ import { SignedIn, SignedOut, useClerk, UserButton } from "@clerk/clerk-react";
 import { navbarStyles } from "../../assets/dummyStyles";
 
 const STORAGE_KEY = "doctorToken_v1";
-const ADMIN_URL = import.meta.env.VITE_ADMIN_URL || "http://localhost:5174";
+const rawAdminUrl = import.meta.env.VITE_ADMIN_URL;
+// Only consider admin URL external if set and not pointing to localhost/127.0.0.1
+const isExternalAdmin = Boolean(
+  rawAdminUrl &&
+  !rawAdminUrl.includes("localhost") &&
+  !rawAdminUrl.includes("127.0.0.1")
+);
+const ADMIN_URL = isExternalAdmin ? rawAdminUrl : "/doctor-admin/login";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -147,15 +154,15 @@ export default function Navbar() {
                 <span className={navbarStyles.doctorText}>Doctor</span>
               </Link>
 
-              {/* 2. Admin Login - Redirects to Admin Page */}
-              <a
-                href={ADMIN_URL}
+              {/* 2. Admin Command Center */}
+              <Link
+                to="/admin"
                 className={navbarStyles.adminButton}
-                title="Redirect to Admin Dashboard"
+                title="MediCare Nexus Command Center"
               >
                 <ShieldCheck className={navbarStyles.adminIcon} />
                 <span className={navbarStyles.adminText}>Admin</span>
-              </a>
+              </Link>
 
               {/* 3. Patient / User Login */}
               <SignedOut>
@@ -222,14 +229,14 @@ export default function Navbar() {
                   <span>Doctor Login</span>
                 </Link>
 
-                <a
-                  href={ADMIN_URL}
+                <Link
+                  to="/admin"
                   onClick={() => setIsOpen(false)}
                   className={navbarStyles.mobileAdminButton}
                 >
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>Admin Login</span>
-                </a>
+                  <span>Admin Command Center</span>
+                </Link>
 
                 <SignedOut>
                   <div className={navbarStyles.mobileLoginContainer}>

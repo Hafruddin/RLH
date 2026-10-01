@@ -1,6 +1,6 @@
 // src/App.jsx
 import React, { useEffect, useState } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 
 // Pages
 import Home from "./pages/Home/Home";
@@ -17,6 +17,7 @@ import DHome from "./pages/DHome/DHome";
 import List from "./pages/List/List";
 import EditProfile from "./pages/EditProfile/EditProfile";
 import HospitalLiveOpdMonitor from "./pages/LiveOpd/HospitalLiveOpdMonitor";
+import NexusMasterLayout from "./components/Nexus/NexusMasterLayout";
 
 // Lucide icon
 import { CircleChevronUp } from "lucide-react";
@@ -92,6 +93,10 @@ const App = () => {
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/live-opd" element={<HospitalLiveOpdMonitor />} />
           <Route path="/doctor-admin/login" element={<Login />} />
+          <Route path="/admin" element={<NexusMasterLayout />} />
+          <Route path="/nexus" element={<NexusMasterLayout />} />
+          <Route path="/command-center" element={<NexusMasterLayout />} />
+          <Route path="/admin/login" element={<Navigate to="/doctor-admin/login" replace />} />
 
           {/* ✅ STRIPE PAYMENT ROUTES */}
           <Route path="/appointment/success" element={<VerifyPaymentPage />} />
