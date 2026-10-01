@@ -21,7 +21,7 @@ const initialFallbackState = {
     totalOTs: 8,
     availableOTs: 2,
     otUtilizationRate: 75,
-    activeEmergenciesCount: 0,
+    activeEmergenciesCount: 1,
     diagnosticBottlenecks: 1,
     avgResponseTimeSeconds: 42
   },
@@ -109,11 +109,37 @@ const initialFallbackState = {
     { department: "Diagnostics", timeWindow: "2 Hours", currentLoad: 17, predictedLoad: 27, confidence: 88, riskLevel: "HIGH", recommendedActions: ["Activate secondary CT scanner technician", "Prioritize emergency ultrasound"] }
   ],
   alerts: [
+    { alertId: "ALT-100", type: "EMERGENCY", severity: "CRITICAL", recipientRole: "ALL", message: "🚨 CODE RED: Critical Patient P-104 (Acute STEMI) allocated to Bed ICU-05 under Dr. Sarah Johnson. Mobilization verified (42s).", status: "UNREAD" },
     { alertId: "ALT-101", type: "BOTTLENECK", severity: "HIGH", recipientRole: "OPERATIONS", message: "Diagnostics: Digital X-Ray Suite 1 queue length exceeded 7 patients (38 min wait). Automated load-balancing recommended.", status: "UNREAD" },
     { alertId: "ALT-102", type: "BED_SHORTAGE", severity: "CRITICAL", recipientRole: "ADMIN", message: "ICU Capacity Warning: Only 2 ICU beds remaining. Predictive model forecasts +2 admissions within 120 minutes.", status: "UNREAD" },
     { alertId: "ALT-103", type: "STAFF_OVERLOAD", severity: "MEDIUM", recipientRole: "DOCTOR", message: "Staff Workload Warning: Dr. Rajesh Gupta workload score is at 78% (HIGH). Shift rotation in 90 min.", status: "UNREAD" }
   ],
-  activeEmergency: null
+  activeEmergency: {
+    emergencyId: "EMG-882104",
+    patientId: "P-104",
+    patientName: "Arjun Verma (Acute STEMI)",
+    severity: "CRITICAL",
+    allocation: {
+      bed: "ICU-05",
+      doctor: "Dr. Sarah Johnson",
+      nurse: "Nurse Sarah Jenkins (N-07)",
+      equipment: ["V-04", "ECG-02"],
+      score: 94,
+      reasons: [
+        "ICU Bed (ICU-05): Negative-pressure isolation & telemetry pre-calibrated (Score: 98/100)",
+        "Physician (Dr. Sarah Johnson): Exact ACLS specialty match, on-site, lowest critical workload index (Score: 96/100)",
+        "Critical Nurse (Nurse Sarah Jenkins N-07): Senior ICU certification, current shift active (Score: 92/100)",
+        "Equip: Ventilator [V-04] & ECG [ECG-02] pre-positioned on Floor 2 (Score: 95/100)"
+      ],
+      responseTime: 42
+    },
+    auditTrail: [
+      { timestamp: new Date(Date.now() - 300000).toISOString(), action: "Triage Alert Received", details: "Patient P-104 registered with SpO2: 82%, HR: 142 bpm (Critical STEMI).", actor: "Emergency Triage" },
+      { timestamp: new Date(Date.now() - 280000).toISOString(), action: "Severity Classified", details: "Acuity evaluated as CRITICAL - Code Red protocol initiated.", actor: "Nexus AI Engine" },
+      { timestamp: new Date(Date.now() - 250000).toISOString(), action: "Multi-Criteria Allocation", details: "Bed ICU-05 & Dr. Sarah Johnson allocated. Composite Score: 94/100.", actor: "Orchestration Engine" },
+      { timestamp: new Date(Date.now() - 210000).toISOString(), action: "Mobilization Dispatched", details: "Mobile alert dispatched to Dr. Sarah and Nurse N-07. Response time: 42s.", actor: "Dispatch Subsystem" }
+    ]
+  }
 };
 
 // Global reactive store in memory

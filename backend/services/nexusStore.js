@@ -480,12 +480,40 @@ export class NexusStore {
 
     // 9. Initial Alerts
     this.alerts = [
+      { alertId: "ALT-100", type: "EMERGENCY", severity: "CRITICAL", recipientRole: "ALL", message: "🚨 CODE RED: Critical Patient P-104 (Acute STEMI) allocated to Bed ICU-05 under Dr. Sarah Johnson. Mobilization verified (42s).", status: "UNREAD", createdAt: new Date(Date.now() - 300000).toISOString() },
       { alertId: "ALT-101", type: "BOTTLENECK", severity: "HIGH", recipientRole: "OPERATIONS", message: "Diagnostics: Digital X-Ray Suite 1 queue length exceeded 7 patients (38 min wait). Automated load-balancing recommended.", status: "UNREAD", createdAt: new Date().toISOString() },
       { alertId: "ALT-102", type: "BED_SHORTAGE", severity: "CRITICAL", recipientRole: "ADMIN", message: "ICU Capacity Warning: Only 2 ICU beds remaining. Predictive model forecasts +2 admissions within 120 minutes.", status: "UNREAD", createdAt: new Date().toISOString() },
       { alertId: "ALT-103", type: "STAFF_OVERLOAD", severity: "MEDIUM", recipientRole: "DOCTOR", message: "Staff Workload Warning: Dr. Rajesh Gupta workload score is at 78% (HIGH). Shift rotation in 90 min.", status: "UNREAD", createdAt: new Date().toISOString() }
     ];
 
-    this.emergencies = [];
+    this.emergencies = [
+      {
+        emergencyId: "EMG-882104",
+        patientId: "P-104",
+        patientName: "Arjun Verma (Acute STEMI)",
+        severity: "CRITICAL",
+        vitals: { heartRate: 142, spO2: 82, bp: "85/55", temperature: 99.2, respiratoryRate: 28 },
+        requiredResources: ["ICU Bed", "Cardiologist", "Nurse", "Ventilator", "ECG"],
+        status: "ACTIVE",
+        assignedResources: {
+          bedId: "ICU-05",
+          doctorId: "DOC-01",
+          doctorName: "Dr. Sarah Johnson",
+          nurseId: "N-07",
+          nurseName: "Nurse Sarah Jenkins (N-07)",
+          equipmentIds: ["V-04", "ECG-02"]
+        },
+        escalationLevel: 2,
+        responseTime: 42,
+        createdAt: new Date(Date.now() - 300000).toISOString(),
+        auditTrail: [
+          { timestamp: new Date(Date.now() - 300000).toISOString(), action: "Triage Alert Received", details: "Patient P-104 registered with SpO2: 82%, HR: 142 bpm (Critical STEMI).", actor: "Emergency Triage" },
+          { timestamp: new Date(Date.now() - 280000).toISOString(), action: "Severity Classified", details: "Acuity evaluated as CRITICAL - Code Red protocol initiated.", actor: "Nexus AI Engine" },
+          { timestamp: new Date(Date.now() - 250000).toISOString(), action: "Multi-Criteria Allocation", details: "Bed ICU-05, Dr. Sarah Johnson & Life Support V-04 allocated (Match score 94/100).", actor: "Nexus Orchestration Engine" },
+          { timestamp: new Date(Date.now() - 210000).toISOString(), action: "Mobilization Dispatched", details: "Mobile alert dispatched to Cardiac Rapid Response Team.", actor: "Dispatch Subsystem" }
+        ]
+      }
+    ];
     this.assignments = [];
     this.patients = [];
   }
