@@ -75,6 +75,20 @@ export default function Navbar() {
         {/* Right side actions */}
         <div className={navbarStylesDr.rightActions}>
           <NavLink
+            to="/admin"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs font-black hover:bg-slate-800 transition-colors shadow-2xs mr-2"
+          >
+            <span>🛡️ Admin Command Center</span>
+          </NavLink>
+
+          <NavLink
+            to="/appointments"
+            className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-black hover:bg-emerald-100 transition-colors shadow-2xs mr-2"
+          >
+            <span>👤 Patient Portal</span>
+          </NavLink>
+
+          <NavLink
             to="/live-opd"
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 text-xs font-black hover:bg-teal-100 transition-colors shadow-2xs mr-2"
           >

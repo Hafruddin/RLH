@@ -141,20 +141,33 @@ export default function NexusMasterLayout() {
               <span className="text-slate-300 font-semibold">{connectivityStatus}</span>
             </div>
 
-            {/* Link back to Classic View */}
+            {/* Link back to Portals */}
             <div className="flex items-center gap-1.5">
               <Link
-                to="/appointments"
-                className="hidden md:inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition"
+                to="/doctor-admin/login"
+                className="hidden lg:inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-lg bg-slate-800 text-slate-200 hover:text-white hover:bg-slate-700 transition border border-slate-700"
               >
-                <span>Appointments</span>
+                <span>👨‍⚕️ Doctor Login</span>
+              </Link>
+              <Link
+                to="/live-opd"
+                className="hidden md:inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-lg bg-teal-950 text-teal-300 hover:text-white hover:bg-teal-900 transition border border-teal-800/60"
+              >
+                <Radio className="w-3 h-3 text-teal-400 animate-pulse" />
+                <span>Live OPD</span>
+              </Link>
+              <Link
+                to="/appointments"
+                className="hidden sm:inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-lg bg-slate-800 text-slate-200 hover:text-white hover:bg-slate-700 transition border border-slate-700"
+              >
+                <span>👤 Patient</span>
               </Link>
               <Link
                 to="/"
-                className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600/90 text-white hover:bg-emerald-500 transition shadow-sm"
+                className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition shadow-sm"
               >
                 <Home className="w-3.5 h-3.5" />
-                <span>Portal</span>
+                <span>Home</span>
               </Link>
             </div>
           </div>

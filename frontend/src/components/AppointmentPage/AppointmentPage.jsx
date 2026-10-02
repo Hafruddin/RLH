@@ -151,6 +151,86 @@ const StatusBadge = ({ itemStatus }) => {
   );
 };
 
+/* -------------------- Default Demo Data for Hackathon -------------------- */
+const _nowDate = new Date();
+const _todayDateStr = _nowDate.toISOString().split("T")[0];
+
+const DEFAULT_DEMO_APPOINTMENTS = [
+  {
+    _id: "demo_appt_101",
+    id: "demo_appt_101",
+    patientName: "Harsh Tripathi",
+    doctorName: "Dr. Rajesh Kumar",
+    doctor: "Dr. Rajesh Kumar",
+    specialization: "Interventional Cardiology",
+    experience: "16 years",
+    date: _todayDateStr,
+    time: "10:30 AM",
+    fees: 800,
+    status: "Confirmed",
+    confirmed: true,
+    payment: { method: "Online", status: "Paid", amount: 800 },
+    notes: "Follow-up Cardiology Consult • Token #04",
+  },
+  {
+    _id: "demo_appt_102",
+    id: "demo_appt_102",
+    patientName: "Harsh Tripathi",
+    doctorName: "Dr. Suresh Reddy",
+    doctor: "Dr. Suresh Reddy",
+    specialization: "Consultant Neurologist",
+    experience: "15 years",
+    date: _todayDateStr,
+    time: "02:00 PM",
+    fees: 900,
+    status: "Confirmed",
+    confirmed: true,
+    payment: { method: "Online", status: "Paid", amount: 900 },
+    notes: "Chronic Migraine & Stress Review • Token #05",
+  },
+  {
+    _id: "demo_appt_103",
+    id: "demo_appt_103",
+    patientName: "Harsh Tripathi",
+    doctorName: "Dr. Aniket Roy",
+    doctor: "Dr. Aniket Roy",
+    specialization: "Dermatology & Skin Care",
+    experience: "10 years",
+    date: _todayDateStr,
+    time: "04:30 PM",
+    fees: 700,
+    status: "Confirmed",
+    confirmed: true,
+    payment: { method: "Cash", status: "Pending", amount: 700 },
+    notes: "Skin Allergy Check • Token #06",
+  }
+];
+
+const DEFAULT_DEMO_SERVICES = [
+  {
+    _id: "demo_srv_101",
+    id: "demo_srv_101",
+    name: "128-Slice Cardiac CT Angiography",
+    price: 4500,
+    date: _todayDateStr,
+    time: "11:30 AM",
+    payment: "Online",
+    status: "Confirmed",
+    image: "/assets/C1.png"
+  },
+  {
+    _id: "demo_srv_102",
+    id: "demo_srv_102",
+    name: "Automated Hematology Lab (CBC & Troponin-I)",
+    price: 1200,
+    date: _todayDateStr,
+    time: "09:00 AM",
+    payment: "Online",
+    status: "Completed",
+    image: "/assets/C2.png"
+  }
+];
+
 /* -------------------- Component -------------------- */
 export default function AppointmentPage() {
   const { isLoaded, isSignedIn, getToken } = useAuth();
@@ -159,12 +239,12 @@ export default function AppointmentPage() {
   const [loadingDoctors, setLoadingDoctors] = useState(false);
   const [loadingServices, setLoadingServices] = useState(false);
 
-  const [doctorAppts, setDoctorAppts] = useState([]);
-  const [serviceAppts, setServiceAppts] = useState([]);
+  const [doctorAppts, setDoctorAppts] = useState(() => DEFAULT_DEMO_APPOINTMENTS);
+  const [serviceAppts, setServiceAppts] = useState(() => DEFAULT_DEMO_SERVICES);
 
   const [appointmentsRaw, setAppointmentsRaw] = useState({
-    doctors: [],
-    services: [],
+    doctors: DEFAULT_DEMO_APPOINTMENTS,
+    services: DEFAULT_DEMO_SERVICES,
   });
   const [error, setError] = useState(null);
 
@@ -204,57 +284,19 @@ export default function AppointmentPage() {
         );
       });
 
-      setDoctorAppts(doctors);
-      setAppointmentsRaw((p) => ({ ...p, doctors: doctors }));
+      if (doctors.length > 0) {
+        setDoctorAppts(doctors);
+        setAppointmentsRaw((p) => ({ ...p, doctors: doctors }));
+      } else {
+        setDoctorAppts(DEFAULT_DEMO_APPOINTMENTS);
+        setAppointmentsRaw((p) => ({ ...p, doctors: DEFAULT_DEMO_APPOINTMENTS }));
+      }
     } catch (err) {
       console.error(
         "Error calling /api/appointments/me:",
         err?.response?.data || err.message || err,
       );
-
-      if (user?.id) {
-        try {
-          console.log("Attempting debug request with ?createdBy=", user.id);
-          const debugResp = await API.get(
-            `/api/appointments/me?createdBy=${user.id}`,
-            { headers },
-          );
-          console.log("Debug fallback response:", debugResp?.data);
-
-          const fetched =
-            debugResp?.data?.appointments ??
-            debugResp?.data?.data ??
-            debugResp?.data ??
-            [];
-          const arr = Array.isArray(fetched) ? fetched : [];
-          const doctors = arr.filter(
-            (a) =>
-              (a.doctorId !== undefined && a.doctorId !== null) ||
-              !!a.doctorName ||
-              !a.serviceId,
-          );
-          setDoctorAppts(doctors);
-          setAppointmentsRaw((p) => ({ ...p, doctors }));
-        } catch (err2) {
-          console.error(
-            "Debug fallback failed (doctors):",
-            err2?.response?.data || err2.message || err2,
-          );
-          setError((prev) =>
-            prev
-              ? prev + " | Doctors failed"
-              : "Failed to load doctor appointments. Check console.",
-          );
-          setDoctorAppts([]);
-        }
-      } else {
-        setError((prev) =>
-          prev
-            ? prev + " | No user id for doctors"
-            : "Failed to load doctor appointments and no user id available for debug fallback.",
-        );
-        setDoctorAppts([]);
-      }
+      setDoctorAppts(DEFAULT_DEMO_APPOINTMENTS);
     } finally {
       setLoadingDoctors(false);
     }
@@ -273,62 +315,24 @@ export default function AppointmentPage() {
       console.error("Failed to get Clerk token (frontend): err", err);
     }
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    console.log("Outgoing headers for /api/service-appointments/me:", headers);
 
     try {
       const resp = await API.get("/api/service-appointments/me", { headers });
-      console.log("Response from /api/service-appointments/me:", resp?.data);
-
       const fetched =
         resp?.data?.appointments ?? resp?.data?.data ?? resp?.data ?? [];
       const arr = Array.isArray(fetched) ? fetched : [];
-      console.log(arr);
 
-      setServiceAppts(arr);
-      setAppointmentsRaw((p) => ({ ...p, services: arr }));
-    } catch (err) {
-      console.error(
-        "Error calling /api/service-appointments/me:",
-        err?.response?.data || err.message || err,
-      );
-
-      if (user?.id) {
-        try {
-          console.log("Attempting debug request with ?createdBy=", user.id);
-          const debugResp = await API.get(
-            `/api/service-appointments/me?createdBy=${user.id}`,
-            { headers },
-          );
-          console.log("Debug fallback response (services):", debugResp?.data);
-
-          const fetched =
-            debugResp?.data?.appointments ??
-            debugResp?.data?.data ??
-            debugResp?.data ??
-            [];
-          const arr = Array.isArray(fetched) ? fetched : [];
-          setServiceAppts(arr);
-          setAppointmentsRaw((p) => ({ ...p, services: arr }));
-        } catch (err2) {
-          console.error(
-            "Debug fallback failed (services):",
-            err2?.response?.data || err2.message || err2,
-          );
-          setError((prev) =>
-            prev
-              ? prev + " | Services failed"
-              : "Failed to load service appointments. Check console.",
-          );
-          setServiceAppts([]);
-        }
+      if (arr.length > 0) {
+        setServiceAppts(arr);
+        setAppointmentsRaw((p) => ({ ...p, services: arr }));
       } else {
-        setError((prev) =>
-          prev
-            ? prev + " | No user id for services"
-            : "Failed to load service appointments and no user id available for debug fallback.",
-        );
-        setServiceAppts([]);
+        setServiceAppts(DEFAULT_DEMO_SERVICES);
+        setAppointmentsRaw((p) => ({ ...p, services: DEFAULT_DEMO_SERVICES }));
       }
+    } catch (err) {
+      console.warn("Service appointments load notice, falling back to demo services:", err.message);
+      setServiceAppts(DEFAULT_DEMO_SERVICES);
+      setAppointmentsRaw((p) => ({ ...p, services: DEFAULT_DEMO_SERVICES }));
     } finally {
       setLoadingServices(false);
     }
@@ -479,6 +483,40 @@ export default function AppointmentPage() {
     <div className={appointmentPageStyles.pageContainer}>
       <Toaster position="top-right" />
       <div className={appointmentPageStyles.maxWidthContainer}>
+        {/* Hackathon Demo Multi-Portal Switcher */}
+        <div className="mb-6 bg-gradient-to-r from-emerald-50 via-teal-50 to-green-50 border border-emerald-200 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <span className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-base shadow-xs shrink-0">
+              👤
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-sm text-gray-900">Patient Care Portal (Active Demo Session)</span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800">
+                  Harsh Tripathi · ABHA #91-8273
+                </span>
+              </div>
+              <p className="text-xs text-gray-600 mt-0.5">
+                Viewing active doctor appointments, live OPD queue token tracking, and diagnostic orders.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              to="/doctor-admin/login"
+              className="px-3.5 py-1.5 rounded-xl bg-white border border-gray-300 hover:border-emerald-500 text-gray-800 text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5"
+            >
+              <span>👨‍⚕️ Doctor Login</span>
+            </Link>
+            <Link
+              to="/admin"
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
+            >
+              <span>🛡️ Admin Command Center</span>
+            </Link>
+          </div>
+        </div>
+
         {/* Real-time Live OPD Banner */}
         <div className="mb-6 bg-gradient-to-r from-blue-950 via-slate-900 to-teal-950 text-white rounded-2xl p-4 sm:p-5 shadow-sm border border-teal-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">

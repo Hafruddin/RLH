@@ -78,6 +78,7 @@ export default function Navbar() {
     { label: "Doctors", href: "/doctors" },
     { label: "Services", href: "/services" },
     { label: "Appointments", href: "/appointments" },
+    { label: "Live OPD", href: "/live-opd" },
     { label: "Contact", href: "/contact" },
   ];
 
