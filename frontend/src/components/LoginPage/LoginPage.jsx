@@ -29,13 +29,24 @@ export default function LoginPage({ apiBase }) {
 
     setBusy(true);
     try {
-      const res = await fetch(`${API_BASE}/api/doctors/login`, {
+      // First try unified RBAC login endpoint
+      let res = await fetch(`${API_BASE}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      const json = await res.json().catch(() => null);
+      let json = await res.json().catch(() => null);
+
+      // Fallback to doctor login if unified auth fails
+      if (!res.ok) {
+        res = await fetch(`${API_BASE}/api/doctors/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        json = await res.json().catch(() => null);
+      }
 
       if (!res.ok) {
         toast.error(json?.message || "Login failed", { duration: 4000 });
@@ -43,39 +54,30 @@ export default function LoginPage({ apiBase }) {
         return;
       }
 
-      /* ================= IMPORTANT PART ================= */
-
-      // token
+      /* ================= ROLE-BASED SESSION RESOLUTION ================= */
       const token = json?.token || json?.data?.token;
-      if (!token) {
-        toast.error("Authentication token missing");
-        setBusy(false);
-        return;
-      }
-
-      // doctor id (supports all common API shapes)
-      const doctorId =
-        json?.data?._id || json?.doctor?._id || json?.data?.doctor?._id;
-
-      if (!doctorId) {
-        toast.error("Doctor ID missing from server response");
-        setBusy(false);
-        return;
-      }
-
-      // store token
-      localStorage.setItem(STORAGE_KEY, token);
-      window.dispatchEvent(
-        new StorageEvent("storage", { key: STORAGE_KEY, newValue: token }),
+      const role = (json?.user?.role || json?.role || "DOCTOR").toUpperCase();
+      const redirectUrl = json?.redirectUrl || (
+        role === "PATIENT" ? "/patient/dashboard" :
+        role === "DOCTOR" ? "/doctor/dashboard" :
+        role === "STAFF" ? "/staff/dashboard" :
+        "/admin/dashboard"
       );
 
-      toast.success("Login successful — redirecting...", {
+      if (token) {
+        localStorage.setItem("nexus_token", token);
+        localStorage.setItem("nexus_role", role);
+        localStorage.setItem(STORAGE_KEY, token);
+        window.dispatchEvent(new StorageEvent("storage", { key: STORAGE_KEY, newValue: token }));
+      }
+
+      toast.success(`Signed in as ${role} — redirecting...`, {
         style: toastStyles.successToast,
       });
 
-      // ✅ Navigate to dynamic route
+      // ✅ Navigate to strict role-based dashboard route
       setTimeout(() => {
-        navigate(`/doctor-admin/${doctorId}`);
+        navigate(redirectUrl);
       }, 700);
     } catch (err) {
       console.error("login error", err);
@@ -141,7 +143,7 @@ export default function LoginPage({ apiBase }) {
         <div className="mt-6 pt-5 border-t border-gray-100">
           <div className="flex items-center justify-between mb-3">
             <span className="text-[11px] font-black text-gray-500 uppercase tracking-wider">
-              ⚡ Demo Doctor Portals (Live Queue)
+              ⚡ Multi-Role Hackathon Demo Portals
             </span>
             <Link
               to="/live-opd"
@@ -150,6 +152,69 @@ export default function LoginPage({ apiBase }) {
               <Radio className="w-3.5 h-3.5 text-teal-600 animate-pulse" />
               View Live Queue
             </Link>
+          </div>
+
+          {/* 4 Portals Direct Access */}
+          <div className="grid grid-cols-2 gap-2 text-xs mb-4">
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.setItem("nexus_role", "PATIENT");
+                navigate("/patient/dashboard");
+              }}
+              className="p-2.5 rounded-xl border border-emerald-300 bg-emerald-50/70 hover:bg-emerald-100 text-left transition-all cursor-pointer shadow-2xs"
+            >
+              <div className="font-extrabold text-emerald-950 flex items-center gap-1.5">
+                <span>👤 Patient Portal</span>
+              </div>
+              <div className="text-[10px] text-emerald-700">Harsh Tripathi · P-101</div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.setItem("nexus_role", "DOCTOR");
+                navigate("/doctor/dashboard");
+              }}
+              className="p-2.5 rounded-xl border border-blue-300 bg-blue-50/70 hover:bg-blue-100 text-left transition-all cursor-pointer shadow-2xs"
+            >
+              <div className="font-extrabold text-blue-950 flex items-center gap-1.5">
+                <span>👨‍⚕️ Doctor Workbench</span>
+              </div>
+              <div className="text-[10px] text-blue-700">Dr. Sarah Johnson · DOC-01</div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.setItem("nexus_role", "ADMIN");
+                navigate("/admin/dashboard");
+              }}
+              className="p-2.5 rounded-xl border border-indigo-300 bg-indigo-50/70 hover:bg-indigo-100 text-left transition-all cursor-pointer shadow-2xs"
+            >
+              <div className="font-extrabold text-indigo-950 flex items-center gap-1.5">
+                <span>🛡️ Hospital Admin</span>
+              </div>
+              <div className="text-[10px] text-indigo-700">Command Center · ADM-01</div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.setItem("nexus_role", "STAFF");
+                navigate("/staff/dashboard");
+              }}
+              className="p-2.5 rounded-xl border border-teal-300 bg-teal-50/70 hover:bg-teal-100 text-left transition-all cursor-pointer shadow-2xs"
+            >
+              <div className="font-extrabold text-teal-950 flex items-center gap-1.5">
+                <span>🩺 Staff & Services</span>
+              </div>
+              <div className="text-[10px] text-teal-700">Nurse Sarah Jenkins · N-07</div>
+            </button>
+          </div>
+
+          <div className="text-[11px] font-black text-gray-500 uppercase tracking-wider mb-2">
+            👨‍⚕️ Individual Doctor OPD Cabins (Live State)
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">

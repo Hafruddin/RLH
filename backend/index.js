@@ -18,7 +18,7 @@ const clerkMiddleware = () => (req, res, next) => {
   next();
 };
 
-// Routers
+import authRouter from "./routes/authRouter.js";
 import appointmentRouter from "./routes/appointmentRouter.js";
 import doctorRouter from "./routes/doctorRouter.js";
 import serviceRouter from "./routes/serviceRoutes.js";
@@ -107,6 +107,7 @@ app.get("/api/health", (req, res) => {
 // ─────────────────────────────────────────────
 // API Routes
 // ─────────────────────────────────────────────
+app.use("/api/auth", authRouter);
 app.use("/api/appointments", appointmentRouter);
 app.use("/api/doctors", doctorRouter);
 app.use("/api/services", serviceRouter);

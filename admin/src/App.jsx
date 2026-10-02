@@ -71,13 +71,21 @@ const App = () => {
   return (
     <>
       <Routes>
-      <Route path="/" element={<NexusMasterLayout />} />
+      <Route path="/" element={<NexusMasterLayout initialRole="ADMIN" />} />
+      <Route path="/admin" element={<NexusMasterLayout initialRole="ADMIN" />} />
+      <Route path="/admin/dashboard" element={<NexusMasterLayout initialRole="ADMIN" />} />
+      <Route path="/patient" element={<NexusMasterLayout initialRole="PATIENT" />} />
+      <Route path="/patient/dashboard" element={<NexusMasterLayout initialRole="PATIENT" />} />
+      <Route path="/doctor" element={<NexusMasterLayout initialRole="DOCTOR" />} />
+      <Route path="/doctor/dashboard" element={<NexusMasterLayout initialRole="DOCTOR" />} />
+      <Route path="/staff" element={<NexusMasterLayout initialRole="STAFF" />} />
+      <Route path="/staff/dashboard" element={<NexusMasterLayout initialRole="STAFF" />} />
       <Route path="/live-opd" element={<HospitalLiveOpdMonitor />} />
       <Route path="/hero" element={<Hero />} />
-      <Route path="/nexus" element={<NexusMasterLayout />} />
+      <Route path="/nexus" element={<NexusMasterLayout initialRole="ADMIN" />} />
       <Route
         path="/h"
-        element={<NexusMasterLayout />}
+        element={<NexusMasterLayout initialRole="ADMIN" />}
       />
       <Route
         path="/add"

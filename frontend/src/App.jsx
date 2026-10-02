@@ -93,9 +93,19 @@ const App = () => {
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/live-opd" element={<HospitalLiveOpdMonitor />} />
           <Route path="/doctor-admin/login" element={<Login />} />
-          <Route path="/admin" element={<NexusMasterLayout />} />
-          <Route path="/nexus" element={<NexusMasterLayout />} />
-          <Route path="/command-center" element={<NexusMasterLayout />} />
+          <Route path="/login" element={<Login />} />
+
+          {/* Strict Role-Based Portal Routes (Section 1, 2, 3) */}
+          <Route path="/patient" element={<NexusMasterLayout initialRole="PATIENT" />} />
+          <Route path="/patient/dashboard" element={<NexusMasterLayout initialRole="PATIENT" />} />
+          <Route path="/doctor" element={<NexusMasterLayout initialRole="DOCTOR" />} />
+          <Route path="/doctor/dashboard" element={<NexusMasterLayout initialRole="DOCTOR" />} />
+          <Route path="/admin" element={<NexusMasterLayout initialRole="ADMIN" />} />
+          <Route path="/admin/dashboard" element={<NexusMasterLayout initialRole="ADMIN" />} />
+          <Route path="/staff" element={<NexusMasterLayout initialRole="STAFF" />} />
+          <Route path="/staff/dashboard" element={<NexusMasterLayout initialRole="STAFF" />} />
+          <Route path="/nexus" element={<NexusMasterLayout initialRole="ADMIN" />} />
+          <Route path="/command-center" element={<NexusMasterLayout initialRole="ADMIN" />} />
           <Route path="/admin/login" element={<Navigate to="/doctor-admin/login" replace />} />
 
           {/* ✅ STRIPE PAYMENT ROUTES */}

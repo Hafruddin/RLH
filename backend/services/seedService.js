@@ -16,6 +16,8 @@ import Alert from "../models/Alert.js";
 import RTLSLocation from "../models/RTLSLocation.js";
 import Doctor from "../models/Doctor.js";
 import Appointment from "../models/Appointment.js";
+import User from "../models/User.js";
+import { DEMO_USERS } from "../controllers/authController.js";
 import { mockAppointments } from "../utils/mockDb.js";
 
 export async function seedNexusData() {
@@ -558,6 +560,10 @@ export async function seedNexusData() {
       createdAt: a.createdAt || new Date(),
     }));
     await Appointment.insertMany(appointmentsToInsert);
+
+    // 12. Seed RBAC Users for all 4 roles
+    await User.deleteMany({});
+    await User.insertMany(DEMO_USERS);
   } catch (err) {
     console.warn("⚠️ [seedService] Doctor/Appointment seed note:", err.message);
   }
