@@ -139,6 +139,266 @@ const initialFallbackState = {
       { timestamp: new Date(Date.now() - 250000).toISOString(), action: "Multi-Criteria Allocation", details: "Bed ICU-05 & Dr. Sarah Johnson allocated. Composite Score: 94/100.", actor: "Orchestration Engine" },
       { timestamp: new Date(Date.now() - 210000).toISOString(), action: "Mobilization Dispatched", details: "Mobile alert dispatched to Dr. Sarah and Nurse N-07. Response time: 42s.", actor: "Dispatch Subsystem" }
     ]
+  },
+  recommendations: [
+    {
+      recommendationId: "REC-NEXUS-001",
+      title: "Reallocate Nurse Sarah Jenkins (N-07) to Emergency Resuscitation",
+      action: "STAFF_REALLOCATION",
+      resourceId: "N-07",
+      resourceName: "Nurse Sarah Jenkins (N-07)",
+      resourceType: "STAFF",
+      fromDepartment: "General Ward",
+      toDepartment: "Emergency Department",
+      targetPatientId: "P-104",
+      reason: "Emergency staffing deficit = 1 nurse due to critical acute STEMI Code Red patient triage.",
+      constraintChecks: [
+        { rule: "ACLS & Trauma Qualification", passed: true, detail: "Certified Senior Emergency & Critical Care RN" },
+        { rule: "Active Shift Check", passed: true, detail: "On-duty morning shift (08:00 - 20:00)" },
+        { rule: "No Active Critical Task Conflict", passed: true, detail: "Currently performing routine monitoring (not locked in surgery)" },
+        { rule: "General Ward Minimum-Capacity Preserved", passed: true, detail: "General Ward: 6 current - 4 required - 1 buffer = 1 releasable nurse" },
+        { rule: "Secondary Bottleneck Prevention", passed: true, detail: "Simulated General Ward capacity post-reallocation satisfies safe threshold" },
+      ],
+      operationalImpact: {
+        recipientGain: "Immediate emergency nursing coverage restored; vital triage response time reduced.",
+        donorImpact: "General Ward nursing ratio remains above regulatory safety mandate (5 nurses on duty).",
+        bufferPreserved: true,
+        secondaryRisks: ["Monitor General Ward if 2+ new elective admissions arrive within 90 minutes."],
+      },
+      confidenceScore: 96,
+      riskLevel: "LOW",
+      approvalRequired: true,
+      status: "PENDING",
+      createdAt: new Date().toISOString(),
+      alternatives: [
+        { resourceId: "N-08", resourceName: "Nurse Anita Roy", score: 86, tradeoff: "Emergency RN already holding medium triage load" },
+      ],
+    },
+    {
+      recommendationId: "REC-NEXUS-002",
+      title: "Dynamic Radiology Queue Re-balancing: X-Ray Suite 1 -> Suite 2",
+      action: "DIAGNOSTIC_REROUTE",
+      resourceId: "DIAG-XR-01",
+      resourceName: "Digital X-Ray Suite 1",
+      resourceType: "DIAGNOSTIC",
+      fromDepartment: "Diagnostics Suite 1",
+      toDepartment: "Diagnostics Suite 2 (Fast-Track)",
+      reason: "Suite 1 queue length exceeded 7 patients (38 min wait). Suite 2 has zero wait time.",
+      constraintChecks: [
+        { rule: "Protocol Compatibility", passed: true, detail: "Suite 2 calibrated for same digital radiography protocols" },
+        { rule: "Technician Roster Available", passed: true, detail: "Radiology Tech on active duty in Suite 2" },
+        { rule: "Patient Priority Filter", passed: true, detail: "Only ambulant outpatient cases rerouted; urgent trauma cases stay localized" }
+      ],
+      operationalImpact: {
+        recipientGain: "Suite 1 wait time reduced from 38 mins to 14 mins (63% reduction).",
+        donorImpact: "Suite 2 capacity utilization elevated to nominal 55%.",
+        bufferPreserved: true,
+        secondaryRisks: []
+      },
+      confidenceScore: 98,
+      riskLevel: "LOW",
+      approvalRequired: true,
+      status: "PENDING",
+      createdAt: new Date(Date.now() - 600000).toISOString()
+    },
+    {
+      recommendationId: "REC-NEXUS-003",
+      title: "Life-Support Failover: Substitute CT-01 with 64-Slice CT-02",
+      action: "EQUIPMENT_FAILOVER",
+      resourceId: "DIAG-CT-01",
+      resourceName: "Trauma CT-01 (Siemens 128)",
+      resourceType: "EQUIPMENT",
+      fromDepartment: "Radiology Room 110",
+      toDepartment: "Radiology Room 112 (CT-02)",
+      reason: "Cooling subsystem error on CT-01. Automatic reroute of 3 scheduled trauma scans.",
+      constraintChecks: [
+        { rule: "Diagnostic Accuracy Parity", passed: true, detail: "CT-02 resolution verified for contrast and trauma imaging" },
+        { rule: "Radiologist On-Call", passed: true, detail: "Dr. Clinician 14 signed into CT-02 terminal" }
+      ],
+      operationalImpact: {
+        recipientGain: "Zero scan cancellations; trauma workflow unbroken.",
+        donorImpact: "CT-02 queue extended by 18 minutes.",
+        bufferPreserved: true,
+        secondaryRisks: []
+      },
+      confidenceScore: 92,
+      riskLevel: "MEDIUM",
+      approvalRequired: true,
+      status: "APPROVED",
+      createdAt: new Date(Date.now() - 1800000).toISOString()
+    }
+  ],
+  conflicts: [
+    {
+      conflictId: "CONF-ICU-12",
+      resourceType: "BED",
+      resourceId: "ICU-05",
+      department: "ICU",
+      sourceA: {
+        system: "Telemetry Bed Sensor Subsystem",
+        reportedStatus: "AVAILABLE",
+        timestamp: new Date(Date.now() - 120000).toISOString(),
+        details: "Pressure sensors report zero physical load (Weight: 0.0 kg).",
+      },
+      sourceB: {
+        system: "Hospital Admission Registration (ADT)",
+        reportedStatus: "OCCUPIED",
+        timestamp: new Date(Date.now() - 300000).toISOString(),
+        details: "Patient P-104 reserved / checked-in via emergency triage registration.",
+      },
+      status: "OPEN",
+      discrepancyDescription: "ICU-05 has conflicting occupancy: Physical Sensor reports AVAILABLE, but ADT reports OCCUPIED.",
+      resolvedBy: null,
+      resolvedAt: null,
+      resolutionAction: null,
+      finalStatus: null,
+    },
+    {
+      conflictId: "CONF-OT-03",
+      resourceType: "OPERATING_THEATRE",
+      resourceId: "OT-03",
+      department: "Surgery",
+      sourceA: {
+        system: "OT Environmental Airflow Telemetry",
+        reportedStatus: "IN_USE",
+        timestamp: new Date(Date.now() - 90000).toISOString(),
+        details: "Surgical laminar airflow active, gas manifold active.",
+      },
+      sourceB: {
+        system: "Surgical Roster Master Schedule",
+        reportedStatus: "SCHEDULED",
+        timestamp: new Date(Date.now() - 1800000).toISOString(),
+        details: "Procedure CABG scheduled to start at 12:00 PM (30 min early prep).",
+      },
+      status: "OPEN",
+      discrepancyDescription: "OT-03 surgical equipment and gas systems engaged prior to formal nursing admission sign-off.",
+      resolvedBy: null,
+      resolvedAt: null,
+      resolutionAction: null,
+      finalStatus: null,
+    }
+  ],
+  transfers: [
+    {
+      transferId: "TRF-P101-01",
+      patientId: "P-101",
+      patientName: "Vikram Malhotra",
+      sourceDepartment: "General",
+      sourceWard: "WARD-GEN-A",
+      sourceBedId: "GEN-A-02",
+      targetDepartment: "Emergency",
+      targetWard: "WARD-EMG",
+      targetBedId: "ER-02",
+      status: "ARRIVED",
+      priority: "CRITICAL",
+      clinicalReason: "Sudden respiratory distress requiring emergency intubation & telemetry monitoring",
+      requestedBy: "Sister Maria (Ward In-Charge Gen-A)",
+      requestedAt: new Date(Date.now() - 3600000).toISOString(),
+      approvedBy: "Dr. Sarah Johnson (ED In-Charge)",
+      approvedAt: new Date(Date.now() - 3300000).toISOString(),
+      inTransitAt: new Date(Date.now() - 2400000).toISOString(),
+      arrivedAt: new Date(Date.now() - 600000).toISOString(),
+      arrivalConfirmedBy: "Nurse Anita Roy (Emergency RN)",
+      assignedAt: new Date(Date.now() - 500000).toISOString(),
+      currentStageDisplay: "Arrived at Emergency Care Bay ER-02",
+      auditLog: [
+        { stage: "TRANSFER_REQUESTED", timestamp: new Date(Date.now() - 3600000).toISOString(), actor: "Ward In-Charge", note: "Initiated clinical transfer request due to SpO2 drop to 84%." },
+        { stage: "TRANSFER_APPROVED", timestamp: new Date(Date.now() - 3300000).toISOString(), actor: "Dr. Sarah Johnson", note: "Emergency transfer authorized; Bed ER-02 pre-reserved." },
+        { stage: "IN_TRANSIT", timestamp: new Date(Date.now() - 2400000).toISOString(), actor: "Orderly Transport Team", note: "Patient in mobile transit with portable oxygen cylinder." },
+        { stage: "ARRIVED", timestamp: new Date(Date.now() - 600000).toISOString(), actor: "Nurse Anita Roy", note: "Physical arrival verified at ED Bay ER-02. Vital monitoring established." },
+        { stage: "ASSIGNED", timestamp: new Date(Date.now() - 500000).toISOString(), actor: "Nexus Orchestrator", note: "Source bed GEN-A-02 released to CLEANING workflow. Staff requirements recalculated." }
+      ]
+    },
+    {
+      transferId: "TRF-P104-02",
+      patientId: "P-104",
+      patientName: "Arjun Verma (Acute STEMI)",
+      sourceDepartment: "Emergency",
+      sourceWard: "WARD-EMG",
+      sourceBedId: "ER-01",
+      targetDepartment: "ICU",
+      targetWard: "WARD-ICU",
+      targetBedId: "ICU-05",
+      status: "IN_TRANSIT",
+      priority: "CRITICAL",
+      clinicalReason: "Post-thrombolytic critical monitoring under mechanical ventilation",
+      requestedBy: "Dr. Sarah Johnson (Cardiologist)",
+      requestedAt: new Date(Date.now() - 1200000).toISOString(),
+      approvedBy: "Dr. Priya Sharma (ICU Lead)",
+      approvedAt: new Date(Date.now() - 900000).toISOString(),
+      inTransitAt: new Date(Date.now() - 300000).toISOString(),
+      arrivedAt: null,
+      currentStageDisplay: "In Transit with ACLS Critical Care Escort to ICU Pod 3",
+      auditLog: [
+        { stage: "TRANSFER_REQUESTED", timestamp: new Date(Date.now() - 1200000).toISOString(), actor: "Dr. Sarah Johnson", note: "Direct ICU isolation transfer ordered." },
+        { stage: "TRANSFER_APPROVED", timestamp: new Date(Date.now() - 900000).toISOString(), actor: "Dr. Priya Sharma", note: "Bed ICU-05 pre-allocated." },
+        { stage: "IN_TRANSIT", timestamp: new Date(Date.now() - 300000).toISOString(), actor: "ACLS Paramedic Team", note: "Transferring via elevator B with continuous telemetry monitor." }
+      ]
+    }
+  ],
+  dependencies: {
+    nodes: [
+      { id: "OT-02", name: "Emergency Hybrid OT (OT-02)", type: "OPERATING_THEATRE", status: "SCHEDULED" },
+      { id: "BED-PACU-01", name: "Surgical Recovery PACU Bed 1", type: "BED", status: "RESERVED" },
+      { id: "N-07", name: "Nurse Sarah Jenkins (N-07)", type: "STAFF", status: "ON_DUTY" },
+      { id: "DIAG-CT-01", name: "Siemens 128-Slice CT-01", type: "EQUIPMENT", status: "ONLINE" },
+      { id: "DIAG-CT-02", name: "GE 64-Slice CT-02", type: "EQUIPMENT", status: "STANDBY" },
+      { id: "ICU-05", name: "Isolation Resuscitation Bed ICU-05", type: "BED", status: "RESERVED" },
+      { id: "V-04", name: "Hamilton G5 Ventilator (V-04)", type: "EQUIPMENT", status: "DEPLOYED" },
+      { id: "WARD-GEN-A", name: "General Ward A Nursing Pool", type: "DEPARTMENT", status: "NORMAL" }
+    ],
+    links: [
+      { source: "OT-02", target: "BED-PACU-01", relation: "Locks Post-Op Recovery" },
+      { source: "OT-02", target: "N-07", relation: "Requires Surgical Nurse" },
+      { source: "DIAG-CT-01", target: "DIAG-CT-02", relation: "Failover Candidate" },
+      { source: "ICU-05", target: "V-04", relation: "Requires Life Support" },
+      { source: "N-07", target: "WARD-GEN-A", relation: "Donor Staff Pool" }
+    ]
+  },
+  cascadeImpacts: {
+    "OT-02": {
+      totalAffectedResources: 4,
+      primaryImpacts: [
+        { resource: "BED-PACU-01", impact: "Surgical Recovery Bed locked for 90 minutes post-surgery." },
+        { resource: "DOC-04", impact: "Dr. Vikram Hegde scheduled roster shifted by 25 minutes." }
+      ],
+      secondaryImpacts: [
+        { resource: "PACU Nursing Pool", impact: "Post-Anesthesia nurse workload increases to 85%." },
+        { resource: "General Ward Admissions", impact: "Elective admissions held until recovery beds clear." }
+      ],
+      mitigationAlternatives: [
+        "Pre-stage recovery overflow in Surgical Ward Pod B",
+        "Alert PACU standby nurse on Floor 4",
+        "Reschedule non-urgent day-surgery checkups"
+      ]
+    },
+    "DIAG-CT-01": {
+      totalAffectedResources: 5,
+      primaryImpacts: [
+        { resource: "DIAG-CT-02", impact: "Automated failover candidate absorbs active trauma scan queue." },
+        { resource: "TECH-01", impact: "Technician reassigned to CT-02 console." }
+      ],
+      secondaryImpacts: [
+        { resource: "Emergency Triage", impact: "Stroke protocol imaging delay minimized from 45m to 4m." }
+      ],
+      mitigationAlternatives: [
+        "Activate fast-track protocol on CT-02",
+        "Direct contrast studies to Basement Suite B"
+      ]
+    },
+    "ICU-05": {
+      totalAffectedResources: 3,
+      primaryImpacts: [
+        { resource: "V-04", impact: "Ventilator pre-calibrated and telemetry synced." },
+        { resource: "N-07", impact: "ICU Nurse Sarah Jenkins assigned 1:1 acuity watch." }
+      ],
+      secondaryImpacts: [
+        { resource: "ICU Capacity", impact: "Only 1 emergency isolation bed remains unallocated." }
+      ],
+      mitigationAlternatives: [
+        "Expedite step-down transfer for P-ICU-02 to Surgical Recovery"
+      ]
+    }
   }
 };
 
@@ -563,7 +823,7 @@ export const nexusApi = {
   // 16. Conflicts & Human Resolution (Section 47)
   async getConflicts() {
     const data = await safeFetch("/api/nexus/conflicts");
-    if (data && data.success) return data.conflicts;
+    if (data && data.success && Array.isArray(data.conflicts) && data.conflicts.length > 0) return data.conflicts;
     return liveState.conflicts || [];
   },
 
@@ -572,13 +832,20 @@ export const nexusApi = {
       method: "POST",
       body: JSON.stringify({ resolutionChoice, reason, resolvedBy: "Supervisor" })
     });
+    const conf = (liveState.conflicts || []).find(c => c.conflictId === conflictId);
+    if (conf) {
+      conf.status = "RESOLVED";
+      conf.resolutionAction = resolutionChoice;
+      conf.resolvedBy = "Operations Supervisor";
+      conf.resolvedAt = new Date().toISOString();
+    }
     return data || { success: true, conflictId, resolutionChoice };
   },
 
   // 17. Human-in-the-Loop Recommendations (Section 29, 58)
   async getRecommendations() {
     const data = await safeFetch("/api/nexus/recommendations");
-    if (data && data.success) return data.recommendations;
+    if (data && data.success && Array.isArray(data.recommendations) && data.recommendations.length > 0) return data.recommendations;
     return liveState.recommendations || [];
   },
 
@@ -587,6 +854,12 @@ export const nexusApi = {
       method: "POST",
       body: JSON.stringify({ approvedBy })
     });
+    const rec = (liveState.recommendations || []).find(r => r.recommendationId === recommendationId);
+    if (rec) {
+      rec.status = "APPROVED";
+      rec.approvedBy = approvedBy;
+      rec.approvedAt = new Date().toISOString();
+    }
     return data || { success: true, recommendationId, status: "APPROVED" };
   },
 
@@ -595,13 +868,20 @@ export const nexusApi = {
       method: "POST",
       body: JSON.stringify({ rejectedBy, reason })
     });
+    const rec = (liveState.recommendations || []).find(r => r.recommendationId === recommendationId);
+    if (rec) {
+      rec.status = "REJECTED";
+      rec.rejectedBy = rejectedBy;
+      rec.rejectionReason = reason;
+      rec.rejectedAt = new Date().toISOString();
+    }
     return data || { success: true, recommendationId, status: "REJECTED" };
   },
 
   // 18. Patient Movement & Transfers (Section 13, 53)
   async getTransfers() {
     const data = await safeFetch("/api/nexus/transfers");
-    if (data && data.success) return data.transfers;
+    if (data && data.success && Array.isArray(data.transfers) && data.transfers.length > 0) return data.transfers;
     return liveState.transfers || [];
   },
 
@@ -610,7 +890,16 @@ export const nexusApi = {
       method: "POST",
       body: JSON.stringify(params)
     });
-    return data;
+    if (data && data.success) return data;
+    const newTransfer = {
+      transferId: `TRF-${Date.now().toString().slice(-6)}`,
+      ...params,
+      status: "REQUESTED",
+      requestedAt: new Date().toISOString(),
+      currentStageDisplay: `Transfer requested to ${params.targetWard || params.targetDepartment}`
+    };
+    liveState.transfers = [newTransfer, ...(liveState.transfers || [])];
+    return { success: true, transfer: newTransfer };
   },
 
   async approveTransfer(transferId, approvedBy = "ED In-Charge") {
@@ -618,7 +907,14 @@ export const nexusApi = {
       method: "POST",
       body: JSON.stringify({ approvedBy })
     });
-    return data;
+    const trf = (liveState.transfers || []).find(t => t.transferId === transferId);
+    if (trf) {
+      trf.status = "APPROVED";
+      trf.approvedBy = approvedBy;
+      trf.approvedAt = new Date().toISOString();
+      trf.currentStageDisplay = "Transfer approved; Transport team dispatched";
+    }
+    return data || { success: true, transferId, status: "APPROVED" };
   },
 
   async confirmTransferArrival(transferId, confirmedBy = "Receiving Nurse") {
@@ -626,14 +922,41 @@ export const nexusApi = {
       method: "POST",
       body: JSON.stringify({ confirmedBy })
     });
-    return data;
+    const trf = (liveState.transfers || []).find(t => t.transferId === transferId);
+    if (trf) {
+      trf.status = "ARRIVED";
+      trf.arrivalConfirmedBy = confirmedBy;
+      trf.arrivedAt = new Date().toISOString();
+      trf.currentStageDisplay = `Arrival confirmed by ${confirmedBy}`;
+    }
+    return data || { success: true, transferId, status: "ARRIVED" };
   },
 
   // 19. Dependency Graph & Cascading Impact (Section 17, 18, 39)
   async getDependencies(resourceId) {
     const url = resourceId ? `/api/nexus/dependencies/${resourceId}` : "/api/nexus/dependencies";
     const data = await safeFetch(url);
-    return data || { nodes: [], links: [] };
+    if (data && data.success && resourceId && data.impact) {
+      return data;
+    }
+    if (data && data.success && Array.isArray(data.nodes) && data.nodes.length > 0) {
+      return data;
+    }
+    if (resourceId) {
+      const impact = liveState.cascadeImpacts?.[resourceId] || liveState.cascadeImpacts?.["OT-02"];
+      return {
+        success: true,
+        resourceId,
+        impact,
+        nodes: liveState.dependencies?.nodes || [],
+        links: liveState.dependencies?.links || []
+      };
+    }
+    return {
+      success: true,
+      nodes: liveState.dependencies?.nodes || [],
+      links: liveState.dependencies?.links || []
+    };
   },
 
   // 20. Immutable Audit Trail (Section 48)

@@ -23,9 +23,68 @@ import {
 } from "lucide-react";
 import { nexusApi } from "./nexusApi";
 
+const DEFAULT_TRANSFERS = [
+  {
+    transferId: "TRF-P101-01",
+    patientId: "P-101",
+    patientName: "Vikram Malhotra",
+    sourceDepartment: "General",
+    sourceWard: "WARD-GEN-A",
+    sourceBedId: "GEN-A-02",
+    targetDepartment: "Emergency",
+    targetWard: "WARD-EMG",
+    targetBedId: "ER-02",
+    status: "ARRIVED",
+    priority: "CRITICAL",
+    clinicalReason: "Sudden respiratory distress requiring emergency intubation & telemetry monitoring",
+    requestedBy: "Sister Maria (Ward In-Charge Gen-A)",
+    requestedAt: new Date(Date.now() - 3600000).toISOString(),
+    approvedBy: "Dr. Sarah Johnson (ED In-Charge)",
+    approvedAt: new Date(Date.now() - 3300000).toISOString(),
+    inTransitAt: new Date(Date.now() - 2400000).toISOString(),
+    arrivedAt: new Date(Date.now() - 600000).toISOString(),
+    arrivalConfirmedBy: "Nurse Anita Roy (Emergency RN)",
+    assignedAt: new Date(Date.now() - 500000).toISOString(),
+    currentStageDisplay: "Arrived at Emergency Care Bay ER-02",
+    auditLog: [
+      { stage: "TRANSFER_REQUESTED", timestamp: new Date(Date.now() - 3600000).toISOString(), actor: "Ward In-Charge", note: "Initiated clinical transfer request due to SpO2 drop to 84%." },
+      { stage: "TRANSFER_APPROVED", timestamp: new Date(Date.now() - 3300000).toISOString(), actor: "Dr. Sarah Johnson", note: "Emergency transfer authorized; Bed ER-02 pre-reserved." },
+      { stage: "IN_TRANSIT", timestamp: new Date(Date.now() - 2400000).toISOString(), actor: "Orderly Transport Team", note: "Patient in mobile transit with portable oxygen cylinder." },
+      { stage: "ARRIVED", timestamp: new Date(Date.now() - 600000).toISOString(), actor: "Nurse Anita Roy", note: "Physical arrival verified at ED Bay ER-02. Vital monitoring established." },
+      { stage: "ASSIGNED", timestamp: new Date(Date.now() - 500000).toISOString(), actor: "Nexus Orchestrator", note: "Source bed GEN-A-02 released to CLEANING workflow. Staff requirements recalculated." }
+    ]
+  },
+  {
+    transferId: "TRF-P104-02",
+    patientId: "P-104",
+    patientName: "Arjun Verma (Acute STEMI)",
+    sourceDepartment: "Emergency",
+    sourceWard: "WARD-EMG",
+    sourceBedId: "ER-01",
+    targetDepartment: "ICU",
+    targetWard: "WARD-ICU",
+    targetBedId: "ICU-05",
+    status: "IN_TRANSIT",
+    priority: "CRITICAL",
+    clinicalReason: "Post-thrombolytic critical monitoring under mechanical ventilation",
+    requestedBy: "Dr. Sarah Johnson (Cardiologist)",
+    requestedAt: new Date(Date.now() - 1200000).toISOString(),
+    approvedBy: "Dr. Priya Sharma (ICU Lead)",
+    approvedAt: new Date(Date.now() - 900000).toISOString(),
+    inTransitAt: new Date(Date.now() - 300000).toISOString(),
+    arrivedAt: null,
+    currentStageDisplay: "In Transit with ACLS Critical Care Escort to ICU Pod 3",
+    auditLog: [
+      { stage: "TRANSFER_REQUESTED", timestamp: new Date(Date.now() - 1200000).toISOString(), actor: "Dr. Sarah Johnson", note: "Direct ICU isolation transfer ordered." },
+      { stage: "TRANSFER_APPROVED", timestamp: new Date(Date.now() - 900000).toISOString(), actor: "Dr. Priya Sharma", note: "Bed ICU-05 pre-allocated." },
+      { stage: "IN_TRANSIT", timestamp: new Date(Date.now() - 300000).toISOString(), actor: "ACLS Paramedic Team", note: "Transferring via elevator B with continuous telemetry monitor." }
+    ]
+  }
+];
+
 export default function PatientTransferView() {
-  const [transfers, setTransfers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [transfers, setTransfers] = useState(DEFAULT_TRANSFERS);
+  const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState("");
   const [feedbackMessage, setFeedbackMessage] = useState("");
 
@@ -49,9 +108,14 @@ export default function PatientTransferView() {
     setLoading(true);
     try {
       const data = await nexusApi.getTransfers();
-      setTransfers(data || []);
+      if (Array.isArray(data) && data.length > 0) {
+        setTransfers(data);
+      } else {
+        setTransfers(DEFAULT_TRANSFERS);
+      }
     } catch (e) {
       console.error(e);
+      setTransfers(DEFAULT_TRANSFERS);
     } finally {
       setLoading(false);
     }
