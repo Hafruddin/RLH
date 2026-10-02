@@ -26,7 +26,26 @@ import {
   getFhirPatientResource,
   getFhirEncounterResource,
   getFhirObservationResource,
-  copilotQuery
+  copilotQuery,
+  // Section 49 Specification APIs
+  getHospitalState,
+  getAllResources,
+  getResourceById,
+  updateResourceStatus,
+  getConflicts,
+  resolveConflict,
+  getRecommendations,
+  approveRecommendation,
+  rejectRecommendation,
+  executeAllocation,
+  getTransfers,
+  requestTransfer,
+  approveTransfer,
+  confirmTransferArrival,
+  runWhatIfSimulation,
+  getResourceDependencies,
+  getAuditLogs,
+  runScenario
 } from "../controllers/nexusController.js";
 
 const nexusRouter = express.Router();
@@ -34,8 +53,18 @@ const nexusRouter = express.Router();
 // Real-Time Events SSE
 nexusRouter.get("/events", streamEvents);
 
+// Authoritative Complete Operational State (Section 5)
+nexusRouter.get("/hospital/state", getHospitalState);
+nexusRouter.get("/state", getHospitalState);
+
 // Dashboard KPIs
 nexusRouter.get("/dashboard/overview", getDashboardOverview);
+
+// Unified Resource Registry (Section 49)
+nexusRouter.get("/resources", getAllResources);
+nexusRouter.get("/resources/:id", getResourceById);
+nexusRouter.post("/resources/:id/status", updateResourceStatus);
+nexusRouter.patch("/resources/:id/status", updateResourceStatus);
 
 // Beds & Wards
 nexusRouter.get("/beds", getBeds);
@@ -57,20 +86,51 @@ nexusRouter.post("/ot/schedule", scheduleOT);
 nexusRouter.get("/diagnostics", getDiagnosticResources);
 nexusRouter.post("/diagnostics/reroute", rerouteDiagnostics);
 
-// Emergency Orchestration Workflow (P-104 Demo)
+// Emergency Orchestration Workflow
 nexusRouter.post("/emergency", triggerEmergency);
 
-// Autonomous Re-Optimization & Conflict Simulation (ICU-05 Failure -> Auto-Reallocate)
+// Autonomous Re-Optimization & Conflict Simulation
 nexusRouter.post("/orchestrator/reallocate", triggerReallocation);
 
 // Multi-Horizon Forecasting
 nexusRouter.get("/forecast", getForecasts);
+nexusRouter.get("/forecast/:department", getForecasts);
 nexusRouter.post("/forecast/generate", generateForecasts);
 
+// Simulation & Scenarios
 nexusRouter.post("/simulation/run", runSimulation);
 nexusRouter.post("/simulation/reset", resetSimulationDemo);
 nexusRouter.post("/reset-demo", resetSimulationDemo);
 nexusRouter.post("/seed", resetSimulationDemo);
+
+// What-If Simulation Sandbox (Section 28, 57)
+nexusRouter.post("/what-if", runWhatIfSimulation);
+
+// 1-Click Reproducible Scenario Execution (Section 51-56, 70)
+nexusRouter.post("/scenarios/run", runScenario);
+
+// Human-in-the-Loop Recommendations (Section 29, 58)
+nexusRouter.get("/recommendations", getRecommendations);
+nexusRouter.post("/recommendations/:id/approve", approveRecommendation);
+nexusRouter.post("/recommendations/:id/reject", rejectRecommendation);
+nexusRouter.post("/allocation/execute", executeAllocation);
+
+// Operational Conflicts (Section 47)
+nexusRouter.get("/conflicts", getConflicts);
+nexusRouter.post("/conflicts/:id/resolve", resolveConflict);
+
+// Patient Transfer Orchestration (Section 13, 53)
+nexusRouter.get("/transfers", getTransfers);
+nexusRouter.post("/transfers/request", requestTransfer);
+nexusRouter.post("/transfers/:id/approve", approveTransfer);
+nexusRouter.post("/transfers/:id/arrival", confirmTransferArrival);
+
+// Multi-Resource Dependency Graph & Cascading Impact (Section 17, 39)
+nexusRouter.get("/dependencies", getResourceDependencies);
+nexusRouter.get("/dependencies/:resourceId", getResourceDependencies);
+
+// Immutable Audit Trail (Section 48)
+nexusRouter.get("/audit", getAuditLogs);
 
 // Alerts & Notifications
 nexusRouter.get("/alerts", getAlerts);

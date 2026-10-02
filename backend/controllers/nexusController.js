@@ -1,6 +1,12 @@
 import { nexusStore } from "../services/nexusStore.js";
 import { registerClient, broadcastEvent } from "../services/eventHub.js";
 import { seedNexusData } from "../services/seedService.js";
+import { nexusOperationalState } from "../services/nexusOperationalState.js";
+import { nexusConstraintOptimizer } from "../services/nexusConstraintOptimizer.js";
+import { nexusDependencyGraph } from "../services/nexusDependencyGraph.js";
+import { nexusTransferOrchestrator } from "../services/nexusTransferOrchestrator.js";
+import { nexusWhatIfEngine } from "../services/nexusWhatIfEngine.js";
+import { nexusScenarioRunner } from "../services/nexusScenarioRunner.js";
 
 /**
  * 1. Real-time Server-Sent Events (SSE) Stream
@@ -810,6 +816,329 @@ export const copilotQuery = (req, res) => {
       answer: reply,
       timestamp: new Date().toISOString()
     });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * 16. Authoritative Hospital Operational State (Section 5)
+ */
+export const getHospitalState = (req, res) => {
+  try {
+    const state = nexusOperationalState.getAuthoritativeState();
+    res.json({ success: true, ...state });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * 17. Unified Resource Registry (Section 49)
+ */
+export const getAllResources = (req, res) => {
+  try {
+    res.json({
+      success: true,
+      resources: {
+        beds: nexusStore.beds,
+        staff: nexusStore.staff,
+        equipment: nexusStore.equipment,
+        operatingTheatres: nexusStore.operatingTheatres,
+        diagnostics: nexusStore.diagnostics,
+        wards: nexusStore.wards
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getResourceById = (req, res) => {
+  try {
+    const { id } = req.params;
+    const bed = nexusStore.beds.find(b => b.bedId === id);
+    if (bed) return res.json({ success: true, type: "BED", resource: bed });
+
+    const staff = nexusStore.staff.find(s => s.staffId === id);
+    if (staff) return res.json({ success: true, type: "STAFF", resource: staff });
+
+    const equip = nexusStore.equipment.find(e => e.equipmentId === id);
+    if (equip) return res.json({ success: true, type: "EQUIPMENT", resource: equip });
+
+    const ot = nexusStore.operatingTheatres.find(o => o.otId === id);
+    if (ot) return res.json({ success: true, type: "OPERATING_THEATRE", resource: ot });
+
+    const diag = nexusStore.diagnostics.find(d => d.resourceId === id);
+    if (diag) return res.json({ success: true, type: "DIAGNOSTIC", resource: diag });
+
+    res.status(404).json({ success: false, message: `Resource ${id} not found.` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateResourceStatus = (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, reason, actor = "Authorized Staff" } = req.body;
+
+    let updated = null;
+    let type = "";
+
+    const bed = nexusStore.beds.find(b => b.bedId === id);
+    if (bed) {
+      const old = bed.status;
+      bed.status = status;
+      bed.lastUpdated = new Date().toISOString();
+      updated = bed;
+      type = "BED";
+      nexusOperationalState.recordAudit({
+        actor,
+        actorRole: "STAFF",
+        action: "BED_STATUS_CHANGED",
+        resourceType: type,
+        resourceId: id,
+        oldValue: old,
+        newValue: status,
+        reason: reason || "Manual status update via clinical control"
+      });
+    }
+
+    const staff = nexusStore.staff.find(s => s.staffId === id);
+    if (staff) {
+      const old = staff.status;
+      staff.status = status;
+      updated = staff;
+      type = "STAFF";
+      nexusOperationalState.recordAudit({
+        actor,
+        actorRole: "STAFF",
+        action: "STAFF_STATUS_CHANGED",
+        resourceType: type,
+        resourceId: id,
+        oldValue: old,
+        newValue: status,
+        reason: reason || "Shift / status rotation"
+      });
+    }
+
+    const equip = nexusStore.equipment.find(e => e.equipmentId === id);
+    if (equip) {
+      const old = equip.status;
+      equip.status = status;
+      updated = equip;
+      type = "EQUIPMENT";
+      nexusOperationalState.recordAudit({
+        actor,
+        actorRole: "TECHNICIAN",
+        action: "EQUIPMENT_STATUS_CHANGED",
+        resourceType: type,
+        resourceId: id,
+        oldValue: old,
+        newValue: status,
+        reason: reason || "Equipment status updated"
+      });
+    }
+
+    if (!updated) {
+      return res.status(404).json({ success: false, message: `Resource ${id} not found.` });
+    }
+
+    broadcastEvent("resourceStatusUpdated", { resourceId: id, type, status, reason });
+    res.json({ success: true, resource: updated, type });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * 18. Conflict Management (Section 47)
+ */
+export const getConflicts = (req, res) => {
+  try {
+    res.json({ success: true, conflicts: nexusOperationalState.conflicts });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const resolveConflict = (req, res) => {
+  try {
+    const { id } = req.params;
+    const { resolvedBy, resolutionChoice, reason } = req.body;
+    const result = nexusOperationalState.resolveConflict(id, resolvedBy, resolutionChoice, reason);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * 19. Human-in-the-Loop Recommendations (Section 29, 58)
+ */
+export const getRecommendations = (req, res) => {
+  try {
+    res.json({ success: true, recommendations: nexusOperationalState.recommendations });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const approveRecommendation = (req, res) => {
+  try {
+    const { id } = req.params;
+    const { approvedBy } = req.body;
+    const result = nexusOperationalState.approveRecommendation(id, approvedBy);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const rejectRecommendation = (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rejectedBy, reason } = req.body;
+    const result = nexusOperationalState.rejectRecommendation(id, rejectedBy, reason);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const executeAllocation = (req, res) => {
+  try {
+    const { recommendationId, approvedBy } = req.body;
+    const result = nexusOperationalState.approveRecommendation(recommendationId, approvedBy);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * 20. Patient Transfer Lifecycle (Section 13, 14, 15, 53)
+ */
+export const getTransfers = (req, res) => {
+  try {
+    res.json({ success: true, transfers: nexusTransferOrchestrator.getTransfers() });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const requestTransfer = (req, res) => {
+  try {
+    const result = nexusTransferOrchestrator.requestTransfer(req.body);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const approveTransfer = (req, res) => {
+  try {
+    const { id } = req.params;
+    const { approvedBy } = req.body;
+    const result = nexusTransferOrchestrator.approveTransfer(id, approvedBy);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const confirmTransferArrival = (req, res) => {
+  try {
+    const { id } = req.params;
+    const { confirmedBy } = req.body;
+    const result = nexusTransferOrchestrator.confirmArrival(id, confirmedBy);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * 21. What-If Simulation Sandbox (Section 28, 57)
+ */
+export const runWhatIfSimulation = (req, res) => {
+  try {
+    const result = nexusWhatIfEngine.runSimulation(req.body);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * 22. Dependency Graph & Cascade Analysis (Section 17, 18, 39)
+ */
+export const getResourceDependencies = (req, res) => {
+  try {
+    const { resourceId } = req.params;
+    if (resourceId) {
+      const impact = nexusDependencyGraph.analyzeCascadingImpact(resourceId, req.query);
+      return res.json({ success: true, impact });
+    }
+    const graph = nexusDependencyGraph.getSerializedGraph();
+    res.json({ success: true, ...graph });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * 23. Immutable Audit Trail (Section 48)
+ */
+export const getAuditLogs = (req, res) => {
+  try {
+    const limit = Number(req.query.limit || 50);
+    const logs = nexusOperationalState.getAuditLogs(limit);
+    res.json({ success: true, logs });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * 24. 1-Click Reproducible Scenario Runner (Section 51-56, 70)
+ */
+export const runScenario = async (req, res) => {
+  try {
+    const { scenarioType, params } = req.body;
+    let result = null;
+
+    switch (scenarioType) {
+      case "EMERGENCY_SURGE":
+        result = await nexusScenarioRunner.runEmergencySurgeScenario();
+        break;
+      case "PATIENT_TRANSFER":
+        result = await nexusScenarioRunner.runPatientTransferScenario();
+        break;
+      case "OT_CASCADE":
+        result = await nexusScenarioRunner.runOtDelayScenario(params?.delayMinutes || 45);
+        break;
+      case "CT_FAILURE":
+        result = await nexusScenarioRunner.runCtFailureScenario();
+        break;
+      case "NURSE_UNAVAILABLE":
+        result = await nexusScenarioRunner.runNurseUnavailableScenario();
+        break;
+      case "BED_RELEASE":
+        result = await nexusScenarioRunner.runBedReleaseScenario(params?.bedId || "ICU-08");
+        break;
+      case "COMPETING_DEMAND":
+        result = await nexusScenarioRunner.runCompetingDemandScenario();
+        break;
+      default:
+        return res.status(400).json({
+          success: false,
+          message: `Unknown scenarioType: ${scenarioType}. Supported: EMERGENCY_SURGE, PATIENT_TRANSFER, OT_CASCADE, CT_FAILURE, NURSE_UNAVAILABLE, BED_RELEASE, COMPETING_DEMAND`
+        });
+    }
+
+    res.json({ success: true, ...result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

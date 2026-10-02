@@ -1,26 +1,37 @@
-// admin/src/components/Nexus/NexusMasterLayout.jsx
-import React, { useState } from "react";
+// frontend/src/components/Nexus/NexusMasterLayout.jsx
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Activity,
   AlertTriangle,
+  ArrowRight,
   Bed,
   Bot,
   Calendar,
+  CheckCircle2,
   ChevronRight,
   Clock,
+  Compass,
   Cpu,
   FileText,
+  GitBranch,
   HeartPulse,
   Home,
   Layers,
   MapPin,
   Microscope,
+  Network,
   Radio,
+  RefreshCw,
   RotateCcw,
+  Scale,
+  ShieldAlert,
+  ShieldCheck,
   Sliders,
+  Sparkles,
   Stethoscope,
   TrendingUp,
+  Truck,
   Users,
   Zap
 } from "lucide-react";
@@ -39,13 +50,52 @@ import SimulationStudio from "./SimulationStudio";
 import EhrTimelineView from "./EhrTimelineView";
 import NexusCopilot from "./NexusCopilot";
 import VoiceAgentMonitorView from "./VoiceAgentMonitorView";
-import logoImg from "../../assets/logo.png";
+import DependencyGraphView from "./DependencyGraphView";
+import RecommendationsView from "./RecommendationsView";
+import PatientTransferView from "./PatientTransferView";
+import ConflictResolutionView from "./ConflictResolutionView";
+import { nexusApi } from "./nexusApi";
 
 export default function NexusMasterLayout() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [orchestrationStage, setOrchestrationStage] = useState("MONITOR");
+  const [connectivityStatus, setConnectivityStatus] = useState("LIVE");
+
+  useEffect(() => {
+    const fetchState = async () => {
+      try {
+        const state = await nexusApi.getHospitalState();
+        if (state && state.orchestrationStage) {
+          setOrchestrationStage(state.orchestrationStage);
+        }
+      } catch (err) {
+        setConnectivityStatus("CACHED — LAST UPDATED");
+      }
+    };
+    fetchState();
+    const interval = setInterval(fetchState, 6000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const stages = [
+    "MONITOR",
+    "PREDICT",
+    "DETECT",
+    "IMPACT ANALYSIS",
+    "OPTIMIZE",
+    "RECOMMEND",
+    "APPROVAL",
+    "ALLOCATE",
+    "REPLAN"
+  ];
 
   const tabs = [
     { id: "overview", label: "Command Center", icon: Radio, badge: "LIVE" },
+    { id: "recommendations", label: "Approvals & Recommendations", icon: ShieldCheck, badge: "Decision" },
+    { id: "dependencies", label: "Dependency & Cascade Graph", icon: Network, badge: "Graph" },
+    { id: "transfers", label: "Patient Transfers", icon: Compass, badge: "5 Stages" },
+    { id: "conflicts", label: "Conflict Resolution", icon: Scale, badge: "Non-Silent" },
+    { id: "simulation", label: "Simulation Studio & Scenarios", icon: Sliders, badge: "7 Demos" },
     { id: "emergency", label: "Emergency Orchestrator", icon: Zap, badge: "P-104" },
     { id: "orchestrator", label: "Autonomous Re-Optimizer", icon: RotateCcw, badge: "Auto" },
     { id: "beds", label: "Beds & Wards", icon: Bed, badge: "48 Beds" },
@@ -55,7 +105,6 @@ export default function NexusMasterLayout() {
     { id: "ot", label: "Operating Theatres", icon: Activity, badge: "8 Suites" },
     { id: "diagnostics", label: "Diagnostics & Queues", icon: Microscope, badge: "Balance" },
     { id: "forecasting", label: "Demand Forecasting", icon: TrendingUp, badge: "+4h" },
-    { id: "simulation", label: "Simulation Studio", icon: Sliders, badge: "What-If" },
     { id: "ehr", label: "EHR & FHIR R4", icon: Layers, badge: "FHIR" },
     { id: "copilot", label: "Nexus AI Copilot", icon: Cpu, badge: "AI" },
     { id: "voice-monitor", label: "AI Agent Monitor", icon: Bot, badge: "Voice 🎙" }
@@ -79,7 +128,7 @@ export default function NexusMasterLayout() {
                   MediCare <span className="text-emerald-400">NEXUS</span>
                 </span>
                 <span className="text-[10px] text-slate-400 block -mt-1 tracking-widest uppercase">
-                  Autonomous Resource Orchestration Platform
+                  Autonomous Hospital Resource Orchestration Platform
                 </span>
               </div>
             </Link>
@@ -88,36 +137,59 @@ export default function NexusMasterLayout() {
           {/* Quick Right Links */}
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 text-xs bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span className="text-slate-300 font-semibold">Hackathon PS-1: Theme-1</span>
+              <span className={`w-2 h-2 rounded-full ${connectivityStatus === "LIVE" ? "bg-emerald-400 animate-ping" : "bg-amber-400"}`} />
+              <span className="text-slate-300 font-semibold">{connectivityStatus}</span>
             </div>
 
-            {/* Link back to Classic Admin Panel */}
+            {/* Link back to Classic View */}
             <div className="flex items-center gap-1.5">
               <Link
                 to="/appointments"
                 className="hidden md:inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition"
               >
-                Appointments
-              </Link>
-              <Link
-                to="/list"
-                className="hidden md:inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition"
-              >
-                Doctors
-              </Link>
-              <Link
-                to="/service-dashboard"
-                className="hidden md:inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition"
-              >
-                Services
+                <span>Appointments</span>
               </Link>
               <Link
                 to="/"
-                className="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition shadow-sm"
+                className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600/90 text-white hover:bg-emerald-500 transition shadow-sm"
               >
-                Home
+                <Home className="w-3.5 h-3.5" />
+                <span>Portal</span>
               </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Closed-Loop Orchestration Status Bar (Section 61 & 71) */}
+        <div className="bg-slate-900/95 border-t border-slate-800/80 px-4 sm:px-6 lg:px-8 py-2">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 overflow-x-auto text-[11px] no-scrollbar">
+            <span className="text-[10px] font-extrabold uppercase text-slate-400 shrink-0 flex items-center gap-1.5">
+              <Activity className="w-3 h-3 text-emerald-400" />
+              Closed-Loop Orchestration:
+            </span>
+            <div className="flex items-center gap-1">
+              {stages.map((stg, idx) => {
+                const isCurrent =
+                  orchestrationStage === stg ||
+                  orchestrationStage?.replace("_", " ") === stg;
+
+                return (
+                  <React.Fragment key={stg}>
+                    <span
+                      className={`px-2 py-0.5 rounded-full font-bold uppercase transition ${
+                        isCurrent
+                          ? "bg-emerald-500 text-slate-950 font-black shadow-xs animate-pulse ring-1 ring-emerald-300"
+                          : "text-slate-400 hover:text-slate-200"
+                      }`}
+                    >
+                      {stg}
+                    </span>
+                    {idx < stages.length - 1 && (
+                      <ArrowRight className="w-3 h-3 text-slate-600 shrink-0" />
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -125,7 +197,7 @@ export default function NexusMasterLayout() {
         {/* Tab Navigation Scrollbar */}
         <div className="bg-slate-950 border-t border-slate-800 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto flex items-center gap-1 overflow-x-auto py-2 no-scrollbar">
-            {tabs.map(t => {
+            {tabs.map((t) => {
               const Icon = t.icon;
               const isActive = activeTab === t.id;
               return (
@@ -159,6 +231,11 @@ export default function NexusMasterLayout() {
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {activeTab === "overview" && <NexusCommandCenter onNavigateTab={(tab) => setActiveTab(tab)} />}
+        {activeTab === "recommendations" && <RecommendationsView />}
+        {activeTab === "dependencies" && <DependencyGraphView />}
+        {activeTab === "transfers" && <PatientTransferView />}
+        {activeTab === "conflicts" && <ConflictResolutionView />}
+        {activeTab === "simulation" && <SimulationStudio />}
         {activeTab === "emergency" && <EmergencyView />}
         {activeTab === "orchestrator" && <OrchestratorView />}
         {activeTab === "beds" && <BedsWardsView />}
@@ -168,7 +245,6 @@ export default function NexusMasterLayout() {
         {activeTab === "ot" && <OtManagerView />}
         {activeTab === "diagnostics" && <DiagnosticsView />}
         {activeTab === "forecasting" && <ForecastingView />}
-        {activeTab === "simulation" && <SimulationStudio />}
         {activeTab === "ehr" && <EhrTimelineView />}
         {activeTab === "copilot" && <NexusCopilot />}
         {activeTab === "voice-monitor" && <VoiceAgentMonitorView />}
@@ -178,7 +254,9 @@ export default function NexusMasterLayout() {
       <footer className="bg-slate-900 text-slate-400 border-t border-slate-800 text-xs py-4 px-6 text-center">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
           <span>MediCare Nexus – Autonomous Hospital Resource Orchestration Engine (HL7 FHIR R4 Compliant)</span>
-          <span className="text-emerald-400 font-semibold">Hackathon Theme-1 PS No: 1 • All 100+ Simulated Resources Operational</span>
+          <span className="text-emerald-400 font-semibold">
+            Hackathon Theme-1 PS No: 1 • Continuous Constraint-Based Closed-Loop Architecture
+          </span>
         </div>
       </footer>
     </div>

@@ -23,7 +23,15 @@ const equipmentSchema = new mongoose.Schema(
     name: { type: String, required: true },
     status: {
       type: String,
-      enum: ["AVAILABLE", "IN_USE", "RESERVED", "MAINTENANCE", "UNAVAILABLE", "UNKNOWN"],
+      enum: [
+        "AVAILABLE",
+        "IN_USE",
+        "RESERVED",
+        "MAINTENANCE",
+        "DOWN",
+        "UNAVAILABLE",
+        "UNKNOWN",
+      ],
       default: "AVAILABLE",
       index: true,
     },
@@ -60,4 +68,3 @@ const equipmentSchema = new mongoose.Schema(
 );
 
 export default mongoose.models.Equipment || mongoose.model("Equipment", equipmentSchema);
-

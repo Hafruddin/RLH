@@ -419,6 +419,79 @@ export default function NexusCommandCenter({ onNavigateTab }) {
         </div>
       </div>
 
+      {/* Innovation Quick-Access Hub (Theme 1 & Core Innovation Mechanisms) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div
+          onClick={() => onNavigateTab && onNavigateTab("recommendations")}
+          className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs hover:border-emerald-500 hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className="font-bold text-slate-800">Recommendations</span>
+            <ShieldCheck className="w-4 h-4 text-emerald-600 group-hover:scale-110 transition" />
+          </div>
+          <p className="text-[11px] text-slate-500">Autonomous proposals with human approval</p>
+          <span className="text-[10px] font-bold text-emerald-600 mt-2 flex items-center gap-1">
+            Review Proposals <ArrowRight className="w-3 h-3" />
+          </span>
+        </div>
+
+        <div
+          onClick={() => onNavigateTab && onNavigateTab("dependencies")}
+          className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs hover:border-indigo-500 hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className="font-bold text-slate-800">Dependency Graph</span>
+            <Activity className="w-4 h-4 text-indigo-600 group-hover:scale-110 transition" />
+          </div>
+          <p className="text-[11px] text-slate-500">Cascading impact across OT, beds & staff</p>
+          <span className="text-[10px] font-bold text-indigo-600 mt-2 flex items-center gap-1">
+            Inspect Network <ArrowRight className="w-3 h-3" />
+          </span>
+        </div>
+
+        <div
+          onClick={() => onNavigateTab && onNavigateTab("transfers")}
+          className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs hover:border-teal-500 hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className="font-bold text-slate-800">Patient Transfers</span>
+            <Clock className="w-4 h-4 text-teal-600 group-hover:scale-110 transition" />
+          </div>
+          <p className="text-[11px] text-slate-500">5-stage clinical movement & bed release</p>
+          <span className="text-[10px] font-bold text-teal-600 mt-2 flex items-center gap-1">
+            Track Transfers <ArrowRight className="w-3 h-3" />
+          </span>
+        </div>
+
+        <div
+          onClick={() => onNavigateTab && onNavigateTab("conflicts")}
+          className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs hover:border-amber-500 hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className="font-bold text-slate-800">Conflicts Center</span>
+            <AlertTriangle className="w-4 h-4 text-amber-600 group-hover:scale-110 transition" />
+          </div>
+          <p className="text-[11px] text-slate-500">Telemetry vs ADT discrepancy resolution</p>
+          <span className="text-[10px] font-bold text-amber-600 mt-2 flex items-center gap-1">
+            Resolve Conflicts <ArrowRight className="w-3 h-3" />
+          </span>
+        </div>
+
+        <div
+          onClick={() => onNavigateTab && onNavigateTab("simulation")}
+          className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs hover:border-blue-500 hover:shadow-md transition cursor-pointer group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className="font-bold text-slate-800">7 Scenarios Demo</span>
+            <Sliders className="w-4 h-4 text-blue-600 group-hover:scale-110 transition" />
+          </div>
+          <p className="text-[11px] text-slate-500">1-click reproducible spec scenarios</p>
+          <span className="text-[10px] font-bold text-blue-600 mt-2 flex items-center gap-1">
+            Launch Studio <ArrowRight className="w-3 h-3" />
+          </span>
+        </div>
+      </div>
+
       {/* 4. Two-Column Operational Section: Bottleneck Radar + Alerts & Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Bottleneck Radar & Department Status */}

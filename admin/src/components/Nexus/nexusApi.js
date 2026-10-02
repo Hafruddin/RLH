@@ -551,5 +551,114 @@ export const nexusApi = {
       return "⚡ **Diagnostic Load:** X-Ray Suite 1 has a queue of **7 patients (38 min wait)**. You can trigger automated re-routing to Suite 2 to drop wait times down to 14 minutes.";
     }
     return "🤖 **MediCare Nexus Operations AI:** All hospital telemetry feeds active. 48 beds, 90 staff, 8 operating theatres, and 12 diagnostic devices monitored in real-time.";
+  },
+
+  // 15. Authoritative Operational State
+  async getHospitalState() {
+    const data = await safeFetch("/api/nexus/hospital/state");
+    if (data && data.success) return data;
+    return { success: true, ...liveState };
+  },
+
+  // 16. Conflicts & Human Resolution (Section 47)
+  async getConflicts() {
+    const data = await safeFetch("/api/nexus/conflicts");
+    if (data && data.success) return data.conflicts;
+    return liveState.conflicts || [];
+  },
+
+  async resolveConflict(conflictId, resolutionChoice = "MARK_OCCUPIED", reason = "Physical inspection verified") {
+    const data = await safeFetch(`/api/nexus/conflicts/${conflictId}/resolve`, {
+      method: "POST",
+      body: JSON.stringify({ resolutionChoice, reason, resolvedBy: "Supervisor" })
+    });
+    return data || { success: true, conflictId, resolutionChoice };
+  },
+
+  // 17. Human-in-the-Loop Recommendations (Section 29, 58)
+  async getRecommendations() {
+    const data = await safeFetch("/api/nexus/recommendations");
+    if (data && data.success) return data.recommendations;
+    return liveState.recommendations || [];
+  },
+
+  async approveRecommendation(recommendationId, approvedBy = "Hospital Operations Supervisor") {
+    const data = await safeFetch(`/api/nexus/recommendations/${recommendationId}/approve`, {
+      method: "POST",
+      body: JSON.stringify({ approvedBy })
+    });
+    return data || { success: true, recommendationId, status: "APPROVED" };
+  },
+
+  async rejectRecommendation(recommendationId, rejectedBy = "Hospital Operations Supervisor", reason = "Clinical override") {
+    const data = await safeFetch(`/api/nexus/recommendations/${recommendationId}/reject`, {
+      method: "POST",
+      body: JSON.stringify({ rejectedBy, reason })
+    });
+    return data || { success: true, recommendationId, status: "REJECTED" };
+  },
+
+  // 18. Patient Movement & Transfers (Section 13, 53)
+  async getTransfers() {
+    const data = await safeFetch("/api/nexus/transfers");
+    if (data && data.success) return data.transfers;
+    return liveState.transfers || [];
+  },
+
+  async requestTransfer(params) {
+    const data = await safeFetch("/api/nexus/transfers/request", {
+      method: "POST",
+      body: JSON.stringify(params)
+    });
+    return data;
+  },
+
+  async approveTransfer(transferId, approvedBy = "ED In-Charge") {
+    const data = await safeFetch(`/api/nexus/transfers/${transferId}/approve`, {
+      method: "POST",
+      body: JSON.stringify({ approvedBy })
+    });
+    return data;
+  },
+
+  async confirmTransferArrival(transferId, confirmedBy = "Receiving Nurse") {
+    const data = await safeFetch(`/api/nexus/transfers/${transferId}/arrival`, {
+      method: "POST",
+      body: JSON.stringify({ confirmedBy })
+    });
+    return data;
+  },
+
+  // 19. Dependency Graph & Cascading Impact (Section 17, 18, 39)
+  async getDependencies(resourceId) {
+    const url = resourceId ? `/api/nexus/dependencies/${resourceId}` : "/api/nexus/dependencies";
+    const data = await safeFetch(url);
+    return data || { nodes: [], links: [] };
+  },
+
+  // 20. Immutable Audit Trail (Section 48)
+  async getAuditLogs(limit = 50) {
+    const data = await safeFetch(`/api/nexus/audit?limit=${limit}`);
+    if (data && data.success) return data.logs;
+    return [];
+  },
+
+  // 21. 1-Click Reproducible Scenario Runner (Section 51-56, 70)
+  async runScenario(scenarioType, params = {}) {
+    const data = await safeFetch("/api/nexus/scenarios/run", {
+      method: "POST",
+      body: JSON.stringify({ scenarioType, params })
+    });
+    return data;
+  },
+
+  // 22. What-If Simulation Sandbox (Section 28, 57)
+  async runWhatIfSimulation(scenario) {
+    const data = await safeFetch("/api/nexus/what-if", {
+      method: "POST",
+      body: JSON.stringify(scenario)
+    });
+    if (data && data.success) return data;
+    return this.runSimulation(scenario);
   }
 };

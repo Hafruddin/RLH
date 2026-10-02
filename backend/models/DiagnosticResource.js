@@ -13,7 +13,16 @@ const diagnosticResourceSchema = new mongoose.Schema(
     department: { type: String, default: "Radiology" },
     status: {
       type: String,
-      enum: ["AVAILABLE", "BUSY", "MAINTENANCE"],
+      enum: [
+        "AVAILABLE",
+        "IN_USE",
+        "BUSY",
+        "QUEUED",
+        "MAINTENANCE",
+        "DOWN",
+        "UNAVAILABLE",
+        "UNKNOWN",
+      ],
       default: "AVAILABLE",
       index: true,
     },
@@ -22,6 +31,13 @@ const diagnosticResourceSchema = new mongoose.Schema(
     currentPatient: { type: String, default: null },
     capacity: { type: Number, default: 20 }, // patients per day
     location: { type: String, default: "Diagnostic Block Ground Floor" },
+    source: { type: String, default: "DIAGNOSTIC_RIS_PACS" },
+    confidence: {
+      type: String,
+      enum: ["HIGH", "MEDIUM", "LOW", "UNKNOWN"],
+      default: "HIGH",
+    },
+    lastVerifiedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

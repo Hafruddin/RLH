@@ -17,7 +17,17 @@ const bedSchema = new mongoose.Schema(
     bedNumber: { type: String, default: "1" },
     status: {
       type: String,
-      enum: ["AVAILABLE", "OCCUPIED", "RESERVED", "CLEANING", "MAINTENANCE", "OUT_OF_SERVICE", "UNKNOWN"],
+      enum: [
+        "AVAILABLE",
+        "RESERVED",
+        "OCCUPIED",
+        "DISCHARGE_PENDING",
+        "CLEANING",
+        "VERIFICATION_REQUIRED",
+        "MAINTENANCE",
+        "OUT_OF_SERVICE",
+        "UNKNOWN",
+      ],
       default: "AVAILABLE",
       index: true,
     },
@@ -49,4 +59,3 @@ const bedSchema = new mongoose.Schema(
 );
 
 export default mongoose.models.Bed || mongoose.model("Bed", bedSchema);
-
