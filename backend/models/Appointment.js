@@ -21,7 +21,7 @@ const appointmentSchema = new mongoose.Schema(
        Doctor Info
     ========================== */
     doctorId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.Mixed,
       ref: "Doctor",
       required: true,
       index: true,

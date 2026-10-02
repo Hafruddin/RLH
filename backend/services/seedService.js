@@ -1,4 +1,6 @@
 // backend/services/seedService.js
+import mongoose from "mongoose";
+import "dotenv/config";
 import Patient from "../models/Patient.js";
 import Ward from "../models/Ward.js";
 import Bed from "../models/Bed.js";
@@ -18,6 +20,10 @@ import { mockAppointments } from "../utils/mockDb.js";
 
 export async function seedNexusData() {
   console.log("🌱 [MediCare Nexus] Seeding complete demo data...");
+  if (mongoose.connection.readyState !== 1) {
+    const uri = process.env.MONGODB_URI || process.env.MONGO_URL || "mongodb://127.0.0.1:27017/medicare";
+    await mongoose.connect(uri);
+  }
 
   // 1. Wards
   await Ward.deleteMany({});

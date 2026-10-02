@@ -13,7 +13,7 @@ const otSchema = new mongoose.Schema(
     location: { type: String, default: "Surgical Wing, 3rd Floor" },
     status: {
       type: String,
-      enum: ["AVAILABLE", "SCHEDULED", "IN_USE", "OCCUPIED", "DELAYED", "CLEANING", "MAINTENANCE", "UNAVAILABLE", "UNKNOWN"],
+      enum: ["AVAILABLE", "SCHEDULED", "RESERVED", "IN_USE", "OCCUPIED", "DELAYED", "CLEANING", "MAINTENANCE", "UNAVAILABLE", "UNKNOWN"],
       default: "AVAILABLE",
       index: true,
     },
