@@ -15,7 +15,6 @@
     "@tailwindcss/vite": "^4.1.17",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
-    "jspdf": "^4.2.1",
     "lucide-react": "^0.553.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

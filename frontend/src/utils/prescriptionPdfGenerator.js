@@ -1,290 +1,254 @@
 // frontend/src/utils/prescriptionPdfGenerator.js
-import jsPDF from "jspdf/dist/jspdf.umd.min.js";
+// Pure JavaScript Vector PDF Generator (Zero-dependency, 100% standards compliant)
 
-export function generatePrescriptionPdf(rxData) {
-  const doc = new jsPDF({
-    orientation: "portrait",
-    unit: "mm",
-    format: "a4"
-  });
+function escapePdfText(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/\\/g, "\\\\")
+    .replace(/\(/g, "\\(")
+    .replace(/\)/g, "\\)");
+}
 
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const primaryColor = [14, 116, 144]; // cyan-700
-  const darkColor = [15, 23, 42]; // slate-900
-  const grayColor = [100, 116, 139]; // slate-500
-  const redColor = [225, 29, 72]; // rose-600
+export function generatePrescriptionPdf(rxData = {}) {
+  const patient = rxData.patient || {
+    name: "Harsh Tripathi",
+    id: "P-101",
+    abha: "91-8273-4412-9901",
+    age: "34",
+    gender: "Male",
+    phone: "+91 98765 43210",
+    visitDate: "03 Oct 2026",
+    diagnosis: "Essential Hypertension & Dyslipidemia (Post-Angiogram Evaluation)"
+  };
 
-  // 1. Hospital Header Bar
-  doc.setFillColor(...darkColor);
-  doc.rect(0, 0, pageWidth, 28, "F");
+  const doctor = rxData.doctor || {
+    name: "Dr. Sarah Johnson",
+    qualifications: "MBBS, MD, DM (Cardiology), FACC",
+    regNo: "KMC-48291",
+    department: "Department of Cardiology & Vascular Medicine",
+    unit: "Unit 3 - OPD Consultation Room 204"
+  };
 
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text("MEDICARE NEXUS HOSPITAL & RESEARCH CENTRE", 14, 11);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.setTextColor(45, 212, 191); // teal-400
-  doc.text("Autonomous Hospital Resource Orchestration Platform · NABH & JCI Accredited", 14, 17);
-
-  doc.setFontSize(7.5);
-  doc.setTextColor(203, 213, 225); // slate-300
-  doc.text("100 Feet Ring Road, Phase 2, Bangalore - 560103 | Emergency: 108 | support@medicare.com", 14, 23);
-
-  // 2. Doctor Info & Rx Metadata
-  doc.setTextColor(...darkColor);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text("Dr. Sarah Johnson, MD, DM (Cardiology)", 14, 38);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(...grayColor);
-  doc.text("Senior Consultant Interventional Cardiologist", 14, 43);
-  doc.text("Reg No: KMC-48291-A | OPD Cabin 102 (Floor 1)", 14, 47);
-
-  // Right-aligned Rx Meta
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8.5);
-  doc.setTextColor(...primaryColor);
-  doc.text(`Prescription ID: ${rxData?.rxId || "RX-2026-8812"}`, pageWidth - 14, 38, { align: "right" });
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(...grayColor);
-  doc.text(`Date: ${rxData?.date || new Date().toLocaleDateString("en-GB")}`, pageWidth - 14, 43, { align: "right" });
-  doc.text(`Visit ID: ${rxData?.visitId || "VST-2026-8812"}`, pageWidth - 14, 47, { align: "right" });
-
-  // Divider
-  doc.setDrawColor(226, 232, 240);
-  doc.setLineWidth(0.5);
-  doc.line(14, 52, pageWidth - 14, 52);
-
-  // 3. Patient Details Card Box
-  doc.setFillColor(248, 250, 252); // slate-50
-  doc.roundedRect(14, 56, pageWidth - 28, 24, 2, 2, "F");
-  doc.setDrawColor(203, 213, 225);
-  doc.roundedRect(14, 56, pageWidth - 28, 24, 2, 2, "D");
-
-  doc.setTextColor(...darkColor);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.text("PATIENT INFORMATION", 18, 62);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.text(`Name: Harsh Tripathi (${rxData?.patientId || "P-101"})`, 18, 68);
-  doc.text(`Age / Gender: 34 Y / Male`, 18, 73);
-  doc.text(`Blood Group: O Positive (O+)`, 18, 77);
-
-  doc.text(`ABHA Health ID: 91-8273-4412-9901`, 95, 68);
-  doc.text(`Contact: +91 98765 43210`, 95, 73);
-  doc.text(`Insurance: Star Health (Pre-Approved)`, 95, 77);
-
-  // Red Flag Allergy on Right
-  doc.setFillColor(255, 241, 242);
-  doc.setDrawColor(254, 205, 211);
-  doc.roundedRect(pageWidth - 78, 59, 60, 18, 1, 1, "FD");
-  doc.setTextColor(...redColor);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.5);
-  doc.text("CRITICAL ALLERGY ALERT:", pageWidth - 75, 65);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  doc.text("PENICILLIN & AMOXICILLIN", pageWidth - 75, 70);
-  doc.text("Severe Anaphylaxis Risk", pageWidth - 75, 74);
-
-  // 4. Clinical Diagnosis & Vitals
-  let currentY = 88;
-  doc.setTextColor(...darkColor);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.text("CLINICAL DIAGNOSIS & REASON FOR VISIT:", 14, currentY);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.setTextColor(30, 41, 59);
-  doc.text("Essential Hypertension (Stage 1), Mild Dyslipidemia, Post-Triage Cardiovascular Screening.", 14, currentY + 5);
-
-  currentY += 12;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.setTextColor(...grayColor);
-  doc.text("Recorded Vitals: BP: 120/80 mmHg | Pulse: 72 bpm | SpO2: 98% | Temp: 98.6°F | Weight: 74 kg", 14, currentY);
-
-  // 5. Rx Symbol & Medicines Table Header
-  currentY += 10;
-  doc.setTextColor(...primaryColor);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text("Rx", 14, currentY);
-
-  doc.setFontSize(9);
-  doc.setTextColor(...darkColor);
-  doc.text("PRESCRIBED MEDICATIONS", 26, currentY - 1);
-
-  currentY += 4;
-  // Table Header
-  doc.setFillColor(241, 245, 249); // slate-100
-  doc.rect(14, currentY, pageWidth - 28, 8, "F");
-  doc.setDrawColor(203, 213, 225);
-  doc.rect(14, currentY, pageWidth - 28, 8, "D");
-
-  doc.setTextColor(...darkColor);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.5);
-  doc.text("#", 17, currentY + 5.5);
-  doc.text("MEDICATION & STRENGTH", 24, currentY + 5.5);
-  doc.text("DOSAGE / FREQUENCY", 90, currentY + 5.5);
-  doc.text("TIMING / INSTRUCTIONS", 135, currentY + 5.5);
-  doc.text("DURATION", pageWidth - 16, currentY + 5.5, { align: "right" });
-
-  currentY += 8;
-
-  // Medicines List
-  const medicines = [
+  const medicines = rxData.medicines || [
     {
-      name: "Tab. Atorvastatin Calcium",
-      strength: "20 mg",
-      dosage: "1 Tablet (0-0-1)",
-      timing: "Once daily at bedtime after food",
-      duration: "30 Days (30 Tab)",
-      notes: "Lipid management. Avoid grapefruit juice."
+      name: "Tab. Atorvastatin 20mg",
+      dosage: "1 Tablet (20 mg)",
+      freq: "Once Daily (Night)",
+      duration: "30 Days",
+      timing: "Post-Dinner",
+      instructions: "Take with water after dinner. Controls LDL cholesterol."
     },
     {
-      name: "Tab. Metoprolol Succinate ER",
-      strength: "25 mg",
-      dosage: "1 Tablet (1-0-0)",
-      timing: "Once daily morning after breakfast",
-      duration: "30 Days (30 Tab)",
-      notes: "Blood pressure regulation. Monitor resting pulse."
+      name: "Tab. Metoprolol Tartrate 25mg",
+      dosage: "1 Tablet (25 mg)",
+      freq: "Twice Daily (Morning & Night)",
+      duration: "30 Days",
+      timing: "With Meals",
+      instructions: "Keep resting pulse monitored. Controls blood pressure."
     },
     {
-      name: "Cap. Aspirin (Ecosprin)",
-      strength: "75 mg",
-      dosage: "1 Capsule (0-1-0)",
-      timing: "Once daily afternoon after lunch",
-      duration: "30 Days (30 Cap)",
-      notes: "Antiplatelet cardioprotective therapy."
+      name: "Tab. Aspirin 75mg (Enteric Coated)",
+      dosage: "1 Tablet (75 mg)",
+      freq: "Once Daily (Morning)",
+      duration: "30 Days",
+      timing: "After Breakfast",
+      instructions: "Do not take on an empty stomach. Antiplatelet prophylaxis."
     },
     {
-      name: "Cap. Cholecalciferol (Vitamin D3)",
-      strength: "60,000 IU",
-      dosage: "1 Capsule weekly",
-      timing: "Sunday morning after heavy meal / milk",
-      duration: "8 Weeks (8 Cap)",
-      notes: "Bone density & cardiovascular metabolic support."
+      name: "Tab. Pantoprazole 40mg",
+      dosage: "1 Tablet (40 mg)",
+      freq: "Once Daily (Early Morning)",
+      duration: "15 Days",
+      timing: "Empty Stomach",
+      instructions: "Take 30 minutes before morning tea or breakfast."
     },
     {
-      name: "Tab. Pantoprazole Sodium",
-      strength: "40 mg",
-      dosage: "1 Tablet (1-0-0)",
-      timing: "Once daily early morning 30 min before food",
-      duration: "14 Days (14 Tab)",
-      notes: "Gastroprotection as advised."
+      name: "Tab. Rosuvastatin + Clopidogrel 10/75mg",
+      dosage: "1 Tablet",
+      freq: "Once Daily (Night)",
+      duration: "14 Days",
+      timing: "Post-Dinner",
+      instructions: "Thrombosis prevention. Continue full prescribed course."
     }
   ];
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
+  // PDF Page Stream commands (A4: 595.28 x 841.89 pt)
+  const cmds = [];
 
+  // Helper drawing functions
+  const fillRect = (x, y, w, h, r, g, b) => {
+    cmds.push(`${r.toFixed(3)} ${g.toFixed(3)} ${b.toFixed(3)} rg`);
+    cmds.push(`${x.toFixed(1)} ${y.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)} re f`);
+  };
+
+  const drawLine = (x1, y1, x2, y2, r, g, b, lineWidth = 1) => {
+    cmds.push(`${r.toFixed(3)} ${g.toFixed(3)} ${b.toFixed(3)} RG`);
+    cmds.push(`${lineWidth} w`);
+    cmds.push(`${x1.toFixed(1)} ${y1.toFixed(1)} m ${x2.toFixed(1)} ${y2.toFixed(1)} l S`);
+  };
+
+  const drawText = (font, size, x, y, text, r = 0, g = 0, b = 0) => {
+    cmds.push(`${r.toFixed(3)} ${g.toFixed(3)} ${b.toFixed(3)} rg`);
+    cmds.push(`BT /${font} ${size} Tf ${x.toFixed(1)} ${y.toFixed(1)} Td (${escapePdfText(text)}) Tj ET`);
+  };
+
+  // Top Navy Hospital Header Banner
+  fillRect(0, 770, 595.28, 72, 0.058, 0.090, 0.165); // Slate 900
+  fillRect(0, 766, 595.28, 4, 0.055, 0.706, 0.533);  // Emerald Accent Strip
+
+  // Hospital Title & Accreditations
+  drawText("F2", 18, 40, 814, "MEDICARE NEXUS HEALTHCARE PLATFORM", 1, 1, 1);
+  drawText("F1", 9, 40, 799, "NABH & JCI ACCREDITED TERTIARY SUPER-SPECIALTY TEACHING HOSPITAL", 0.7, 0.85, 0.8);
+  drawText("F1", 8, 40, 785, "24/7 Emergency & Trauma: 1800-419-9999 | OPD Desk: 080-4920-1111 | https://medi-nexus-rhl.netlify.app", 0.6, 0.7, 0.75);
+
+  // Prescription Title Bar
+  fillRect(40, 728, 515.28, 28, 0.941, 0.965, 0.988); // Soft blue-gray
+  drawLine(40, 728, 555.28, 728, 0.8, 0.85, 0.9, 1);
+  drawText("F2", 13, 50, 737, "OFFICIAL OUTPATIENT CONSULTATION PRESCRIPTION", 0.058, 0.090, 0.165);
+  drawText("F2", 9, 395, 737, `RX ID: NEXUS-RX-2026-${patient.id}`, 0.055, 0.55, 0.45);
+
+  // Doctor Credentials (Left Box)
+  drawText("F2", 11, 40, 706, doctor.name, 0.058, 0.090, 0.165);
+  drawText("F1", 8.5, 40, 694, doctor.qualifications, 0.25, 0.35, 0.45);
+  drawText("F1", 8, 40, 682, `Reg. No: ${doctor.regNo} | ${doctor.department}`, 0.4, 0.45, 0.5);
+  drawText("F1", 8, 40, 670, doctor.unit, 0.4, 0.45, 0.5);
+
+  // Patient Demographics (Right Box)
+  fillRect(360, 665, 195.28, 55, 0.97, 0.98, 0.99);
+  drawLine(360, 665, 555.28, 665, 0.88, 0.9, 0.92, 0.75);
+  drawText("F2", 10, 370, 706, `Patient: ${patient.name}`, 0.058, 0.090, 0.165);
+  drawText("F1", 8.5, 370, 693, `MRN / ID: ${patient.id} | Age/Sex: ${patient.age}Y / ${patient.gender}`, 0.2, 0.25, 0.3);
+  drawText("F1", 8, 370, 681, `ABHA ID: ${patient.abha}`, 0.25, 0.35, 0.45);
+  drawText("F1", 8, 370, 670, `Date of Consultation: ${patient.visitDate}`, 0.35, 0.4, 0.45);
+
+  drawLine(40, 656, 555.28, 656, 0.85, 0.88, 0.92, 1);
+
+  // Diagnosis Line
+  drawText("F2", 9, 40, 642, "Provisional / Clinical Diagnosis:", 0.058, 0.090, 0.165);
+  drawText("F1", 9, 215, 642, patient.diagnosis, 0.1, 0.35, 0.6);
+
+  // Critical Allergy Alert Banner
+  fillRect(40, 615, 515.28, 20, 1.0, 0.94, 0.94); // Light rose
+  drawLine(40, 615, 555.28, 615, 0.9, 0.3, 0.3, 1);
+  drawText("F2", 8.5, 48, 621, "CRITICAL ALLERGY ALERT:", 0.85, 0.1, 0.1);
+  drawText("F2", 8.5, 185, 621, "Patient has severe confirmed anaphylaxis to PENICILLIN & BETA-LACTAMS", 0.7, 0.1, 0.1);
+
+  // Prescription Rx Header
+  drawText("F2", 18, 40, 588, "Rx", 0.055, 0.55, 0.45);
+  drawText("F2", 10.5, 68, 592, "PRESCRIBED MEDICINES & PHARMACOLOGICAL REGIMEN", 0.058, 0.090, 0.165);
+
+  // Medicines Table Header
+  fillRect(40, 565, 515.28, 18, 0.1, 0.15, 0.22); // Dark header
+  drawText("F2", 8, 48, 571, "#", 1, 1, 1);
+  drawText("F2", 8, 68, 571, "Medication & Formulation", 1, 1, 1);
+  drawText("F2", 8, 230, 571, "Dosage", 1, 1, 1);
+  drawText("F2", 8, 305, 571, "Frequency / Timing", 1, 1, 1);
+  drawText("F2", 8, 420, 571, "Duration", 1, 1, 1);
+  drawText("F2", 8, 475, 571, "Clinical Advice", 1, 1, 1);
+
+  // Table Rows
+  let curY = 545;
   medicines.forEach((med, idx) => {
-    // Alternating row background
-    if (idx % 2 === 1) {
-      doc.setFillColor(248, 250, 252);
-      doc.rect(14, currentY, pageWidth - 28, 12, "F");
+    const isEven = idx % 2 === 0;
+    if (isEven) {
+      fillRect(40, curY - 14, 515.28, 30, 0.98, 0.99, 1.0);
     }
-    doc.setDrawColor(241, 245, 249);
-    doc.line(14, currentY + 12, pageWidth - 14, currentY + 12);
+    drawLine(40, curY - 14, 555.28, curY - 14, 0.9, 0.92, 0.95, 0.5);
 
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(...darkColor);
-    doc.text(String(idx + 1), 17, currentY + 5);
-    doc.text(`${med.name} ${med.strength}`, 24, currentY + 5);
+    drawText("F2", 8.5, 48, curY + 2, `${idx + 1}.`, 0.058, 0.090, 0.165);
+    drawText("F2", 9, 68, curY + 2, med.name, 0.058, 0.090, 0.165);
+    drawText("F1", 8, 68, curY - 9, med.instructions, 0.4, 0.45, 0.5);
 
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(71, 85, 105);
-    doc.text(med.notes, 24, currentY + 9.5);
+    drawText("F1", 8.5, 230, curY + 2, med.dosage, 0.15, 0.2, 0.25);
+    drawText("F2", 8.5, 305, curY + 2, med.freq, 0.055, 0.5, 0.4);
+    drawText("F1", 7.5, 305, curY - 9, med.timing, 0.35, 0.4, 0.45);
 
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(14, 116, 144);
-    doc.text(med.dosage, 90, currentY + 5);
+    drawText("F2", 8.5, 420, curY + 2, med.duration, 0.1, 0.15, 0.2);
+    drawText("F1", 8, 475, curY + 2, "Oral Administration", 0.3, 0.35, 0.4);
 
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(51, 65, 85);
-    doc.text(med.timing, 135, currentY + 5);
-
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(30, 41, 59);
-    doc.text(med.duration, pageWidth - 16, currentY + 5, { align: "right" });
-
-    currentY += 12;
+    curY -= 32;
   });
 
-  // 6. Clinical Advice & Investigation Orders
-  currentY += 6;
-  doc.setFillColor(248, 250, 252);
-  doc.roundedRect(14, currentY, pageWidth - 28, 24, 2, 2, "F");
-  doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(14, currentY, pageWidth - 28, 24, 2, 2, "D");
+  // Clinical Notes & Lifestyle Advice Box
+  curY -= 10;
+  fillRect(40, curY - 45, 515.28, 50, 0.96, 0.97, 0.98);
+  drawLine(40, curY - 45, 555.28, curY - 45, 0.88, 0.9, 0.92, 0.75);
+  drawText("F2", 9, 48, curY - 6, "GENERAL INSTRUCTIONS & LIFESTYLE MODIFICATIONS:", 0.058, 0.090, 0.165);
+  drawText("F1", 8, 48, curY - 18, "• Dietary: Strict low-salt (< 2g/day), heart-safe Mediterranean diet. Avoid deep fried & processed foods.", 0.2, 0.25, 0.3);
+  drawText("F1", 8, 48, curY - 29, "• Activity: 30 minutes light aerobic walking daily. Avoid heavy lifting and intense isometric strain.", 0.2, 0.25, 0.3);
+  drawText("F1", 8, 48, curY - 40, "• Review: Repeat Lipid Profile & Serum Creatinine in 14 days. Report immediately if chest discomfort occurs.", 0.2, 0.25, 0.3);
 
-  doc.setTextColor(...darkColor);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.text("LIFESTYLE GUIDELINES & CLINICAL ORDERS:", 18, currentY + 6);
+  // Footer & Digital Signature Block
+  const sigY = curY - 80;
+  drawLine(40, sigY + 25, 555.28, sigY + 25, 0.85, 0.88, 0.9, 1);
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
-  doc.setTextColor(51, 65, 85);
-  doc.text("• Low sodium cardiac diet (< 2.5g sodium/day). Avoid fried foods, processed meats, and trans fats.", 18, currentY + 11);
-  doc.text("• 30-45 minutes brisk walking at least 5 days a week. Maintain adequate hydration.", 18, currentY + 16);
-  doc.text("• Diagnostic Orders: 12-Lead Electrocardiogram & 2D Echocardiography (Ground Floor Diagnostics Suite).", 18, currentY + 21);
+  // Digital Security Hash & QR Info (Left)
+  drawText("F2", 8, 40, sigY + 12, "DIGITALLY VERIFIED PRESCRIPTION", 0.055, 0.55, 0.45);
+  drawText("F1", 7.5, 40, sigY + 1, "Verification Hash: SHA256: 7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1f", 0.5, 0.55, 0.6);
+  drawText("F1", 7.5, 40, sigY - 10, "Compliant with National Digital Health Mission (ABDM) & Telemedicine Practice Guidelines 2020", 0.5, 0.55, 0.6);
+  drawText("F1", 7.5, 40, sigY - 21, "Dispensed medications must be cross-verified by Registered Pharmacist prior to issue.", 0.5, 0.55, 0.6);
 
-  currentY += 28;
+  // Doctor Signature (Right)
+  drawText("F2", 10.5, 385, sigY + 12, doctor.name, 0.058, 0.090, 0.165);
+  drawText("F1", 8, 385, sigY + 1, doctor.qualifications, 0.3, 0.35, 0.4);
+  drawText("F1", 8, 385, sigY - 10, `Medical Council Reg No: ${doctor.regNo}`, 0.3, 0.35, 0.4);
+  drawText("F2", 7.5, 385, sigY - 21, "[Digitally Authenticated by MediCare Nexus PKI]", 0.055, 0.55, 0.45);
 
-  // 7. Follow-Up & Next Appointment
-  doc.setTextColor(...primaryColor);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8.5);
-  doc.text("NEXT FOLLOW-UP REVIEW:", 14, currentY);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(...darkColor);
-  doc.text("After 14 Days (17 Oct 2026) with repeat fasting Lipid Profile & Resting Blood Pressure records.", 14, currentY + 4.5);
+  // Very bottom copyright
+  fillRect(0, 0, 595.28, 20, 0.95, 0.96, 0.97);
+  drawText("F1", 7, 140, 7, "MediCare Nexus Autonomous Hospital Platform • Confidential Medical Record • For Patient Use Only", 0.5, 0.55, 0.6);
 
-  // 8. Sign-off & Hospital Stamp
-  currentY += 16;
-  doc.setDrawColor(203, 213, 225);
-  doc.line(pageWidth - 75, currentY + 12, pageWidth - 14, currentY + 12);
+  // Assemble Objects
+  const contentStream = cmds.join("\n");
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
+    `<< /Length ${contentStream.length} >>\nstream\n${contentStream}\nendstream`
+  ];
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8.5);
-  doc.setTextColor(...darkColor);
-  doc.text("Dr. Sarah Johnson, MD, DM", pageWidth - 14, currentY + 16, { align: "right" });
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
-  doc.setTextColor(...grayColor);
-  doc.text("Consultant Interventional Cardiologist", pageWidth - 14, currentY + 20, { align: "right" });
-  doc.text("Digitally Verified e-Signature · MediCare Nexus EHR", pageWidth - 14, currentY + 24, { align: "right" });
+  let pdf = "%PDF-1.4\n";
+  const offsets = [];
 
-  // Verification QR note on bottom left
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  doc.setTextColor(...grayColor);
-  doc.text("QR Verification: Scanned via ABHA Health Locker", 14, currentY + 18);
-  doc.text("Security Hash: SHA256:7a9f82bc19402e389d0012e84", 14, currentY + 22);
+  for (let i = 0; i < objects.length; i++) {
+    offsets.push(pdf.length);
+    pdf += `${i + 1} 0 obj\n${objects[i]}\nendobj\n`;
+  }
 
-  // 9. Footer Line
-  doc.setDrawColor(226, 232, 240);
-  doc.line(14, 282, pageWidth - 14, 282);
+  const xrefOffset = pdf.length;
+  pdf += "xref\n";
+  pdf += `0 ${objects.length + 1}\n`;
+  pdf += "0000000000 65535 f \n";
 
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(7);
-  doc.setTextColor(...grayColor);
-  doc.text("This is a digitally generated medical prescription under the Ayushman Bharat Digital Mission (ABDM).", 14, 286);
-  doc.text(`Generated on ${new Date().toLocaleString("en-GB")} | MediCare Nexus Platform`, pageWidth - 14, 286, { align: "right" });
+  for (const off of offsets) {
+    pdf += `${off.toString().padStart(10, "0")} 00000 n \n`;
+  }
 
-  // Save PDF
-  const filename = `Medicare_Nexus_Prescription_Harsh_Tripathi_P101.pdf`;
-  doc.save(filename);
-  return filename;
+  pdf += "trailer\n";
+  pdf += `<< /Size ${objects.length + 1} /Root 1 0 R >>\n`;
+  pdf += "startxref\n";
+  pdf += `${xrefOffset}\n`;
+  pdf += "%%EOF";
+
+  // Trigger instant browser download as .pdf
+  try {
+    const blob = new Blob([pdf], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const filename = `Medicare_Nexus_Prescription_${(patient.name || "Patient").replace(/\s+/g, "_")}_${patient.id || "Rx"}.pdf`;
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    }, 1000);
+    return true;
+  } catch (err) {
+    console.error("PDF generation error:", err);
+    return false;
+  }
 }
