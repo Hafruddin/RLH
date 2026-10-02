@@ -81,7 +81,27 @@ export default function LoginPage({ apiBase }) {
       }, 700);
     } catch (err) {
       console.error("login error", err);
-      toast.error("Network error during login");
+      // Offline / Demo fallback for hackathon presentations & static preview
+      const emailLower = (formData.email || "").toLowerCase();
+      let fallbackRole = "ADMIN";
+      let fallbackUrl = "/admin/dashboard";
+      if (emailLower.includes("patient")) {
+        fallbackRole = "PATIENT";
+        fallbackUrl = "/patient/dashboard";
+      } else if (emailLower.includes("doctor")) {
+        fallbackRole = "DOCTOR";
+        fallbackUrl = "/doctor/dashboard";
+      } else if (emailLower.includes("staff") || emailLower.includes("nurse") || emailLower.includes("lab") || emailLower.includes("pharm")) {
+        fallbackRole = "STAFF";
+        fallbackUrl = "/staff/dashboard";
+      }
+      localStorage.setItem("nexus_role", fallbackRole);
+      toast.success(`Demo Mode: Accessing ${fallbackRole} Portal`, {
+        style: toastStyles.successToast,
+      });
+      setTimeout(() => {
+        navigate(fallbackUrl);
+      }, 700);
     } finally {
       setBusy(false);
     }
