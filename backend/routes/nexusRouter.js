@@ -108,6 +108,7 @@ nexusRouter.post("/what-if", runWhatIfSimulation);
 
 // 1-Click Reproducible Scenario Execution (Section 51-56, 70)
 nexusRouter.post("/scenarios/run", runScenario);
+nexusRouter.post("/scenarios/:scenarioType/run", runScenario);
 
 // Human-in-the-Loop Recommendations (Section 29, 58)
 nexusRouter.get("/recommendations", getRecommendations);

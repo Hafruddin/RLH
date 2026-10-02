@@ -1106,36 +1106,29 @@ export const getAuditLogs = (req, res) => {
  */
 export const runScenario = async (req, res) => {
   try {
-    const { scenarioType, params } = req.body;
+    const rawKey = (req.body?.scenarioType || req.body?.scenarioKey || req.params?.scenarioType || req.params?.scenarioKey || "").toString();
+    const key = rawKey.toUpperCase().trim();
     let result = null;
 
-    switch (scenarioType) {
-      case "EMERGENCY_SURGE":
-        result = await nexusScenarioRunner.runEmergencySurgeScenario();
-        break;
-      case "PATIENT_TRANSFER":
-        result = await nexusScenarioRunner.runPatientTransferScenario();
-        break;
-      case "OT_CASCADE":
-        result = await nexusScenarioRunner.runOtDelayScenario(params?.delayMinutes || 45);
-        break;
-      case "CT_FAILURE":
-        result = await nexusScenarioRunner.runCtFailureScenario();
-        break;
-      case "NURSE_UNAVAILABLE":
-        result = await nexusScenarioRunner.runNurseUnavailableScenario();
-        break;
-      case "BED_RELEASE":
-        result = await nexusScenarioRunner.runBedReleaseScenario(params?.bedId || "ICU-08");
-        break;
-      case "COMPETING_DEMAND":
-        result = await nexusScenarioRunner.runCompetingDemandScenario();
-        break;
-      default:
-        return res.status(400).json({
-          success: false,
-          message: `Unknown scenarioType: ${scenarioType}. Supported: EMERGENCY_SURGE, PATIENT_TRANSFER, OT_CASCADE, CT_FAILURE, NURSE_UNAVAILABLE, BED_RELEASE, COMPETING_DEMAND`
-        });
+    if (key.includes("SURGE") || key === "EMERGENCY_SURGE") {
+      result = await nexusScenarioRunner.runEmergencySurgeScenario();
+    } else if (key.includes("TRANSFER") || key === "PATIENT_TRANSFER") {
+      result = await nexusScenarioRunner.runPatientTransferScenario();
+    } else if (key.includes("OT") || key.includes("SURGICAL") || key === "OT_CASCADE") {
+      result = await nexusScenarioRunner.runOtDelayScenario(req.body?.params?.delayMinutes || 45);
+    } else if (key.includes("CT") || key === "CT_FAILURE") {
+      result = await nexusScenarioRunner.runCtFailureScenario();
+    } else if (key.includes("NURSE") || key === "NURSE_UNAVAILABLE") {
+      result = await nexusScenarioRunner.runNurseUnavailableScenario();
+    } else if (key.includes("BED") || key === "BED_RELEASE") {
+      result = await nexusScenarioRunner.runBedReleaseScenario(req.body?.params?.bedId || "ICU-08");
+    } else if (key.includes("COMPETING") || key === "COMPETING_DEMAND") {
+      result = await nexusScenarioRunner.runCompetingDemandScenario();
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: `Unknown scenarioType: ${rawKey}. Supported: EMERGENCY_SURGE, PATIENT_TRANSFER, OT_CASCADE, CT_FAILURE, NURSE_UNAVAILABLE, BED_RELEASE, COMPETING_DEMAND`
+      });
     }
 
     res.json({ success: true, ...result });
