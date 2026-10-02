@@ -191,6 +191,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
         { id: "patient-registration", label: "Patient Registration", icon: FileText },
         { id: "book-appointment", label: "Book Appointment", icon: Calendar },
         { id: "journey-timeline", label: "Journey Timeline", icon: HeartPulse },
+        { id: "health-records", label: "Health Records", icon: FileCheck },
         { id: "insurance-readiness", label: "Insurance Readiness", icon: ShieldCheck },
         { id: "emergency-request", label: "Emergency Request", icon: AlertTriangle }
       ];
