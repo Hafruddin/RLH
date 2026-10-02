@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
-import { Menu, X, Stethoscope, ShieldCheck, Key } from "lucide-react";
+import { Menu, X, Stethoscope, ShieldCheck, Key, User } from "lucide-react";
 
 // Clerk
 import { SignedIn, SignedOut, useClerk, UserButton } from "@clerk/clerk-react";
@@ -144,11 +144,21 @@ export default function Navbar() {
 
             {/* Right side */}
             <div className={navbarStyles.rightContainer}>
+              {/* 0. Patient Portal Link */}
+              <Link
+                to="/patient/dashboard"
+                className={navbarStyles.doctorButton}
+                title="Patient Care Portal"
+              >
+                <User className={navbarStyles.doctorIcon} />
+                <span className={navbarStyles.doctorText}>Patient</span>
+              </Link>
+
               {/* 1. Doctor Login */}
               <Link
-                to="/doctor-admin/login"
+                to="/doctor/dashboard"
                 className={navbarStyles.doctorButton}
-                title="Doctor Login Portal"
+                title="Doctor Workbench Portal"
               >
                 <Stethoscope className={navbarStyles.doctorIcon} />
                 <span className={navbarStyles.doctorText}>Doctor</span>
@@ -156,7 +166,7 @@ export default function Navbar() {
 
               {/* 2. Admin Command Center */}
               <Link
-                to="/admin"
+                to="/admin/dashboard"
                 className={navbarStyles.adminButton}
                 title="MediCare Nexus Command Center"
               >
@@ -178,6 +188,13 @@ export default function Navbar() {
 
               {/* Patient Logged In */}
               <SignedIn>
+                <Link
+                  to="/patient/dashboard"
+                  className="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200 transition"
+                  title="My Patient Portal"
+                >
+                  My Portal
+                </Link>
                 <UserButton afterSignOutUrl="/" />
               </SignedIn>
 
@@ -221,16 +238,25 @@ export default function Navbar() {
               {/* 3 Logins in mobile menu */}
               <div className="pt-3 border-t border-emerald-100 space-y-2">
                 <Link
-                  to="/doctor-admin/login"
+                  to="/patient/dashboard"
+                  onClick={() => setIsOpen(false)}
+                  className={navbarStyles.mobileDoctorButton}
+                >
+                  <User className="w-4 h-4 text-emerald-600" />
+                  <span>Patient Portal</span>
+                </Link>
+
+                <Link
+                  to="/doctor/dashboard"
                   onClick={() => setIsOpen(false)}
                   className={navbarStyles.mobileDoctorButton}
                 >
                   <Stethoscope className="w-4 h-4 text-emerald-600" />
-                  <span>Doctor Login</span>
+                  <span>Doctor Workbench</span>
                 </Link>
 
                 <Link
-                  to="/admin"
+                  to="/admin/dashboard"
                   onClick={() => setIsOpen(false)}
                   className={navbarStyles.mobileAdminButton}
                 >
