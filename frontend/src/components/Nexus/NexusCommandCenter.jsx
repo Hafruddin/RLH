@@ -12,6 +12,7 @@ import {
   RefreshCw,
   RotateCcw,
   ShieldAlert,
+  ShieldCheck,
   Sparkles,
   Stethoscope,
   TrendingUp,
