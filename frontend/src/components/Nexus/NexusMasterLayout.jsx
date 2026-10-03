@@ -226,7 +226,6 @@ export default function NexusMasterLayout({ initialRole = null }) {
         { id: "staff-dashboard", label: "Task Inbox & Dashboard", icon: UserCheck, badge: "Active" },
         { id: "smart-op-queues", label: "Smart OP & Virtual Queue Management", icon: Compass, badge: "Live" },
         { id: "resource-heatmap", label: "Resource Heatmap", icon: Flame, badge: "RPI" },
-        { id: "security-privacy", label: "Emergency Access", icon: ShieldCheck, badge: "Break-Glass" },
         { id: "transfers", label: "Patient Transfers", icon: Truck, badge: "5 Stages" },
         { id: "equipment", label: "Life Support Equipment", icon: HeartPulse, badge: "20 Assets" },
         { id: "copilot", label: "Staff Assistant", icon: Cpu, badge: "AI" }
@@ -640,7 +639,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
           {activeTab === "resource-heatmap" && <ResourceHeatmapView />}
           {activeTab === "dynamic-scheduling" && <DynamicSchedulingView />}
           {activeTab === "smart-op-queues" && currentRole !== "PATIENT" && <SmartOpQueueView />}
-          {activeTab === "security-privacy" && currentRole !== "PATIENT" && <SecurityPrivacyCenterView />}
+          {activeTab === "security-privacy" && currentRole !== "PATIENT" && currentRole !== "STAFF" && <SecurityPrivacyCenterView />}
           {activeTab === "ai-ml-strategy" && <AiMlStrategyView />}
 
           {/* 1. PATIENT PORTAL VIEWS */}
@@ -670,7 +669,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
           {currentRole === "STAFF" && (
             <>
               {activeTab === "hospital-simulator" && <SimulationStudio />}
-              {activeTab === "staff-dashboard" && <StaffDashboardView staffDepartment="NURSING" />}
+              {(activeTab === "staff-dashboard" || activeTab === "security-privacy") && <StaffDashboardView staffDepartment="NURSING" />}
               {activeTab === "transfers" && <PatientTransferView />}
               {activeTab === "equipment" && <EquipmentView />}
               {activeTab === "copilot" && <NexusCopilot />}
