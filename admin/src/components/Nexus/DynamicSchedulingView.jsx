@@ -67,7 +67,7 @@ export default function DynamicSchedulingView() {
   return (
     <div className="space-y-5 animate-fade-in">
       {/* ─────────────────────────────────────────────────────────────
-          1. Header & Jury Statement Banner
+          1. Header: Dynamic Multi-Resource Scheduling
       ────────────────────────────────────────────────────────────── */}
       <div className="bg-slate-900 text-white rounded-2xl p-5 sm:p-6 border border-slate-800 shadow-xl relative overflow-hidden">
         <div className="absolute right-0 top-0 bottom-0 w-96 bg-gradient-to-l from-indigo-500/10 via-purple-500/10 to-transparent pointer-events-none" />
@@ -86,12 +86,12 @@ export default function DynamicSchedulingView() {
               </span>
             </div>
             <p className="text-slate-400 text-xs max-w-3xl leading-relaxed">
-              Jury Requirement 1: Solves multi-resource dynamic scheduling with strict hard constraints (no overlapping OT, no doctor double-booking, simultaneous staff readiness) and soft constraints (preferred surgeon, minimized wait time, high capacity efficiency).
+              Multi-Resource Constraint Engine: Solves dynamic clinical scheduling with strict hard constraints (no overlapping OT, no doctor double-booking, simultaneous staff readiness) and soft constraints (preferred surgeon, minimized wait time, high capacity efficiency).
             </p>
           </div>
         </div>
 
-        {/* Strong Jury Line Quote */}
+        {/* Architectural Principle */}
         <div className="mt-4 p-3.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs text-indigo-300 font-semibold flex items-center gap-2.5">
           <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
           <span>

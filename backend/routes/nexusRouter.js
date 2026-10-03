@@ -152,7 +152,7 @@ nexusRouter.get("/integration/fhir/observation/:id", getFhirObservationResource)
 nexusRouter.post("/copilot/chat", copilotQuery);
 
 // ─────────────────────────────────────────────────────────────
-// Round 2 Modules (Jury 25 Marks Specifications)
+// Clinical Optimization & Orchestration Modules
 // ─────────────────────────────────────────────────────────────
 import {
   getResourceHeatmap,

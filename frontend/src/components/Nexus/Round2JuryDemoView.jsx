@@ -1,7 +1,7 @@
 // frontend/src/components/Nexus/Round2JuryDemoView.jsx
 import React, { useState, useEffect } from "react";
 import {
-  Trophy,
+  Workflow,
   Play,
   CheckCircle2,
   Clock,
@@ -197,26 +197,26 @@ export default function Round2JuryDemoView() {
   return (
     <div className="space-y-5 animate-fade-in">
       {/* ─────────────────────────────────────────────────────────────
-          1. Header & 25-Marks Round 2 Banner
+          1. Header: Integrated Clinical Journey Orchestrator
       ────────────────────────────────────────────────────────────── */}
       <div className="bg-slate-900 text-white rounded-2xl p-5 sm:p-6 border border-slate-800 shadow-xl relative overflow-hidden">
-        <div className="absolute right-0 top-0 bottom-0 w-96 bg-gradient-to-l from-amber-500/10 via-purple-500/10 to-transparent pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-96 bg-gradient-to-l from-indigo-500/10 via-purple-500/10 to-transparent pointer-events-none" />
 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                <Trophy className="w-5 h-5" />
+              <span className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                <Workflow className="w-5 h-5" />
               </span>
               <h1 className="text-xl sm:text-2xl font-black tracking-tight">
-                Round 2 Jury Demonstration Suite (25 Marks)
+                Integrated Clinical Care Pathway Simulator
               </h1>
               <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                13-Step Automated Walkthrough
+                13-Stage Operational Workflow
               </span>
             </div>
             <p className="text-slate-400 text-xs max-w-3xl leading-relaxed">
-              Demonstrates complete Journey-Aware OP + Diagnostic Queue + Resource Heatmap + CP-SAT Dynamic Scheduling + Security & Privacy in an unbroken closed-loop sequence.
+              Real-time operational walkthrough of an unbroken hospital care pathway: Smart Kiosk Check-In → Dynamic Consultation → Automated Diagnostic Routing → Predictive Congestion Detection → CP-SAT Re-Optimization → Dynamic Discharge & Care Continuity.
             </p>
           </div>
 
@@ -231,13 +231,13 @@ export default function Round2JuryDemoView() {
               }`}
             >
               <Play className={`w-3.5 h-3.5 ${isRunningAll ? "animate-pulse" : ""}`} />
-              {isRunningAll ? "Pause Auto-Run" : "▶ Play All 13 Steps"}
+              {isRunningAll ? "Pause Pathway" : "▶ Run Care Pathway (13 Stages)"}
             </button>
 
             <button
               onClick={handleReset}
               className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer"
-              title="Reset Demo to Step 1"
+              title="Reset Pathway to Stage 1"
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
@@ -247,12 +247,12 @@ export default function Round2JuryDemoView() {
         {/* Progress Bar Across 13 Steps */}
         <div className="mt-4 pt-3 border-t border-slate-800 space-y-1.5">
           <div className="flex items-center justify-between text-xs text-slate-400 font-bold">
-            <span>Demo Progress: Step {currentStepIdx + 1} of 13</span>
+            <span>Pathway Progress: Stage {currentStepIdx + 1} of 13</span>
             <span className="text-emerald-400 font-mono">{Math.round(((currentStepIdx + 1) / 13) * 100)}% Completed</span>
           </div>
           <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-emerald-500 via-purple-500 to-amber-500 transition-all duration-300"
+              className="h-full bg-gradient-to-r from-emerald-500 via-purple-500 to-indigo-500 transition-all duration-300"
               style={{ width: `${((currentStepIdx + 1) / 13) * 100}%` }}
             />
           </div>
@@ -365,40 +365,40 @@ export default function Round2JuryDemoView() {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          4. Strong Jury Defensibility Points
+          4. Enterprise Architectural & Clinical Standards
       ────────────────────────────────────────────────────────────── */}
       <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200/80 space-y-3 text-xs">
         <h3 className="font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-amber-500" />
-          Key Defensibility Statements for Round 2 Evaluation
+          <Sparkles className="w-4 h-4 text-indigo-500" />
+          Enterprise Architectural & Clinical Standards
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px] text-slate-700">
           <div className="p-3 rounded-xl bg-white border border-slate-200 space-y-1">
-            <strong className="text-purple-900 block">1. Dynamic Scheduling:</strong>
+            <strong className="text-purple-900 block">1. Dynamic Multi-Resource Scheduling:</strong>
             <p>
-              "We don't treat scheduling as a simple calendar problem. We model it as a constraint optimization problem where OT, staff, equipment, patient readiness and time dependencies are considered together."
+              "Schedules are solved as constraint optimization problems where operating theatres, surgical staff, life support equipment, patient readiness and time dependencies are harmonized simultaneously."
             </p>
           </div>
 
           <div className="p-3 rounded-xl bg-white border border-slate-200 space-y-1">
-            <strong className="text-emerald-900 block">2. Smart OP & Queues:</strong>
+            <strong className="text-emerald-900 block">2. Smart OP & Continuous Journey Routing:</strong>
             <p>
-              "Move the information, not the patient. Diagnostic orders route automatically without second physical registration, and doctor-review queues trigger dynamically upon result completion."
+              "Move information, not the patient. Diagnostic orders route automatically without second physical registration, and doctor-review queues trigger dynamically upon report sign-off."
             </p>
           </div>
 
           <div className="p-3 rounded-xl bg-white border border-slate-200 space-y-1">
-            <strong className="text-amber-900 block">3. Predictive Heatmaps:</strong>
+            <strong className="text-amber-900 block">3. Predictive Operational Heatmaps:</strong>
             <p>
-              "The heatmap is not only a dashboard. It becomes predictive when current utilization is combined with pending demand, forecasted arrivals, and expected discharges."
+              "Real-time visibility combined with predictive forecasts (+2h, +4h, +8h) factoring in current occupancy, queue velocity, incoming emergencies, and planned discharges."
             </p>
           </div>
 
           <div className="p-3 rounded-xl bg-white border border-slate-200 space-y-1">
-            <strong className="text-blue-900 block">4. Security & Privacy:</strong>
+            <strong className="text-blue-900 block">4. Zero-Trust Security & Patient Consent:</strong>
             <p>
-              "Layered security with object-level authorization (verifying specific patient/record permissions, not just roles), active patient consent, and audited 15-minute emergency break-glass access."
+              "Layered security with object-level authorization, DPDP-compliant patient consent preferences, and an audited 15-minute emergency break-glass clinical override protocol."
             </p>
           </div>
         </div>

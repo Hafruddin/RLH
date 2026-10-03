@@ -1001,7 +1001,7 @@ export const nexusApi = {
     return this.runSimulation(scenario);
   },
 
-  // ─── ROUND 2 CORE APIS (Jury 25 Marks Specifications) ───
+  // ─── CLINICAL OPTIMIZATION & ORCHESTRATION APIS ───
   async getResourceHeatmap() {
     const data = await safeFetch("/api/nexus/heatmap");
     return data || null;

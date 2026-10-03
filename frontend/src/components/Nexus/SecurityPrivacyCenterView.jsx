@@ -116,7 +116,7 @@ export default function SecurityPrivacyCenterView() {
               </span>
             </div>
             <p className="text-slate-400 text-xs max-w-3xl leading-relaxed">
-              Jury Requirement 4 & 7: Layered authentication, RBAC, object-level authorization, encryption at rest & in-transit, dynamic patient consent management, tamper-evident audit logging, and controlled emergency break-glass access.
+              Zero-Trust Clinical Security Architecture: Layered authentication, RBAC, object-level authorization, encryption at rest & in-transit, dynamic patient consent management, tamper-evident audit logging, and controlled emergency break-glass access.
             </p>
           </div>
 
@@ -137,7 +137,7 @@ export default function SecurityPrivacyCenterView() {
           </div>
         </div>
 
-        {/* Security Jury Statement */}
+        {/* Security Policy Statement */}
         <div className="mt-4 p-3.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs text-slate-300 flex flex-wrap items-center justify-between gap-2.5">
           <div className="flex items-center gap-2 text-purple-300 font-semibold">
             <Lock className="w-4 h-4 text-purple-400 shrink-0" />

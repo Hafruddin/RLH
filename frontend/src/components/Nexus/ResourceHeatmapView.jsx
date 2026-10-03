@@ -88,7 +88,7 @@ export default function ResourceHeatmapView() {
               </span>
             </div>
             <p className="text-slate-400 text-xs max-w-3xl leading-relaxed">
-              Jury Requirement 2: Real-time and predictive resource heatmaps across beds, ICU, doctors, nurses, OT suites, diagnostic machines, and pharmacy inventory. Combines current occupancy with pending requests, predicted arrivals, and expected discharges.
+              Hospital-Wide Resource Intelligence: Real-time and predictive resource heatmaps across beds, ICU, doctors, nurses, OT suites, diagnostic machines, and pharmacy inventory. Combines current occupancy with pending requests, predicted arrivals, and expected discharges.
             </p>
           </div>
 

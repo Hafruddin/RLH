@@ -122,7 +122,7 @@ export default function SmartOpQueueView() {
               </span>
             </div>
             <p className="text-slate-400 text-xs max-w-3xl leading-relaxed">
-              Jury Requirement 3 & 6: Journey-aware virtual dynamic queues that automatically move patients between consultation, diagnostic, result-ready, and doctor-review stages without repeated manual registration.
+              Patient-Centered Virtual Queue Architecture: Journey-aware virtual dynamic queues that automatically route patients between consultation, diagnostic, result-ready, and doctor-review stages without repeated manual registration.
             </p>
           </div>
 

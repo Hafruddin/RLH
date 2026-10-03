@@ -40,7 +40,6 @@ import {
   Sparkles,
   Stethoscope,
   TrendingUp,
-  Trophy,
   Truck,
   User,
   UserCheck,
@@ -72,7 +71,7 @@ import RecommendationsView from "./RecommendationsView";
 import PatientTransferView from "./PatientTransferView";
 import ConflictResolutionView from "./ConflictResolutionView";
 
-// Round 2 Modules (Jury 25 Marks Specifications)
+// Clinical Optimization & Orchestration Modules
 import ResourceHeatmapView from "./ResourceHeatmapView";
 import DynamicSchedulingView from "./DynamicSchedulingView";
 import SmartOpQueueView from "./SmartOpQueueView";
@@ -200,7 +199,6 @@ export default function NexusMasterLayout({ initialRole = null }) {
         { id: "patient-dashboard", label: "Patient Dashboard", icon: User },
         { id: "smart-op-queues", label: "My Virtual Queue & Journey", icon: Compass, badge: "Live ETA" },
         { id: "security-privacy", label: "My Privacy & Consent", icon: ShieldCheck, badge: "DPDP" },
-        { id: "jury-demo", label: "Round 2 Demo", icon: Trophy, badge: "25 Marks ⭐" },
         { id: "visit-center", label: "Unified Visit Center", icon: Activity },
         { id: "patient-registration", label: "Patient Registration", icon: FileText },
         { id: "book-appointment", label: "Book Appointment", icon: Calendar },
@@ -218,7 +216,6 @@ export default function NexusMasterLayout({ initialRole = null }) {
         { id: "dynamic-scheduling", label: "Dynamic Scheduling", icon: Cpu, badge: "CP-SAT" },
         { id: "resource-heatmap", label: "Resource Heatmap", icon: Flame, badge: "Live" },
         { id: "security-privacy", label: "Patient Privacy & Consent", icon: ShieldCheck, badge: "ABAC" },
-        { id: "jury-demo", label: "Round 2 Demo", icon: Trophy, badge: "25 Marks ⭐" },
         { id: "ot", label: "Operating Theatres", icon: Activity, badge: "8 Suites" },
         { id: "diagnostics", label: "Diagnostic Orders", icon: Microscope, badge: "Imaging" },
         { id: "journey", label: "Patient Clinical Journey", icon: Compass, badge: "EHR" },
@@ -234,20 +231,19 @@ export default function NexusMasterLayout({ initialRole = null }) {
         { id: "security-privacy", label: "Emergency Access", icon: ShieldCheck, badge: "Break-Glass" },
         { id: "transfers", label: "Patient Transfers", icon: Truck, badge: "5 Stages" },
         { id: "equipment", label: "Life Support Equipment", icon: HeartPulse, badge: "20 Assets" },
-        { id: "jury-demo", label: "Round 2 Demo", icon: Trophy, badge: "25 Marks ⭐" },
         { id: "copilot", label: "Staff Assistant", icon: Cpu, badge: "AI" }
       ];
     }
 
     // HOSPITAL ADMIN (Full 23-Section Operational Command)
     return [
-      { id: "jury-demo", label: "Round 2 Jury Demo", icon: Trophy, badge: "25 Marks ⭐" },
+      { id: "overview", label: "Command Center", icon: Radio, badge: "LIVE" },
       { id: "resource-heatmap", label: "Resource Heatmap", icon: Flame, badge: "RPI Live" },
       { id: "dynamic-scheduling", label: "Dynamic Scheduling", icon: Cpu, badge: "CP-SAT" },
       { id: "smart-op-queues", label: "Smart OP Queues", icon: Compass, badge: "Virtual" },
       { id: "security-privacy", label: "Security & Privacy", icon: ShieldCheck, badge: "Break-Glass" },
       { id: "ai-ml-strategy", label: "AI/ML Strategy", icon: Brain, badge: "6 Models" },
-      { id: "overview", label: "Command Center", icon: Radio, badge: "LIVE" },
+      { id: "jury-demo", label: "Care Pathway Simulator", icon: Workflow, badge: "13 Stages" },
       { id: "recommendations", label: "Approvals & Recommendations", icon: ShieldCheck, badge: "Decision" },
       { id: "dependencies", label: "Dependency & Cascade Graph", icon: Network, badge: "Graph" },
       { id: "transfers", label: "Patient Transfers", icon: Compass, badge: "5 Stages" },
@@ -573,51 +569,35 @@ export default function NexusMasterLayout({ initialRole = null }) {
               </div>
             </div>
 
-            {/* Hospital Simulator Button (Scenarios A-H) */}
-            <button
-              onClick={() => setActiveTab("hospital-simulator")}
-              className={`w-full mt-4 p-3 rounded-xl border transition-all text-left flex items-center justify-between group cursor-pointer ${
-                activeTab === "hospital-simulator"
-                  ? "bg-[#0e2744] border-cyan-400 shadow-md ring-1 ring-cyan-400/50"
-                  : "bg-[#0e2238] border-cyan-800/40 hover:border-cyan-500/60"
-              }`}
-            >
-              <div className="flex items-center gap-2 text-xs font-black text-cyan-400">
-                <span className="text-cyan-400 font-bold">▶</span>
-                <span className="text-slate-100 group-hover:text-cyan-300">Hospital Simulator</span>
-              </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-500/30">
-                SCENARIOS A-H
-              </span>
-            </button>
-
-            {/* Round 2 Jury Demo Button (25 Marks) */}
-            <button
-              onClick={() => setActiveTab("jury-demo")}
-              className={`w-full mt-2 p-3 rounded-xl border transition-all text-left flex items-center justify-between group cursor-pointer ${
-                activeTab === "jury-demo"
-                  ? "bg-[#2d1b06] border-amber-400 shadow-md ring-1 ring-amber-400/50"
-                  : "bg-[#1f1304] border-amber-800/40 hover:border-amber-500/60"
-              }`}
-            >
-              <div className="flex items-center gap-2 text-xs font-black text-amber-400">
-                <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-slate-100 group-hover:text-amber-300">Round 2 Jury Demo</span>
-              </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-500/30">
-                25 MARKS ⭐
-              </span>
-            </button>
+            {/* Hospital Simulator Button (Scenarios A-H) - Only for Admin */}
+            {currentRole === "ADMIN" && (
+              <button
+                onClick={() => setActiveTab("hospital-simulator")}
+                className={`w-full mt-4 p-3 rounded-xl border transition-all text-left flex items-center justify-between group cursor-pointer ${
+                  activeTab === "hospital-simulator"
+                    ? "bg-[#0e2744] border-cyan-400 shadow-md ring-1 ring-cyan-400/50"
+                    : "bg-[#0e2238] border-cyan-800/40 hover:border-cyan-500/60"
+                }`}
+              >
+                <div className="flex items-center gap-2 text-xs font-black text-cyan-400">
+                  <span className="text-cyan-400 font-bold">▶</span>
+                  <span className="text-slate-100 group-hover:text-cyan-300">Hospital Simulator</span>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-500/30">
+                  SCENARIOS A-H
+                </span>
+              </button>
+            )}
 
             {/* Section Category Title */}
-            <div className="mt-6 px-1 text-[11px] font-black uppercase text-slate-400 tracking-wider">
+            <div className={`${currentRole === "ADMIN" ? "mt-6" : "mt-4"} px-1 text-[11px] font-black uppercase text-slate-400 tracking-wider`}>
               {currentRole === "PATIENT"
-                ? "PORTAL 1: PATIENT & ATTENDANT"
+                ? "PATIENT SERVICES"
                 : currentRole === "DOCTOR"
-                ? "PORTAL 2: DOCTOR WORKBENCH"
+                ? "CLINICAL WORKBENCH"
                 : currentRole === "STAFF"
-                ? "PORTAL 4: STAFF & SERVICES"
-                : "PORTAL 3: HOSPITAL ADMIN"}
+                ? "STAFF & NURSING OPERATIONS"
+                : "HOSPITAL COMMAND & CONTROL"}
             </div>
 
             {/* Menu Items List */}
@@ -657,7 +637,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
 
         {/* Right Main Content Panel */}
         <main className="flex-1 bg-slate-100 text-slate-900 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          {/* Universal Round 2 Core Module Views (25 Marks) */}
+          {/* Clinical Optimization & Orchestration Module Views */}
           {activeTab === "jury-demo" && <Round2JuryDemoView />}
           {activeTab === "resource-heatmap" && <ResourceHeatmapView />}
           {activeTab === "dynamic-scheduling" && <DynamicSchedulingView />}

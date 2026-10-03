@@ -77,7 +77,7 @@ export default function AiMlStrategyView() {
               </span>
             </div>
             <p className="text-slate-400 text-xs max-w-3xl leading-relaxed">
-              Jury Requirement 5: Problem-specific algorithm selection rather than treating AI as a monolith. Combines Predictive ML (XGBoost/LightGBM) for demand and wait times, Constraint Programming (Google OR-Tools CP-SAT) for multi-resource allocation, Isolation Forest for anomaly detection, and Reinforcement Learning (DQN) as an advanced optimization layer.
+              Hospital Intelligence Architecture: Problem-specific algorithm selection rather than treating AI as a monolith. Combines Predictive ML (XGBoost/LightGBM) for demand and wait times, Constraint Programming (Google OR-Tools CP-SAT) for multi-resource allocation, Isolation Forest for anomaly detection, and Reinforcement Learning (DQN) as an advanced optimization layer.
             </p>
           </div>
         </div>
