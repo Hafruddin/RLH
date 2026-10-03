@@ -23,6 +23,208 @@ import {
 } from "lucide-react";
 import { nexusApi } from "./nexusApi";
 
+// ── Fallback demo journeys shown when backend is unreachable ──────────────────
+const DEMO_JOURNEYS = [
+  {
+    journeyId: "JRN-2026-8812",
+    patientId: "P-101",
+    patientName: "Harsh Tripathi",
+    age: 34,
+    gender: "Male",
+    bloodGroup: "O+",
+    abhaId: "91-8273-4412-9901",
+    opdToken: "OPD-A104",
+    departmentToken: "OPD-A104",
+    stage: "CONSULTATION_COMPLETED",
+    assignedDoctor: { id: "DOC-01", name: "Dr. Sarah Johnson", specialty: "Cardiology" },
+    vitals: { bp: "120/80 mmHg", pulse: "72 bpm", spo2: "98%", temp: "98.6 °F" },
+    diagnosticsOrdered: [
+      {
+        testId: "TEST-01",
+        type: "Complete Blood Profile & Cardiac Troponin",
+        department: "Laboratory / Pathology",
+        status: "RESULT_READY",
+        token: "LAB-B201",
+        estimatedDurationMin: 20,
+        completedAt: new Date(Date.now() - 10 * 60000).toISOString(),
+        resultSummary: "Troponin I: <0.01 ng/mL (Normal), Hb: 14.2 g/dL, WBC: 7.2 x 10^3/uL",
+      },
+      {
+        testId: "TEST-02",
+        type: "High-Resolution CT Angiography",
+        department: "Radiology / CT Suite",
+        status: "IN_QUEUE",
+        token: "CT-C102",
+        estimatedDurationMin: 15,
+        queuePosition: 2,
+        virtualEtaMin: 18,
+      }
+    ],
+    doctorReviewQueue: {
+      status: "PENDING_DIAGNOSTICS",
+      priority: "HIGH",
+      estimatedReviewTime: "11:25 AM",
+      virtualEtaMinutes: 18,
+      assignedDoctor: "Dr. Sarah Johnson"
+    },
+    prescription: null,
+    notifications: [
+      {
+        id: "NOTIF-1",
+        message: "Your Blood Profile results are READY. Linked automatically to Journey JRN-2026-8812.",
+        time: "10:50 AM",
+        read: true,
+      },
+      {
+        id: "NOTIF-2",
+        message: "CT Angiography ETA updated: ~18 mins. Please proceed to Radiology Floor 1 only when notified.",
+        time: "10:52 AM",
+        read: false,
+      }
+    ]
+  },
+  {
+    journeyId: "JRN-2026-8815",
+    patientId: "P-102",
+    patientName: "Elena Rostova",
+    age: 42,
+    gender: "Female",
+    bloodGroup: "A+",
+    abhaId: "91-7721-3902-8811",
+    opdToken: "OPD-B105",
+    departmentToken: "OPD-B105",
+    stage: "DOCTOR_REVIEW_QUEUED",
+    assignedDoctor: { id: "DOC-02", name: "Dr. Rajesh Gupta", specialty: "Orthopedics" },
+    vitals: { bp: "118/76 mmHg", pulse: "68 bpm", spo2: "99%", temp: "98.2 °F" },
+    diagnosticsOrdered: [
+      {
+        testId: "TEST-03",
+        type: "Digital X-Ray Right Knee (AP & Lateral)",
+        department: "Radiology Suite 2",
+        status: "RESULT_READY",
+        token: "XRAY-X101",
+        completedAt: new Date(Date.now() - 5 * 60000).toISOString(),
+        resultSummary: "Mild medial joint space narrowing. No acute fracture detected.",
+      }
+    ],
+    doctorReviewQueue: {
+      status: "READY_FOR_REVIEW",
+      priority: "STANDARD",
+      estimatedReviewTime: "11:15 AM",
+      virtualEtaMinutes: 6,
+      assignedDoctor: "Dr. Rajesh Gupta"
+    },
+    prescription: null,
+    notifications: [
+      {
+        id: "NOTIF-3",
+        message: "Digital X-Ray report ready. Doctor review queue #02 created automatically — no re-registration needed.",
+        time: "11:02 AM",
+        read: false,
+      }
+    ]
+  },
+  {
+    journeyId: "JRN-2026-8820",
+    patientId: "P-103",
+    patientName: "Mohammed Al-Rashid",
+    age: 58,
+    gender: "Male",
+    bloodGroup: "B+",
+    abhaId: "91-5541-2218-7743",
+    opdToken: "OPD-C203",
+    departmentToken: "OPD-C203",
+    stage: "PRESCRIPTION_GENERATED",
+    assignedDoctor: { id: "DOC-03", name: "Dr. Priya Sharma", specialty: "General Medicine" },
+    vitals: { bp: "138/88 mmHg", pulse: "80 bpm", spo2: "97%", temp: "99.1 °F" },
+    diagnosticsOrdered: [
+      {
+        testId: "TEST-05",
+        type: "Fasting Blood Glucose & HbA1c",
+        department: "Laboratory / Pathology",
+        status: "RESULT_READY",
+        token: "LAB-B209",
+        completedAt: new Date(Date.now() - 25 * 60000).toISOString(),
+        resultSummary: "FBG: 182 mg/dL (High), HbA1c: 8.4% — Diabetes management plan updated.",
+      }
+    ],
+    doctorReviewQueue: {
+      status: "REVIEW_COMPLETED",
+      priority: "STANDARD",
+      estimatedReviewTime: "10:50 AM",
+      virtualEtaMinutes: 0,
+      assignedDoctor: "Dr. Priya Sharma"
+    },
+    prescription: { rxId: "RX-2026-5521", pharmacy: "Ground Floor Dispensary", status: "READY_FOR_PICKUP" },
+    notifications: [
+      {
+        id: "NOTIF-5",
+        message: "Your e-prescription (RX-2026-5521) is ready for collection at the Ground Floor Dispensary.",
+        time: "10:55 AM",
+        read: true,
+      },
+      {
+        id: "NOTIF-6",
+        message: "Doctor review completed. Diagnosis: Type 2 Diabetes — adjusted medication plan issued.",
+        time: "10:53 AM",
+        read: true,
+      }
+    ]
+  },
+  {
+    journeyId: "JRN-2026-8831",
+    patientId: "P-104",
+    patientName: "Ananya Krishnamurthy",
+    age: 29,
+    gender: "Female",
+    bloodGroup: "AB-",
+    abhaId: "91-3312-9901-6628",
+    opdToken: "OPD-D301",
+    departmentToken: "OPD-D301",
+    stage: "DIAGNOSTIC_IN_PROGRESS",
+    assignedDoctor: { id: "DOC-04", name: "Dr. Vikram Nair", specialty: "Gynecology" },
+    vitals: { bp: "110/72 mmHg", pulse: "76 bpm", spo2: "99%", temp: "98.8 °F" },
+    diagnosticsOrdered: [
+      {
+        testId: "TEST-07",
+        type: "Pelvic Ultrasound (Abdominal & Transvaginal)",
+        department: "Sonography Suite 1",
+        status: "IN_QUEUE",
+        token: "USG-U110",
+        estimatedDurationMin: 25,
+        queuePosition: 1,
+        virtualEtaMin: 10,
+      },
+      {
+        testId: "TEST-08",
+        type: "Thyroid Function Test (TSH, T3, T4)",
+        department: "Laboratory / Endocrinology",
+        status: "IN_QUEUE",
+        token: "LAB-B215",
+        estimatedDurationMin: 30,
+        queuePosition: 3,
+        virtualEtaMin: 35,
+      }
+    ],
+    doctorReviewQueue: {
+      status: "PENDING_DIAGNOSTICS",
+      priority: "STANDARD",
+      estimatedReviewTime: "12:10 PM",
+      virtualEtaMinutes: 45,
+      assignedDoctor: "Dr. Vikram Nair"
+    },
+    prescription: null,
+    notifications: [
+      {
+        id: "NOTIF-8",
+        message: "You are next in queue for Pelvic Ultrasound (USG-U110). Please proceed to Sonography Suite 1, Floor 2.",
+        time: "11:28 AM",
+        read: false,
+      }
+    ]
+  }
+];
+
 export default function SmartOpQueueView() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,11 +234,15 @@ export default function SmartOpQueueView() {
   const loadData = async () => {
     try {
       const res = await nexusApi.getOpQueues();
-      if (res && res.success) {
+      if (res && res.success && res.activeJourneys && res.activeJourneys.length > 0) {
         setData(res);
+      } else {
+        // Fallback to demo data when backend is unreachable or returns empty
+        setData({ success: true, activeJourneys: DEMO_JOURNEYS });
       }
     } catch (e) {
-      console.error("Failed to load OP queues", e);
+      console.error("Backend unavailable — using demo journeys", e);
+      setData({ success: true, activeJourneys: DEMO_JOURNEYS });
     } finally {
       setLoading(false);
     }
