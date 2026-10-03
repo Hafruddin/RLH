@@ -232,6 +232,9 @@ export default function PatientDashboardView({ activeTab = "patient-dashboard", 
   // Emergency SOS Trigger
   const handleTriggerEmergency = async () => {
     setActiveEmergency(true);
+    if (setActiveTab) {
+      setActiveTab("emergency-request");
+    }
     try {
       const res = await nexusApi.triggerEmergency({
         patientId: patientData.patientId,
