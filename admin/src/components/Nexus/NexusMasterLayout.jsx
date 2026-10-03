@@ -197,7 +197,6 @@ export default function NexusMasterLayout({ initialRole = null }) {
     if (currentRole === "PATIENT") {
       return [
         { id: "patient-dashboard", label: "Patient Dashboard", icon: User },
-        { id: "security-privacy", label: "My Privacy & Consent", icon: ShieldCheck, badge: "DPDP" },
         { id: "visit-center", label: "Unified Visit Center", icon: Activity },
         { id: "patient-registration", label: "Patient Registration", icon: FileText },
         { id: "book-appointment", label: "Book Appointment", icon: Calendar },
@@ -641,7 +640,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
           {activeTab === "resource-heatmap" && <ResourceHeatmapView />}
           {activeTab === "dynamic-scheduling" && <DynamicSchedulingView />}
           {activeTab === "smart-op-queues" && currentRole !== "PATIENT" && <SmartOpQueueView />}
-          {activeTab === "security-privacy" && <SecurityPrivacyCenterView />}
+          {activeTab === "security-privacy" && currentRole !== "PATIENT" && <SecurityPrivacyCenterView />}
           {activeTab === "ai-ml-strategy" && <AiMlStrategyView />}
 
           {/* 1. PATIENT PORTAL VIEWS */}
@@ -649,8 +648,8 @@ export default function NexusMasterLayout({ initialRole = null }) {
             <>
               {activeTab === "hospital-simulator" ? (
                 <SimulationStudio />
-              ) : activeTab === "jury-demo" || activeTab === "resource-heatmap" || activeTab === "dynamic-scheduling" || activeTab === "security-privacy" || activeTab === "ai-ml-strategy" ? null : (
-                <PatientDashboardView activeTab={activeTab === "smart-op-queues" ? "patient-dashboard" : activeTab} setActiveTab={setActiveTab} />
+              ) : activeTab === "jury-demo" || activeTab === "resource-heatmap" || activeTab === "dynamic-scheduling" || activeTab === "ai-ml-strategy" ? null : (
+                <PatientDashboardView activeTab={activeTab === "smart-op-queues" || activeTab === "security-privacy" ? "patient-dashboard" : activeTab} setActiveTab={setActiveTab} />
               )}
             </>
           )}
