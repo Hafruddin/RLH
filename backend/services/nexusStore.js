@@ -437,10 +437,14 @@ export class NexusStore {
         name: "OT Suite 1 (Cardiothoracic & Hybrid)",
         specialty: "Cardiovascular",
         status: "AVAILABLE",
+        hourlyRate: 850,
+        sterilePrepFee: 150,
+        techTier: "Level-1 Hybrid / Robotic C-Arm",
+        location: "Wing A, 3rd Floor",
         currentProcedure: null,
         equipment: ["Heart-Lung Bypass Machine", "Fluoroscopy C-Arm", "Anesthesia Workstation"],
         upcomingSchedule: [
-          { surgeryType: "Elective Valve Repair", patientName: "Arthur King", surgeonName: "Dr. Sarah Johnson", scheduledTime: new Date(Date.now() + 4 * 3600000).toISOString(), durationMinutes: 180, priority: "SCHEDULED" }
+          { surgeryType: "Elective Valve Repair", patientName: "Arthur King", surgeonName: "Dr. Sarah Johnson", scheduledTime: new Date(Date.now() + 4 * 3600000).toISOString(), durationMinutes: 180, priority: "SCHEDULED", estimatedCost: 2700 }
         ]
       },
       {
@@ -449,6 +453,10 @@ export class NexusStore {
         name: "OT Suite 2 (Emergency Trauma)",
         specialty: "Trauma & General",
         status: "AVAILABLE",
+        hourlyRate: 750,
+        sterilePrepFee: 120,
+        techTier: "Trauma Resuscitation Certified",
+        location: "Wing A, Ground Floor (Direct ER)",
         currentProcedure: null,
         equipment: ["Rapid Blood Infuser", "Surgical Laparoscopy Tower", "Defibrillator"],
         upcomingSchedule: []
@@ -459,7 +467,11 @@ export class NexusStore {
         name: "OT Suite 3 (Neuro & Spine)",
         specialty: "Neurosurgery",
         status: "OCCUPIED",
-        currentProcedure: { surgeryType: "Craniotomy Decompression", patientName: "Robert Green", surgeonName: "Dr. Michael Chen", scheduledTime: new Date(Date.now() - 3600000).toISOString(), durationMinutes: 240, priority: "EMERGENCY" },
+        hourlyRate: 950,
+        sterilePrepFee: 180,
+        techTier: "Stealth Stealth Navigation / Micron",
+        location: "Wing B, 4th Floor",
+        currentProcedure: { surgeryType: "Craniotomy Decompression", patientName: "Robert Green", surgeonName: "Dr. Michael Chen", scheduledTime: new Date(Date.now() - 3600000).toISOString(), durationMinutes: 240, priority: "EMERGENCY", estimatedCost: 3980 },
         equipment: ["Surgical Microscope", "Stealth Navigation", "Intra-op Monitoring"],
         upcomingSchedule: []
       },
@@ -469,14 +481,66 @@ export class NexusStore {
         name: "OT Suite 4 (Orthopedic Joint & Bone)",
         specialty: "Orthopedics",
         status: "OCCUPIED",
-        currentProcedure: { surgeryType: "Total Knee Arthroplasty", patientName: "Evelyn Reed", surgeonName: "Dr. Rajesh Gupta", scheduledTime: new Date(Date.now() - 1800000).toISOString(), durationMinutes: 120, priority: "SCHEDULED" },
+        hourlyRate: 650,
+        sterilePrepFee: 130,
+        techTier: "Robotic Joint Replacement",
+        location: "Wing B, 3rd Floor",
+        currentProcedure: { surgeryType: "Total Knee Arthroplasty", patientName: "Evelyn Reed", surgeonName: "Dr. Rajesh Gupta", scheduledTime: new Date(Date.now() - 1800000).toISOString(), durationMinutes: 120, priority: "SCHEDULED", estimatedCost: 1430 },
         equipment: ["Orthopedic Traction Table", "C-Arm", "Power Saws"],
         upcomingSchedule: []
       },
-      { _id: "ot_05", otId: "OT-05", name: "OT Suite 5 (Laparoscopic Day Surgery)", specialty: "General", status: "AVAILABLE", equipment: ["4K Endoscopy Tower"], upcomingSchedule: [] },
-      { _id: "ot_06", otId: "OT-06", name: "OT Suite 6 (Pediatric & Neonatal Surgery)", specialty: "Pediatrics", status: "AVAILABLE", equipment: ["Neonatal Warmer", "Micro Instruments"], upcomingSchedule: [] },
-      { _id: "ot_07", otId: "OT-07", name: "OT Suite 7 (Urology & Laser)", specialty: "Urology", status: "CLEANING", equipment: ["Holmium Laser", "Urology Table"], upcomingSchedule: [] },
-      { _id: "ot_08", otId: "OT-08", name: "OT Suite 8 (Ophthalmology & Plastics)", specialty: "Microsurgery", status: "AVAILABLE", equipment: ["Phacoemulsification Machine"], upcomingSchedule: [] }
+      {
+        _id: "ot_05",
+        otId: "OT-05",
+        name: "OT Suite 5 (Laparoscopic Day Surgery)",
+        specialty: "General",
+        status: "AVAILABLE",
+        hourlyRate: 450,
+        sterilePrepFee: 100,
+        techTier: "High-Def 4K Laparoscopy",
+        location: "Day Surgical Center, 2nd Floor",
+        equipment: ["4K Endoscopy Tower", "Harmonic Scalpel"],
+        upcomingSchedule: []
+      },
+      {
+        _id: "ot_06",
+        otId: "OT-06",
+        name: "OT Suite 6 (Pediatric & Neonatal Surgery)",
+        specialty: "Pediatrics",
+        status: "AVAILABLE",
+        hourlyRate: 550,
+        sterilePrepFee: 120,
+        techTier: "Pediatric Micro-Instrumentation",
+        location: "Maternal & Child Wing, 2nd Floor",
+        equipment: ["Neonatal Warmer", "Micro Instruments", "Pediatric Ventilator"],
+        upcomingSchedule: []
+      },
+      {
+        _id: "ot_07",
+        otId: "OT-07",
+        name: "OT Suite 7 (Urology & Laser)",
+        specialty: "Urology",
+        status: "CLEANING",
+        hourlyRate: 500,
+        sterilePrepFee: 110,
+        techTier: "Holmium Laser Lithotripsy",
+        location: "Wing C, 3rd Floor",
+        equipment: ["Holmium Laser", "Urology Table", "Flexible Cystoscope"],
+        upcomingSchedule: []
+      },
+      {
+        _id: "ot_08",
+        otId: "OT-08",
+        name: "OT Suite 8 (Ophthalmology & Plastics)",
+        specialty: "Microsurgery",
+        status: "AVAILABLE",
+        hourlyRate: 400,
+        sterilePrepFee: 90,
+        techTier: "Microsurgical Zeiss Optics",
+        location: "Ambulatory Surgery Unit, 1st Floor",
+        equipment: ["Phacoemulsification Machine", "Zeiss Lumera Microscope"],
+        upcomingSchedule: []
+      }
     ];
 
     // 6. Diagnostics Suites

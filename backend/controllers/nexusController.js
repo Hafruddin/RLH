@@ -210,9 +210,12 @@ export const getOperatingTheatres = (req, res) => {
 
 export const scheduleOT = (req, res) => {
   try {
-    const { otId, surgeryType, patientId, patientName, surgeonName, scheduledTime, durationMinutes, priority } = req.body;
+    const { otId, surgeryType, patientId, patientName, surgeonName, scheduledTime, durationMinutes, priority, estimatedCost, notes } = req.body;
     const ot = nexusStore.operatingTheatres.find(o => o.otId === otId);
     if (!ot) return res.status(404).json({ success: false, message: "Operating Theatre not found" });
+
+    const dur = Number(durationMinutes) || 90;
+    const calculatedCost = estimatedCost || Math.round((ot.hourlyRate || 650) * (dur / 60) + (ot.sterilePrepFee || 150));
 
     const procedure = {
       surgeryType: surgeryType || "Emergency Laparotomy",
@@ -220,18 +223,47 @@ export const scheduleOT = (req, res) => {
       patientName: patientName || "Emergency Trauma Patient",
       surgeonName: surgeonName || "Dr. Rajesh Gupta",
       scheduledTime: scheduledTime || new Date(Date.now() + 15 * 60000).toISOString(),
-      durationMinutes: durationMinutes || 90,
-      priority: priority || "EMERGENCY"
+      durationMinutes: dur,
+      priority: priority || "EMERGENCY",
+      estimatedCost: calculatedCost,
+      notes: notes || ""
     };
 
     ot.upcomingSchedule.unshift(procedure);
-    if (priority === "EMERGENCY" && ot.status === "AVAILABLE") {
+    if ((priority === "EMERGENCY" || priority === "URGENT") && ot.status === "AVAILABLE") {
       ot.status = "OCCUPIED";
       ot.currentProcedure = procedure;
     }
 
     broadcastEvent("otUpdated", ot);
     res.json({ success: true, operatingTheatre: ot, procedure });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateOTStatus = (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, surgeryType, patientName, surgeonName, durationMinutes } = req.body;
+    const ot = nexusStore.operatingTheatres.find(o => o.otId === id || o._id === id);
+    if (!ot) return res.status(404).json({ success: false, message: "Operating Theatre not found" });
+
+    ot.status = status;
+    if (status === "AVAILABLE" || status === "CLEANING") {
+      ot.currentProcedure = null;
+    } else if (status === "OCCUPIED") {
+      ot.currentProcedure = {
+        surgeryType: surgeryType || "Urgent Surgical Case",
+        patientName: patientName || "Admitted Patient",
+        surgeonName: surgeonName || "On-Call Surgeon",
+        scheduledTime: new Date().toISOString(),
+        durationMinutes: Number(durationMinutes) || 90,
+        priority: "URGENT"
+      };
+    }
+    broadcastEvent("otUpdated", ot);
+    res.json({ success: true, operatingTheatre: ot });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

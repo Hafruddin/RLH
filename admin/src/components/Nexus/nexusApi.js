@@ -509,6 +509,22 @@ export const nexusApi = {
     return { success: true, operatingTheatre: ot };
   },
 
+  async updateOTStatus(otId, status, extra = {}) {
+    const data = await safeFetch(`/api/nexus/ot/${otId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status, ...extra })
+    });
+    if (data && data.success) return data;
+    const ot = liveState.operatingTheatres.find(o => o.otId === otId);
+    if (ot) {
+      ot.status = status;
+      if (status === "AVAILABLE" || status === "CLEANING") {
+        ot.currentProcedure = null;
+      }
+    }
+    return { success: true, operatingTheatre: ot };
+  },
+
   // 6. Diagnostics
   async getDiagnostics() {
     const data = await safeFetch("/api/nexus/diagnostics");

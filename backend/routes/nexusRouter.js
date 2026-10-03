@@ -11,6 +11,7 @@ import {
   updateEquipmentLocation,
   getOperatingTheatres,
   scheduleOT,
+  updateOTStatus,
   getDiagnosticResources,
   rerouteDiagnostics,
   triggerEmergency,
@@ -81,6 +82,7 @@ nexusRouter.patch("/equipment/:id/location", updateEquipmentLocation);
 // Operating Theatres (OT)
 nexusRouter.get("/ot", getOperatingTheatres);
 nexusRouter.post("/ot/schedule", scheduleOT);
+nexusRouter.patch("/ot/:id/status", updateOTStatus);
 
 // Diagnostic Suites & Dynamic Queue Re-routing
 nexusRouter.get("/diagnostics", getDiagnosticResources);
