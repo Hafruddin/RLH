@@ -19,81 +19,261 @@ import {
   Check,
   Search,
   Eye,
-  FileText
+  FileText,
+  Stethoscope,
+  HeartPulse,
+  UserCheck,
+  ClipboardList
 } from "lucide-react";
 
-// Initial Bed Data Matrix (Matching reference design)
+// Initial Bed Data Matrix with Complete Clinical Occupancy Records
 const INITIAL_BEDS = [
   {
     ward: "General Ward",
     floor: "1st Floor",
     beds: [
-      { id: "Bed 101", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Ready for immediate admission" },
-      { id: "Bed 102", status: "OCCUPIED", occupant: "Harsh Tripathi (P-101)", doctor: "Dr. Sarah Johnson", notes: "Cardiac observation — post-ECG" },
-      { id: "Bed 103", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Sanitized & verified" },
-      { id: "Bed 104", status: "CLEANING", occupant: null, cleaner: "Cleaning Staff 2", notes: "Terminal disinfection in progress (ETA 10m)" },
-      { id: "Bed 105", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Ready for walk-in" },
-      { id: "Bed 106", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Oxygen port verified" },
+      { id: "Bed 101", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Sanitized & ready for immediate clinical intake" },
+      {
+        id: "Bed 102",
+        status: "OCCUPIED",
+        patientId: "PID-10101",
+        patientName: "Harsh Tripathi",
+        age: 34,
+        gender: "Male",
+        admittedAt: "03 Oct 2026, 08:30 AM",
+        admittedDuration: "4 hours 15 mins ago",
+        admissionReason: "Severe retrosternal chest pain with diaphoresis; admitted for continuous 12-lead ECG telemetry monitoring and post-ECG cardiac enzyme titration",
+        diagnosis: "Acute Coronary Syndrome (NSTEMI Rule-out)",
+        doctor: "Dr. Sarah Johnson (Cardiology)",
+        nurse: "Nurse Priya M.",
+        vitals: { bp: "128/84 mmHg", hr: "76 bpm", spo2: "98%", temp: "98.6 °F" },
+        occupant: "Harsh Tripathi (PID-10101)",
+        notes: "Cardiac telemetry active. Troponin-I repeat scheduled for 02:00 PM."
+      },
+      { id: "Bed 103", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Sanitized & verified by Floor Supervisor" },
+      { id: "Bed 104", status: "CLEANING", occupant: null, cleaner: "Cleaning Staff 2", notes: "Terminal UV-C disinfection in progress (ETA 10m)" },
+      { id: "Bed 105", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Ready for walk-in OPD admission" },
+      { id: "Bed 106", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Oxygen pipeline & suction port verified" },
     ]
   },
   {
     ward: "General Ward",
     floor: "2nd Floor",
     beds: [
-      { id: "Bed 201", status: "PENDING", occupant: "Transfer Pending (ER Bay 02)", doctor: "Dr. Vikram Hegde", notes: "Awaiting bed turnover confirmation" },
-      { id: "Bed 202", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Inspected by Nurse Anita" },
-      { id: "Bed 203", status: "OCCUPIED", occupant: "Elena Rostova (P-102)", doctor: "Dr. Rajesh Gupta", notes: "Orthopedic knee observation" },
-      { id: "Bed 204", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Sanitized & pre-made" },
-      { id: "Bed 205", status: "CLEANING", occupant: null, cleaner: "Cleaning Staff 1", notes: "Routine linen change and floor mopping" },
-      { id: "Bed 206", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Telemetry monitor connected" },
+      {
+        id: "Bed 201",
+        status: "PENDING",
+        patientId: "PID-20104",
+        patientName: "Rajesh Verma",
+        age: 46,
+        gender: "Male",
+        admittedAt: "03 Oct 2026, 09:15 AM",
+        admittedDuration: "Transfer Pending from ER",
+        admissionReason: "Acute hypovolemia secondary to severe food poisoning & gastroenteritis; transferred from ER Bay 02 for IV rehydration and electrolyte correction",
+        diagnosis: "Severe Acute Gastroenteritis with Moderate Dehydration",
+        doctor: "Dr. Vikram Hegde (Trauma & ER)",
+        nurse: "Nurse Fatima S.",
+        vitals: { bp: "112/70 mmHg", hr: "88 bpm", spo2: "97%", temp: "99.4 °F" },
+        occupant: "Rajesh Verma (PID-20104)",
+        notes: "Awaiting bed turnover confirmation and IV line setup"
+      },
+      { id: "Bed 202", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Inspected by Nurse Anita. Linen sterile." },
+      {
+        id: "Bed 203",
+        status: "OCCUPIED",
+        patientId: "PID-10203",
+        patientName: "Elena Rostova",
+        age: 29,
+        gender: "Female",
+        admittedAt: "02 Oct 2026, 03:45 PM",
+        admittedDuration: "21 hours ago",
+        admissionReason: "Post-arthroscopic ACL reconstruction recovery; admitted for continuous cryotherapy, neurovascular leg checks, and analgesia titration",
+        diagnosis: "Right Knee ACL Rupture (Post-Surgical Day 1)",
+        doctor: "Dr. Rajesh Gupta (Orthopedics Lead)",
+        nurse: "Nurse Fatima S.",
+        vitals: { bp: "118/76 mmHg", hr: "72 bpm", spo2: "99%", temp: "98.4 °F" },
+        occupant: "Elena Rostova (PID-10203)",
+        notes: "Wound dry and intact. Post-op physiotherapy consultation planned at 03:00 PM."
+      },
+      { id: "Bed 204", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Sanitized, sanitized mattress, ready for intake" },
+      { id: "Bed 205", status: "CLEANING", occupant: null, cleaner: "Cleaning Staff 1", notes: "Routine terminal wash and fresh antimicrobial linen deployment" },
+      { id: "Bed 206", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Telemetry monitor connected and calibrated" },
     ]
   },
   {
     ward: "ICU",
     floor: "3rd Floor",
     beds: [
-      { id: "Bed 301", status: "OCCUPIED", occupant: "Vikram Singh (P-105)", doctor: "Dr. Sarah Johnson", notes: "Post-CABG Day 1, Arterial Line active" },
-      { id: "Bed 302", status: "OCCUPIED", occupant: "Mohammed Al-Rashid (P-103)", doctor: "Dr. Priya Sharma", notes: "Non-invasive BiPAP ventilation" },
-      { id: "Bed 303", status: "AVAILABLE", occupant: null, cleaner: null, notes: "High-spec ventilator on standby" },
-      { id: "Bed 304", status: "OCCUPIED", occupant: "Kavita Reddy (P-107)", doctor: "Dr. Marcus Bell", notes: "Sepsis protocol active" },
-      { id: "Bed 305", status: "EQUIPMENT", occupant: null, cleaner: null, notes: "Defibrillator sensor error — recalibration requested" },
-      { id: "Bed 306", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Negative pressure isolation unit ready" },
+      {
+        id: "Bed 301",
+        status: "OCCUPIED",
+        patientId: "PID-30101",
+        patientName: "Vikram Singh",
+        age: 62,
+        gender: "Male",
+        admittedAt: "02 Oct 2026, 11:20 PM",
+        admittedDuration: "13 hours ago",
+        admissionReason: "Post-CABG 3-vessel coronary bypass hemodynamic stabilization; admitted for invasive arterial line blood pressure monitoring and inotropic weaning",
+        diagnosis: "Coronary Artery Bypass Graft (CABG x3) Post-Op Day 1",
+        doctor: "Dr. Sarah Johnson (Cardiology Lead)",
+        nurse: "Nurse Sarah Jenkins (Senior ICU Charge)",
+        vitals: { bp: "122/78 mmHg", hr: "82 bpm", spo2: "98%", temp: "98.8 °F" },
+        occupant: "Vikram Singh (PID-30101)",
+        notes: "Arterial Line active. Mediastinal drains minimal (<20ml/hr). Pacing wires secure."
+      },
+      {
+        id: "Bed 302",
+        status: "OCCUPIED",
+        patientId: "PID-30202",
+        patientName: "Mohammed Al-Rashid",
+        age: 58,
+        gender: "Male",
+        admittedAt: "03 Oct 2026, 04:15 AM",
+        admittedDuration: "8 hours ago",
+        admissionReason: "Acute infective exacerbation of severe COPD with hypercapnic respiratory failure; admitted for non-invasive BiPAP ventilation and bronchodilator nebulization",
+        diagnosis: "Severe COPD Exacerbation with Type-2 Respiratory Failure",
+        doctor: "Dr. Priya Sharma (Pulmonology)",
+        nurse: "Nurse Sarah Jenkins (ICU)",
+        vitals: { bp: "134/86 mmHg", hr: "90 bpm", spo2: "94% on BiPAP", temp: "99.1 °F" },
+        occupant: "Mohammed Al-Rashid (PID-30202)",
+        notes: "BiPAP settings: IPAP 14, EPAP 6, FiO2 40%. Arterial blood gas pH 7.34, pCO2 49 mmHg."
+      },
+      { id: "Bed 303", status: "AVAILABLE", occupant: null, cleaner: null, notes: "High-spec ventilator V-03 on sterile standby. Negative pressure active." },
+      {
+        id: "Bed 304",
+        status: "OCCUPIED",
+        patientId: "PID-30404",
+        patientName: "Kavita Reddy",
+        age: 48,
+        gender: "Female",
+        admittedAt: "03 Oct 2026, 06:40 AM",
+        admittedDuration: "6 hours ago",
+        admissionReason: "Septic shock secondary to acute pyelonephritis; admitted for central venous pressure monitoring, broad-spectrum IV carbapenem, and Noradrenaline titration",
+        diagnosis: "Urosepsis with Septic Shock",
+        doctor: "Dr. Marcus Bell (Intensivist / Critical Care)",
+        nurse: "Nurse Anita Roy (ICU)",
+        vitals: { bp: "106/68 mmHg", hr: "94 bpm", spo2: "96%", temp: "101.2 °F" },
+        occupant: "Kavita Reddy (PID-30404)",
+        notes: "Noradrenaline infusion at 0.08 mcg/kg/min. Serum lactate downtrending (2.1 mmol/L)."
+      },
+      { id: "Bed 305", status: "EQUIPMENT", occupant: null, cleaner: null, notes: "Defibrillator sensor error — biomedical engineering recalibration requested" },
+      { id: "Bed 306", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Negative pressure isolation unit sterile & ready for acute intake" },
     ]
   },
   {
     ward: "Surgery Ward",
     floor: "4th Floor",
     beds: [
-      { id: "Bed 401", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Pre-op checklist ready" },
-      { id: "Bed 402", status: "PENDING", occupant: "Post-Op Transfer (OT-1)", doctor: "Dr. Rajesh Gupta", notes: "Recovery phase in PACU" },
-      { id: "Bed 403", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Ready for post-surgical intake" },
-      { id: "Bed 404", status: "AVAILABLE", occupant: null, cleaner: null, notes: "IV Infusion stand checked" },
-      { id: "Bed 405", status: "OCCUPIED", occupant: "Priya Menon (P-108)", doctor: "Dr. Aniket Roy", notes: "Post-Laparoscopy, vitals stable" },
-      { id: "Bed 406", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Wound care kit stocked" },
+      { id: "Bed 401", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Pre-op surgical checklist verified. Bed made." },
+      {
+        id: "Bed 402",
+        status: "PENDING",
+        patientId: "PID-40201",
+        patientName: "Amit Saxena",
+        age: 41,
+        gender: "Male",
+        admittedAt: "03 Oct 2026, 10:10 AM",
+        admittedDuration: "PACU Recovery in OT-1",
+        admissionReason: "Post-laparoscopic cholecystectomy intake; transferring from PACU recovery for overnight surgical observation and wound inspection",
+        diagnosis: "Symptomatic Cholelithiasis (Post-Op Lap Chole)",
+        doctor: "Dr. Rajesh Gupta (General Surgery)",
+        nurse: "Nurse Priya M.",
+        vitals: { bp: "120/78 mmHg", hr: "74 bpm", spo2: "99%", temp: "98.6 °F" },
+        occupant: "Amit Saxena (PID-40201)",
+        notes: "Awaiting PACU discharge criteria score > 9. Bed oxygen and IV stand verified."
+      },
+      { id: "Bed 403", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Ready for post-surgical elective intake" },
+      { id: "Bed 404", status: "AVAILABLE", occupant: null, cleaner: null, notes: "IV Infusion pump tested and calibrated" },
+      {
+        id: "Bed 405",
+        status: "OCCUPIED",
+        patientId: "PID-40502",
+        patientName: "Priya Menon",
+        age: 38,
+        gender: "Female",
+        admittedAt: "02 Oct 2026, 02:30 PM",
+        admittedDuration: "22 hours ago",
+        admissionReason: "Post-operative laparoscopic appendectomy recovery; admitted for IV antibiotic completion, abdominal drainage monitoring, and oral diet advancement",
+        diagnosis: "Acute Suppurative Appendicitis (Post-Appendectomy Day 1)",
+        doctor: "Dr. Aniket Roy (General Surgery)",
+        nurse: "Nurse Sneha R.",
+        vitals: { bp: "116/74 mmHg", hr: "70 bpm", spo2: "99%", temp: "98.4 °F" },
+        occupant: "Priya Menon (PID-40502)",
+        notes: "Oral liquids tolerated well. Pain controlled on oral Paracetamol. Discharge planned tomorrow morning."
+      },
+      { id: "Bed 406", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Wound care sterile kit and telemetry lead docked" },
     ]
   },
   {
     ward: "Pediatrics",
     floor: "5th Floor",
     beds: [
-      { id: "Bed 501", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Pediatric cot ready" },
-      { id: "Bed 502", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Parent attendant couch ready" },
-      { id: "Bed 503", status: "CLEANING", occupant: null, cleaner: "Cleaning Staff 3", notes: "Deep UV sterilization in progress" },
-      { id: "Bed 504", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Pediatric pulse oximeter verified" },
-      { id: "Bed 505", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Sanitized & verified" },
-      { id: "Bed 506", status: "PENDING", occupant: "Admission Planned (OPD-Peds)", doctor: "Dr. Meera Iyer", notes: "Severe dehydration observation" },
+      { id: "Bed 501", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Pediatric cot ready with safety rails" },
+      { id: "Bed 502", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Parent attendant sleeper couch sanitized and prepped" },
+      { id: "Bed 503", status: "CLEANING", occupant: null, cleaner: "Cleaning Staff 3", notes: "Deep pediatric UV sterilization in progress" },
+      { id: "Bed 504", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Pediatric finger pulse oximeter verified" },
+      { id: "Bed 505", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Sanitized & verified by Floor Nurse" },
+      {
+        id: "Bed 506",
+        status: "PENDING",
+        patientId: "PID-50601",
+        patientName: "Baby Aarav Mehta",
+        age: 4,
+        gender: "Male",
+        admittedAt: "03 Oct 2026, 10:00 AM",
+        admittedDuration: "Admission from OPD-Peds",
+        admissionReason: "High-grade viral pyrexia with febrile seizure episode; admitted for 24-hour pediatric neurological observation and IV antipyretics",
+        diagnosis: "Simple Febrile Convulsion with Viral Upper Respiratory Infection",
+        doctor: "Dr. Meera Iyer (Pediatric Specialist)",
+        nurse: "Nurse Maya V.",
+        vitals: { bp: "95/60 mmHg", hr: "108 bpm", spo2: "99%", temp: "100.4 °F" },
+        occupant: "Baby Aarav Mehta (PID-50601)",
+        notes: "Patient conscious, oriented to mother. Seizure precaution protocol initiated."
+      },
     ]
   },
   {
     ward: "Maternity",
     floor: "6th Floor",
     beds: [
-      { id: "Bed 601", status: "OCCUPIED", occupant: "Sunita Sharma (P-109)", doctor: "Dr. Vikram Nair", notes: "Postnatal Day 2 — newborn in nursery" },
-      { id: "Bed 602", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Fetal Doppler unit ready" },
-      { id: "Bed 603", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Electric delivery cot verified" },
-      { id: "Bed 604", status: "CLEANING", occupant: null, cleaner: "Cleaning Staff 2", notes: "Post-discharge sanitization" },
-      { id: "Bed 605", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Maternity suite ready" },
-      { id: "Bed 606", status: "OCCUPIED", occupant: "Ananya K. (P-104)", doctor: "Dr. Vikram Nair", notes: "Active labor monitoring" },
+      {
+        id: "Bed 601",
+        status: "OCCUPIED",
+        patientId: "PID-60101",
+        patientName: "Sunita Sharma",
+        age: 28,
+        gender: "Female",
+        admittedAt: "01 Oct 2026, 09:00 PM",
+        admittedDuration: "39 hours ago",
+        admissionReason: "Postnatal Day 2 maternal recovery following uncomplicated full-term vaginal delivery; admitted for lactation guidance and maternal-infant bonding observation",
+        diagnosis: "Post-Term Normal Vaginal Delivery (Healthy Baby Girl, 3.2 kg)",
+        doctor: "Dr. Vikram Nair (Obstetrics & Gynecology)",
+        nurse: "Nurse Sneha R.",
+        vitals: { bp: "114/72 mmHg", hr: "68 bpm", spo2: "99%", temp: "98.6 °F" },
+        occupant: "Sunita Sharma (PID-60101)",
+        notes: "Uterus well contracted, lochia rubra normal. Pediatrician cleared newborn for discharge tomorrow."
+      },
+      { id: "Bed 602", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Fetal Doppler ultrasound unit sterile and ready" },
+      { id: "Bed 603", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Electric delivery cot verified with newborn warmer" },
+      { id: "Bed 604", status: "CLEANING", occupant: null, cleaner: "Cleaning Staff 2", notes: "Post-discharge room sanitization" },
+      { id: "Bed 605", status: "AVAILABLE", occupant: null, cleaner: null, notes: "Maternity private suite ready for intake" },
+      {
+        id: "Bed 606",
+        status: "OCCUPIED",
+        patientId: "PID-60602",
+        patientName: "Ananya K.",
+        age: 31,
+        gender: "Female",
+        admittedAt: "03 Oct 2026, 07:15 AM",
+        admittedDuration: "5 hours 30 mins ago",
+        admissionReason: "Active labor progression (cervical dilation 6cm, regular uterine contractions every 3 mins); admitted for continuous intrapartum CTG cardiotocography",
+        diagnosis: "Primigravida in Active Labor at 39 Weeks Gestation",
+        doctor: "Dr. Vikram Nair (Obstetrics)",
+        nurse: "Nurse Sneha R.",
+        vitals: { bp: "122/80 mmHg", hr: "84 bpm", spo2: "98%", temp: "98.7 °F" },
+        occupant: "Ananya K. (PID-60602)",
+        notes: "CTG shows reactive fetal heart rate pattern with no decelerations. Epidural analgesia active."
+      },
     ]
   }
 ];
@@ -308,6 +488,71 @@ export default function ResourceHeatmapView() {
   // Modal States
   const [selectedTile, setSelectedTile] = useState(null); // When user clicks ANY tile in matrix
   const [quickActionModal, setQuickActionModal] = useState(null); // "bed-details" | "assign-cleaning" | "equipment-request" | "patient-journey" | "all-alerts"
+  const [showAdmitForm, setShowAdmitForm] = useState(false);
+  const [admitForm, setAdmitForm] = useState({
+    patientId: "PID-89210",
+    patientName: "",
+    age: "42",
+    gender: "Male",
+    admittedAt: "Today, " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    admissionReason: "",
+    doctor: "Dr. Sarah Johnson (Cardiology)",
+    diagnosis: ""
+  });
+
+  const admitPatientToBed = (bedId, patientPayload) => {
+    setBedsData(prev => prev.map(row => ({
+      ...row,
+      beds: row.beds.map(b => b.id === bedId ? {
+        ...b,
+        status: "OCCUPIED",
+        occupant: `${patientPayload.patientName} (${patientPayload.patientId})`,
+        patientId: patientPayload.patientId,
+        patientName: patientPayload.patientName,
+        age: patientPayload.age || 45,
+        gender: patientPayload.gender || "Male",
+        admittedAt: patientPayload.admittedAt,
+        admittedDuration: "Just admitted",
+        admissionReason: patientPayload.admissionReason,
+        diagnosis: patientPayload.diagnosis || "Acute Clinical Intake",
+        doctor: patientPayload.doctor,
+        nurse: "Nurse On Duty",
+        vitals: { bp: "120/80 mmHg", hr: "72 bpm", spo2: "98%", temp: "98.6 °F" },
+        notes: `Admitted on ${patientPayload.admittedAt}. Admission reason: ${patientPayload.admissionReason}`
+      } : b)
+    })));
+    triggerToast(`✓ Patient ${patientPayload.patientName} (${patientPayload.patientId}) admitted to ${bedId}!`);
+  };
+
+  const dischargePatientFromBed = (bedId) => {
+    setBedsData(prev => prev.map(row => ({
+      ...row,
+      beds: row.beds.map(b => b.id === bedId ? {
+        ...b,
+        status: "CLEANING",
+        patientId: null,
+        patientName: null,
+        occupant: null,
+        cleaner: "Sanitation Squad 1",
+        notes: `Patient discharged at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. Terminal UV-C cleaning initiated.`
+      } : b)
+    })));
+    triggerToast(`✓ Patient discharged from ${bedId}. Bed queued for sanitization.`);
+    if (selectedTile) {
+      setSelectedTile(prev => ({
+        ...prev,
+        tile: {
+          ...prev.tile,
+          status: "CLEANING",
+          patientId: null,
+          patientName: null,
+          occupant: null,
+          cleaner: "Sanitation Squad 1",
+          notes: `Patient discharged. Terminal UV-C cleaning initiated.`
+        }
+      }));
+    }
+  };
   const [toastMessage, setToastMessage] = useState("");
 
   const triggerToast = (msg) => {
@@ -824,23 +1069,27 @@ export default function ResourceHeatmapView() {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          MODAL 1: INNER INTERFACE FOR TILE CLICK
+          MODAL 1: INNER INTERFACE FOR TILE CLICK (PATIENT BED RECORD)
       ────────────────────────────────────────────────────────────── */}
       {selectedTile && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-scale-in">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-8 animate-scale-in">
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
                 <span className="text-[10px] font-black uppercase text-blue-600 tracking-wider">
                   {selectedTile.row.ward} · {selectedTile.row.floor}
                 </span>
-                <h3 className="text-xl font-black text-slate-900 mt-0.5">
-                  {selectedTile.tile.id} Inspector
+                <h3 className="text-xl font-black text-slate-900 mt-0.5 flex items-center gap-2">
+                  <Bed className="w-5 h-5 text-blue-600" />
+                  <span>{selectedTile.tile.id} Record</span>
                 </h3>
               </div>
               <button
-                onClick={() => setSelectedTile(null)}
+                onClick={() => {
+                  setSelectedTile(null);
+                  setShowAdmitForm(false);
+                }}
                 className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 cursor-pointer"
               >
                 <X className="w-4 h-4" />
@@ -848,8 +1097,8 @@ export default function ResourceHeatmapView() {
             </div>
 
             {/* Current Status Pill */}
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
-              <span className="font-bold text-slate-600">Current Status:</span>
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+              <span className="font-bold text-slate-600">Bed Operational Status:</span>
               <span className={`px-3 py-1 rounded-full font-black text-xs ${
                 selectedTile.tile.status === "AVAILABLE"
                   ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
@@ -863,52 +1112,303 @@ export default function ResourceHeatmapView() {
               </span>
             </div>
 
-            {/* Details Section */}
-            <div className="space-y-2.5 text-xs">
-              {selectedTile.tile.occupant && (
-                <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-200">
-                  <span className="text-[10px] font-bold uppercase text-blue-600 block">Active Occupant / Case</span>
-                  <div className="font-black text-slate-900 text-sm mt-0.5">{selectedTile.tile.occupant}</div>
-                  {selectedTile.tile.doctor && (
-                    <div className="text-slate-600 text-xs mt-1">Lead Physician: <strong>{selectedTile.tile.doctor}</strong></div>
+            {/* CASE 1: BED IS OCCUPIED (Show Detailed Patient Identity, Bed-Taken Time, Reason) */}
+            {selectedTile.tile.status === "OCCUPIED" && (
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-red-50/70 via-white to-slate-50 border border-red-200/90 shadow-xs space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-red-100">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-1 rounded-lg bg-red-600 text-white font-mono font-black text-xs tracking-wider shadow-xs">
+                      {selectedTile.tile.patientId || "PID-10101"}
+                    </span>
+                    <span className="font-black text-slate-900 text-sm">
+                      {selectedTile.tile.patientName || selectedTile.tile.occupant || "Admitted Patient"}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                    {selectedTile.tile.gender || "Male"}, {selectedTile.tile.age ? `${selectedTile.tile.age} yrs` : "Adult"}
+                  </span>
+                </div>
+
+                {/* Bed Taken / Admission Time */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200">
+                    <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[10px] uppercase">
+                      <Clock className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Bed Taken / Admitted Time</span>
+                    </div>
+                    <div className="font-extrabold text-slate-900 text-xs mt-1">
+                      {selectedTile.tile.admittedAt || "Today, 08:30 AM"}
+                    </div>
+                    <div className="text-[10px] text-blue-600 font-semibold mt-0.5">
+                      {selectedTile.tile.admittedDuration || "Active admission (~4 hrs elapsed)"}
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200">
+                    <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[10px] uppercase">
+                      <Stethoscope className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Attending Specialist</span>
+                    </div>
+                    <div className="font-extrabold text-slate-900 text-xs mt-1">
+                      {selectedTile.tile.doctor || "Dr. Sarah Johnson"}
+                    </div>
+                    <div className="text-[10px] text-slate-500 font-semibold mt-0.5">
+                      Lead Physician in Charge
+                    </div>
+                  </div>
+                </div>
+
+                {/* Clinical Reason Patient Took the Bed */}
+                <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200 text-xs">
+                  <span className="text-[10px] font-black uppercase text-amber-900 flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                    Reason Patient Took Bed / Admission Indication
+                  </span>
+                  <p className="text-amber-950 font-bold text-xs mt-1 leading-relaxed">
+                    {selectedTile.tile.admissionReason || selectedTile.tile.notes || "Continuous clinical monitoring, vital stabilization, and acute medical observation."}
+                  </p>
+                  {selectedTile.tile.diagnosis && (
+                    <div className="mt-2 pt-2 border-t border-amber-200/80 text-[11px] text-amber-900 flex items-center justify-between">
+                      <span><strong>Working Diagnosis:</strong> {selectedTile.tile.diagnosis}</span>
+                      <span className="font-mono text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">ICD-10 Linked</span>
+                    </div>
                   )}
                 </div>
-              )}
 
-              {selectedTile.tile.cleaner && (
-                <div className="p-3 rounded-xl bg-amber-50/60 border border-amber-200">
-                  <span className="text-[10px] font-bold uppercase text-amber-700 block">Assigned Sanitation Team</span>
-                  <div className="font-bold text-slate-900 mt-0.5">{selectedTile.tile.cleaner}</div>
+                {/* Vitals Telemetry */}
+                {selectedTile.tile.vitals && (
+                  <div className="grid grid-cols-4 gap-1.5 text-center text-xs">
+                    <div className="p-2 rounded-xl bg-white border border-slate-200">
+                      <span className="text-[9px] text-slate-400 font-bold block uppercase">Blood Pressure</span>
+                      <span className="font-extrabold text-slate-900 text-xs">{selectedTile.tile.vitals.bp}</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white border border-slate-200">
+                      <span className="text-[9px] text-slate-400 font-bold block uppercase">Heart Rate</span>
+                      <span className="font-extrabold text-slate-900 text-xs">{selectedTile.tile.vitals.hr}</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white border border-slate-200">
+                      <span className="text-[9px] text-slate-400 font-bold block uppercase">SpO2 Oxygen</span>
+                      <span className="font-extrabold text-blue-700 text-xs">{selectedTile.tile.vitals.spo2}</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white border border-slate-200">
+                      <span className="text-[9px] text-slate-400 font-bold block uppercase">Temperature</span>
+                      <span className="font-extrabold text-slate-900 text-xs">{selectedTile.tile.vitals.temp}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Discharge and Vacate Actions */}
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => {
+                      dischargePatientFromBed(selectedTile.tile.id);
+                      setSelectedTile(null);
+                    }}
+                    className="flex-1 py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+                  >
+                    <span>Discharge Patient & Mark Cleaning</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      updateTileStatus(selectedTile.rowIdx, selectedTile.tile.id, "AVAILABLE");
+                      setSelectedTile(null);
+                    }}
+                    className="py-2.5 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer"
+                  >
+                    Mark Available
+                  </button>
                 </div>
-              )}
-
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="text-[10px] font-bold uppercase text-slate-400 block">Operational Notes</span>
-                <p className="text-slate-700 font-medium mt-0.5 leading-relaxed">{selectedTile.tile.notes || "Standard clinical protocol maintained."}</p>
               </div>
-            </div>
+            )}
 
-            {/* Action Buttons inside modal */}
+            {/* CASE 2: BED IS PENDING TRANSFER / INCOMING PATIENT */}
+            {selectedTile.tile.status === "PENDING" && (
+              <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-xs space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-amber-200">
+                  <span className="font-black text-amber-950 text-sm">
+                    Incoming Patient Transfer Pending
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md bg-amber-200 text-amber-900 font-mono font-bold text-[11px]">
+                    {selectedTile.tile.patientId || "PID-20104"}
+                  </span>
+                </div>
+                <div className="space-y-1.5">
+                  <div><strong>Patient:</strong> {selectedTile.tile.patientName || selectedTile.tile.occupant}</div>
+                  <div><strong>Scheduled Intake:</strong> {selectedTile.tile.admittedAt || "Today, 10:15 AM"}</div>
+                  <div><strong>Transfer Reason:</strong> {selectedTile.tile.admissionReason || selectedTile.tile.notes}</div>
+                  <div><strong>Attending Doctor:</strong> {selectedTile.tile.doctor || "Dr. Vikram Hegde"}</div>
+                </div>
+                <button
+                  onClick={() => {
+                    updateTileStatus(selectedTile.rowIdx, selectedTile.tile.id, "OCCUPIED");
+                    triggerToast(`✓ Patient accepted into ${selectedTile.tile.id}. Status: OCCUPIED.`);
+                    setSelectedTile(null);
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs transition cursor-pointer shadow-xs"
+                >
+                  Accept Patient & Mark Bed Occupied →
+                </button>
+              </div>
+            )}
+
+            {/* CASE 3: BED IS CLEANING */}
+            {selectedTile.tile.status === "CLEANING" && (
+              <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-xs space-y-3">
+                <div className="flex items-center gap-2 text-amber-900 font-bold">
+                  <Sparkles className="w-4 h-4 text-amber-600 animate-spin" />
+                  <span>Sanitization & Terminal UV Cleaning in Progress</span>
+                </div>
+                <p className="text-slate-600">
+                  Assigned Team: <strong>{selectedTile.tile.cleaner || "Sanitation Squad 2"}</strong> · ETA: ~8 mins until sterile verification.
+                </p>
+                <button
+                  onClick={() => {
+                    updateTileStatus(selectedTile.rowIdx, selectedTile.tile.id, "AVAILABLE");
+                    triggerToast(`✓ Cleaning verified! ${selectedTile.tile.id} is now AVAILABLE for admission.`);
+                    setSelectedTile(null);
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer shadow-xs"
+                >
+                  Verify Cleaning & Mark Available
+                </button>
+              </div>
+            )}
+
+            {/* CASE 4: BED IS AVAILABLE (Clean & Ready + Inline Admit Patient Form) */}
+            {selectedTile.tile.status === "AVAILABLE" && (
+              <div className="space-y-3">
+                <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-emerald-900 font-bold">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>Bed is Sanitized & Ready for Immediate Intake</span>
+                  </div>
+                  <button
+                    onClick={() => setShowAdmitForm(!showAdmitForm)}
+                    className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold cursor-pointer"
+                  >
+                    {showAdmitForm ? "Hide Form" : "+ Admit Patient"}
+                  </button>
+                </div>
+
+                {showAdmitForm ? (
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 text-xs animate-fade-in">
+                    <span className="font-black text-slate-900 block text-xs uppercase tracking-wide">
+                      Admit Patient to {selectedTile.tile.id}
+                    </span>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Patient ID</label>
+                        <input
+                          type="text"
+                          value={admitForm.patientId}
+                          onChange={e => setAdmitForm(p => ({ ...p, patientId: e.target.value }))}
+                          className="w-full p-2 bg-white border border-slate-300 rounded-lg font-mono font-bold text-slate-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Patient Name</label>
+                        <input
+                          type="text"
+                          value={admitForm.patientName}
+                          onChange={e => setAdmitForm(p => ({ ...p, patientName: e.target.value }))}
+                          className="w-full p-2 bg-white border border-slate-300 rounded-lg font-bold text-slate-900"
+                          placeholder="e.g. Ramesh Kumar"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Admission Time</label>
+                      <input
+                        type="text"
+                        value={admitForm.admittedAt}
+                        onChange={e => setAdmitForm(p => ({ ...p, admittedAt: e.target.value }))}
+                        className="w-full p-2 bg-white border border-slate-300 rounded-lg text-slate-900 font-medium"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Reason Patient Took Bed / Symptoms</label>
+                      <textarea
+                        rows={2}
+                        value={admitForm.admissionReason}
+                        onChange={e => setAdmitForm(p => ({ ...p, admissionReason: e.target.value }))}
+                        className="w-full p-2 bg-white border border-slate-300 rounded-lg text-slate-900"
+                        placeholder="e.g. Acute retrosternal pain, continuous telemetry observation, oxygen therapy..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 block mb-0.5">Attending Doctor</label>
+                      <select
+                        value={admitForm.doctor}
+                        onChange={e => setAdmitForm(p => ({ ...p, doctor: e.target.value }))}
+                        className="w-full p-2 bg-white border border-slate-300 rounded-lg font-semibold text-slate-900"
+                      >
+                        <option value="Dr. Sarah Johnson (Cardiology)">Dr. Sarah Johnson (Cardiology)</option>
+                        <option value="Dr. Rajesh Gupta (Orthopedics)">Dr. Rajesh Gupta (Orthopedics)</option>
+                        <option value="Dr. Vikram Hegde (Trauma & ER)">Dr. Vikram Hegde (Trauma & ER)</option>
+                        <option value="Dr. Marcus Bell (Critical Care / ICU)">Dr. Marcus Bell (Critical Care / ICU)</option>
+                        <option value="Dr. Priya Sharma (Internal Medicine)">Dr. Priya Sharma (Internal Medicine)</option>
+                      </select>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        const name = admitForm.patientName.trim() || "Emergency Inpatient";
+                        const reason = admitForm.admissionReason.trim() || "Acute medical observation and vital monitoring";
+                        admitPatientToBed(selectedTile.tile.id, {
+                          patientId: admitForm.patientId,
+                          patientName: name,
+                          age: admitForm.age || 42,
+                          gender: admitForm.gender || "Male",
+                          admittedAt: admitForm.admittedAt,
+                          admissionReason: reason,
+                          doctor: admitForm.doctor,
+                          diagnosis: "Clinical Intake"
+                        });
+                        setSelectedTile(null);
+                        setShowAdmitForm(false);
+                      }}
+                      className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition cursor-pointer shadow-md"
+                    >
+                      Confirm Admission & Occupy Bed →
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowAdmitForm(true)}
+                    className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Admit Patient to {selectedTile.tile.id}</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Quick Status Override Buttons */}
             <div className="pt-2 border-t border-slate-100 space-y-2">
-              <span className="text-[10px] font-black uppercase text-slate-400 block">Change Status Directly:</span>
+              <span className="text-[10px] font-black uppercase text-slate-400 block">Override Status Directly:</span>
               <div className="grid grid-cols-3 gap-2 text-xs font-bold">
                 <button
                   onClick={() => updateTileStatus(selectedTile.rowIdx, selectedTile.tile.id, "AVAILABLE")}
-                  className="py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition cursor-pointer"
+                  className="py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition cursor-pointer text-center"
                 >
-                  Mark Available
+                  Available
                 </button>
                 <button
                   onClick={() => updateTileStatus(selectedTile.rowIdx, selectedTile.tile.id, "CLEANING")}
-                  className="py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-black transition cursor-pointer"
+                  className="py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-black transition cursor-pointer text-center"
                 >
-                  Mark Cleaning
+                  Cleaning
                 </button>
                 <button
                   onClick={() => updateTileStatus(selectedTile.rowIdx, selectedTile.tile.id, "OCCUPIED")}
-                  className="py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white transition cursor-pointer"
+                  className="py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white transition cursor-pointer text-center"
                 >
-                  Mark Occupied
+                  Occupied
                 </button>
               </div>
             </div>

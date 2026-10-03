@@ -218,9 +218,8 @@ export default function NexusMasterLayout({ initialRole = null }) {
         { id: "clinical-case", label: "Clinical Case Taking", icon: ClipboardList, badge: "EHR" },
         { id: "smart-op-queues", label: "Smart OP Queues", icon: Compass, badge: "Auto-Routing" },
         { id: "dynamic-scheduling", label: "Dynamic Scheduling", icon: Cpu, badge: "CP-SAT" },
-        { id: "resource-heatmap", label: "Resource Heatmap", icon: Flame, badge: "Live" },
+        { id: "ot-monitoring", label: "OT Monitoring", icon: Activity, badge: "Availability Live" },
         { id: "security-privacy", label: "Patient Privacy & Consent", icon: ShieldCheck, badge: "ABAC" },
-        { id: "ot", label: "Operating Theatres", icon: Activity, badge: "8 Suites" },
         { id: "diagnostics", label: "Diagnostic Orders", icon: Microscope, badge: "Imaging" },
         { id: "journey", label: "Patient Clinical Journey", icon: Compass, badge: "EHR" },
         { id: "copilot", label: "Clinical Decision Support", icon: Cpu, badge: "AI" }
@@ -231,7 +230,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
       return [
         { id: "staff-dashboard", label: "Task Inbox & Dashboard", icon: UserCheck, badge: "Active" },
         { id: "smart-op-queues", label: "Smart OP & Virtual Queue Management", icon: Compass, badge: "Live" },
-        { id: "resource-heatmap", label: "Resource Heatmap", icon: Flame, badge: "RPI" },
+        { id: "resource-heatmap", label: "Resource Heatmap", icon: Flame, badge: "Live Wards" },
         { id: "transfers", label: "Patient Transfers", icon: Truck, badge: "5 Stages" },
         { id: "equipment", label: "Life Support Equipment", icon: HeartPulse, badge: "20 Assets" },
         { id: "copilot", label: "Staff Assistant", icon: Cpu, badge: "AI" }
@@ -243,7 +242,6 @@ export default function NexusMasterLayout({ initialRole = null }) {
       { id: "overview", label: "Command Center", icon: Radio, badge: "LIVE" },
       { id: "revenue", label: "Hospital Revenue", icon: IndianRupee, badge: "₹4.82 Cr" },
       { id: "clinical-case", label: "Clinical Case Taking", icon: ClipboardList, badge: "EHR" },
-      { id: "resource-heatmap", label: "Resource Heatmap", icon: Flame, badge: "RPI Live" },
       { id: "dynamic-scheduling", label: "Dynamic Scheduling", icon: Cpu, badge: "CP-SAT" },
       { id: "smart-op-queues", label: "Smart OP Queues", icon: Compass, badge: "Virtual" },
       { id: "security-privacy", label: "Security & Privacy", icon: ShieldCheck, badge: "Break-Glass" },
@@ -645,7 +643,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
           {/* Clinical Optimization & Orchestration Module Views */}
           {activeTab === "revenue" && <HospitalRevenueView />}
           {activeTab === "jury-demo" && <Round2JuryDemoView />}
-          {activeTab === "resource-heatmap" && <ResourceHeatmapView />}
+          {activeTab === "resource-heatmap" && currentRole === "STAFF" && <ResourceHeatmapView />}
           {activeTab === "dynamic-scheduling" && <DynamicSchedulingView />}
           {activeTab === "smart-op-queues" && currentRole !== "PATIENT" && <SmartOpQueueView />}
           {activeTab === "security-privacy" && currentRole !== "PATIENT" && currentRole !== "STAFF" && <SecurityPrivacyCenterView />}
@@ -668,7 +666,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
             <>
               {activeTab === "hospital-simulator" && <SimulationStudio />}
               {activeTab === "doctor-dashboard" && <DoctorWorkbenchView />}
-              {activeTab === "ot" && <OtManagerView />}
+              {(activeTab === "ot-monitoring" || activeTab === "ot") && <OtManagerView />}
               {activeTab === "diagnostics" && <DiagnosticsView />}
               {activeTab === "journey" && <EhrTimelineView />}
               {activeTab === "copilot" && <NexusCopilot />}
@@ -702,7 +700,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
               {activeTab === "equipment" && <EquipmentView />}
               {activeTab === "rtls" && <RtlsMapView />}
               {activeTab === "staff" && <StaffView />}
-              {activeTab === "ot" && <OtManagerView />}
+              {(activeTab === "ot" || activeTab === "ot-monitoring") && <OtManagerView />}
               {activeTab === "diagnostics" && <DiagnosticsView />}
               {activeTab === "forecasting" && <ForecastingView />}
               {activeTab === "ehr" && <EhrTimelineView />}

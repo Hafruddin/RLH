@@ -43,6 +43,7 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
   const [connectionEngine, setConnectionEngine] = useState("HYBRID_LOCAL"); // ELEVENLABS_SIGNED or HYBRID_LOCAL
 
   const recognitionRef = useRef(null);
+  const accumulatedTranscriptRef = useRef("");
   const synthRef = useRef(null);
   const chatScrollRef = useRef(null);
 
@@ -64,7 +65,7 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
   const [messages, setMessages] = useState([
     {
       sender: "agent",
-      text: "Hello! I am MediCare Nexus Voice Assistant. How can I help you with appointments, doctors, beds, or emergency care?",
+      text: "Hello! I am MediCare Nexus Voice Assistant. How can I help you with appointments, doctors, beds, OT availability, or emergency care?",
       timestamp: new Date().toLocaleTimeString()
     }
   ]);
@@ -118,18 +119,25 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
         };
 
         recognition.onresult = (event) => {
-          let currentSpeech = "";
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            currentSpeech += event.results[i][0].transcript;
+          let interim = "";
+          let final = "";
+          for (let i = 0; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              final += event.results[i][0].transcript;
+            } else {
+              interim += event.results[i][0].transcript;
+            }
           }
-          setTranscript(currentSpeech);
+          const combined = (final + " " + interim).trim();
+          accumulatedTranscriptRef.current = combined;
+          setTranscript(combined);
         };
 
         recognition.onerror = (event) => {
           console.warn("Speech recognition notice:", event.error);
           if (event.error === "not-allowed" || event.error === "service-not-allowed") {
             setMicPermissionState("denied");
-            setErrorMessage("Microphone permission was denied. Please allow microphone access in your browser settings.");
+            setErrorMessage("Microphone permission was denied. Please allow microphone access in your browser settings or use Text Mode.");
             setVoiceState("ERROR");
           } else if (event.error !== "no-speech") {
             setVoiceState("IDLE");
@@ -137,14 +145,14 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
         };
 
         recognition.onend = () => {
-          setTranscript((finalText) => {
-            if (finalText.trim()) {
-              handleVoiceSubmission(finalText.trim());
-            } else if (voiceState === "LISTENING") {
-              setVoiceState("IDLE");
-            }
-            return "";
-          });
+          const finalSpoken = (accumulatedTranscriptRef.current || "").trim();
+          accumulatedTranscriptRef.current = "";
+          setTranscript("");
+          if (finalSpoken) {
+            handleVoiceSubmission(finalSpoken);
+          } else {
+            setVoiceState("IDLE");
+          }
         };
 
         recognitionRef.current = recognition;
@@ -152,6 +160,10 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
 
       if ("speechSynthesis" in window) {
         synthRef.current = window.speechSynthesis;
+        // Warm up voices
+        try {
+          window.speechSynthesis.getVoices();
+        } catch (_) {}
       }
     }
 
@@ -202,40 +214,35 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
 
     stopVoice();
     setErrorMessage("");
+    accumulatedTranscriptRef.current = "";
 
-    // Try requesting mic stream first to trigger clean browser prompt if unprompted
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Close stream immediately; SpeechRecognition will acquire it cleanly
-        stream.getTracks().forEach((track) => track.stop());
-        setMicPermissionState("granted");
-      }
-    } catch (err) {
-      console.warn("getUserMedia permission notice:", err);
-      if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
-        setMicPermissionState("denied");
-        setErrorMessage("Microphone access is blocked in browser settings. Please allow microphone access or use Text Mode.");
-        setVoiceState("ERROR");
-        return;
-      }
+    if (!recognitionRef.current) {
+      setErrorMessage("Speech Recognition is not supported in this browser. Please type your query in the text box below.");
+      setVoiceState("ERROR");
+      return;
     }
 
     try {
-      if (recognitionRef.current) {
-        recognitionRef.current.lang = selectedLanguage === "auto" ? "en-US" : getLangLocale(selectedLanguage);
-        recognitionRef.current.start();
-      } else {
-        setVoiceState("IDLE");
-      }
+      recognitionRef.current.lang = selectedLanguage === "auto" ? "en-US" : getLangLocale(selectedLanguage);
+      recognitionRef.current.start();
+      setVoiceState("LISTENING");
     } catch (err) {
-      console.warn("Recognition start notice:", err);
+      console.warn("Recognition start attempt notice:", err);
+      try {
+        recognitionRef.current.stop();
+        setTimeout(() => {
+          try {
+            recognitionRef.current.start();
+            setVoiceState("LISTENING");
+          } catch (_) {}
+        }, 150);
+      } catch (_) {}
     }
   }
 
   function stopVoice() {
     if (synthRef.current && synthRef.current.speaking) {
-      synthRef.current.cancel();
+      try { synthRef.current.cancel(); } catch (_) {}
     }
     if (recognitionRef.current) {
       try {
@@ -255,7 +262,39 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
     let response = "";
     let action = null;
 
-    if (lower.includes("emergency") || lower.includes("p-1005") || lower.includes("அவசரம்") || lower.includes("इमरजेंसी") || lower.includes("అత్యవసరం") || lower.includes("ತುರ್ತು") || lower.includes("അടിയന്തരം") || lower.includes("आणीबाणी") || lower.includes("জরুরি")) {
+    // 1. Bed Occupancy Details (Who is in Bed X, Bed Patient Details)
+    if (
+      lower.includes("bed 102") || lower.includes("icu-102") || lower.includes("icu 102") ||
+      (lower.includes("102") && lower.includes("bed"))
+    ) {
+      agent = "bed";
+      agentTitle = "Nexus Bed Supervisor";
+      action = { type: "BED_INSPECTED", details: "Bed ICU-102: Priya Sharma (PID-20104)" };
+      response = "Bed ICU-102 is currently occupied by patient Priya Sharma (Patient ID: PID-20104), female age 38. She was admitted at 09:15 AM today (3 hours ago) due to Acute Respiratory Distress with bronchospasm and wheezing. She is receiving continuous nebulization and oxygen under Dr. Sarah Johnson.";
+    } else if (
+      lower.includes("bed 101") || lower.includes("icu-101") || lower.includes("icu 101") ||
+      (lower.includes("101") && lower.includes("bed"))
+    ) {
+      agent = "bed";
+      agentTitle = "Nexus Bed Supervisor";
+      action = { type: "BED_INSPECTED", details: "Bed ICU-101: Rajesh Kumar (PID-10101)" };
+      response = "Bed ICU-101 is occupied by Rajesh Kumar (Patient ID: PID-10101), male age 54. Admitted at 08:30 AM today (4 hours ago) due to Acute Myocardial Infarction with severe retrosternal chest pain. He is on 12-lead ECG telemetry under Dr. Sarah Johnson.";
+    } else if (
+      lower.includes("who is in bed") || lower.includes("who occupied") || lower.includes("patient in bed") ||
+      lower.includes("bed details") || lower.includes("occupied bed")
+    ) {
+      agent = "bed";
+      agentTitle = "Nexus Bed Supervisor";
+      response = "Bed ICU-101 is occupied by Rajesh Kumar (PID-10101, admitted at 08:30 AM for Myocardial Infarction). Bed ICU-102 is occupied by Priya Sharma (PID-20104, admitted at 09:15 AM for Acute Respiratory Distress). You can tap any bed on the ward heatmap to view the full clinical admission card.";
+    } else if (
+      lower.includes("ot") || lower.includes("operation theatre") || lower.includes("operating room") ||
+      lower.includes("surgery schedule") || lower.includes("surgical suite")
+    ) {
+      agent = "ot";
+      agentTitle = "Nexus OT Coordinator";
+      action = { type: "OT_STATUS_CHECKED", details: "3 Suites active • OT-1 In Surgery" };
+      response = "Operation Theatre Status: OT Suite 1 (Cardiac) is IN SURGERY with Dr. Sarah Johnson for Coronary Artery Bypass until 1:30 PM. OT Suite 2 (Ortho) is AVAILABLE and prepped with laminar airflow. OT Suite 3 (Neuro) is SCHEDULED for Craniotomy at 3:00 PM.";
+    } else if (lower.includes("emergency") || lower.includes("p-1005") || lower.includes("அவசரம்") || lower.includes("इमरजेंसी") || lower.includes("అత్యవసరం") || lower.includes("ತುರ್ತು") || lower.includes("അടിയന്തരം") || lower.includes("आणीबाणी") || lower.includes("জরুরি")) {
       agent = "emergency";
       agentTitle = "Nexus Emergency Agent";
       action = {
@@ -413,68 +452,71 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
 
     let handledByBackend = false;
 
-    // 1. Try Backend Action Engine First
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout for cold starts
+    // 1. Try Backend Action Engine First (skip wait if HTTPS frontend calling localhost HTTP backend)
+    const isMixedContent = typeof window !== "undefined" && window.location.protocol === "https:" && API_BASE.startsWith("http://");
+    if (!isMixedContent) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s quick timeout for responsiveness
 
-      const res = await fetch(`${API_BASE}/api/voice/converse`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-user-role": "patient"
-        },
-        body: JSON.stringify({
-          message: userUtterance,
-          context: initialContext,
-          currentAgent
-        }),
-        signal: controller.signal
-      });
+        const res = await fetch(`${API_BASE}/api/voice/converse`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-user-role": "patient"
+          },
+          body: JSON.stringify({
+            message: userUtterance,
+            context: initialContext,
+            currentAgent
+          }),
+          signal: controller.signal
+        });
 
-      clearTimeout(timeoutId);
+        clearTimeout(timeoutId);
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          handledByBackend = true;
-          setConnectionEngine("LIVE_BACKEND");
-          setCurrentAgent(data.agent);
-          setAgentName(data.agentName);
-          setDetectedLanguage(data.detectedLanguage || detectedLang);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            handledByBackend = true;
+            setConnectionEngine("LIVE_BACKEND");
+            setCurrentAgent(data.agent);
+            setAgentName(data.agentName);
+            setDetectedLanguage(data.detectedLanguage || detectedLang);
 
-          if (data.executedAction) {
-            setActiveStep(3);
-            setVoiceState("EXECUTING");
-            setActionConfirmation(data.executedAction);
-            setTimeout(() => {
-              setActiveStep(4);
-              setVoiceState("SUCCESS");
-            }, 600);
-          } else {
-            setActiveStep(3);
-          }
-
-          setMessages((prev) => [
-            ...prev,
-            {
-              sender: "agent",
-              text: data.responseText,
-              action: data.executedAction,
-              agentName: data.agentName,
-              timestamp: new Date().toLocaleTimeString()
+            if (data.executedAction) {
+              setActiveStep(3);
+              setVoiceState("EXECUTING");
+              setActionConfirmation(data.executedAction);
+              setTimeout(() => {
+                setActiveStep(4);
+                setVoiceState("SUCCESS");
+              }, 600);
+            } else {
+              setActiveStep(3);
             }
-          ]);
 
-          if (!isMuted) {
-            speakResponse(data.spokenText || data.responseText, data.detectedLanguage || detectedLang);
-          } else {
-            setVoiceState("IDLE");
+            setMessages((prev) => [
+              ...prev,
+              {
+                sender: "agent",
+                text: data.responseText,
+                action: data.executedAction,
+                agentName: data.agentName,
+                timestamp: new Date().toLocaleTimeString()
+              }
+            ]);
+
+            if (!isMuted) {
+              speakResponse(data.spokenText || data.responseText, data.detectedLanguage || detectedLang);
+            } else {
+              setVoiceState("IDLE");
+            }
           }
         }
+      } catch (err) {
+        console.warn("Backend API unavailable or timed out. Transitioning to Autonomous Local Action Engine:", err);
       }
-    } catch (err) {
-      console.warn("Backend API unavailable or timed out. Transitioning to Autonomous Local Action Engine:", err);
     }
 
     // 2. If Backend was unreachable or timed out, execute seamlessly with Local Action Engine
@@ -518,7 +560,15 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
   function speakResponse(text, langCode) {
     if (!synthRef.current || isMuted) return;
 
-    synthRef.current.cancel();
+    try {
+      if (synthRef.current.speaking || synthRef.current.pending) {
+        synthRef.current.cancel();
+      }
+      if (synthRef.current.paused) {
+        synthRef.current.resume();
+      }
+    } catch (_) {}
+
     const lang = langCode || detectedLanguage;
     const profile = getVoiceProfile(lang);
     const normalizedText = normalizeSpokenText(text, lang);
@@ -546,7 +596,13 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
     utterance.onend = () => setVoiceState("IDLE");
     utterance.onerror = () => setVoiceState("IDLE");
 
-    synthRef.current.speak(utterance);
+    try {
+      synthRef.current.resume();
+      synthRef.current.speak(utterance);
+    } catch (e) {
+      console.warn("Speech synthesis trigger error:", e);
+      setVoiceState("IDLE");
+    }
   }
 
   const handleTextSubmit = (e) => {
@@ -762,6 +818,18 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
             
             {/* Quick Demo Prompts */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-[11px]">
+              <button
+                onClick={() => handleVoiceSubmission("Who is in Bed 102?")}
+                className="whitespace-nowrap px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-800 font-semibold hover:bg-emerald-100 transition-colors shadow-xs"
+              >
+                🛏 Who is in Bed 102?
+              </button>
+              <button
+                onClick={() => handleVoiceSubmission("Check OT availability")}
+                className="whitespace-nowrap px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-300 text-indigo-800 font-semibold hover:bg-indigo-100 transition-colors shadow-xs"
+              >
+                🏥 Check OT Availability
+              </button>
               <button
                 onClick={() => handleVoiceSubmission("Book an appointment with Dr. Sarah tomorrow morning")}
                 className="whitespace-nowrap px-2.5 py-1 rounded-full bg-white border border-gray-200 text-gray-700 hover:border-emerald-500 hover:text-emerald-700 transition-colors"
