@@ -18,7 +18,8 @@ import {
   Flame,
   Cpu,
   ShieldCheck,
-  Volume2
+  Volume2,
+  Sliders
 } from "lucide-react";
 import { nexusApi } from "./nexusApi";
 
