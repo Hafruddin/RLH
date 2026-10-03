@@ -20,6 +20,305 @@ import {
 } from "lucide-react";
 import { nexusApi } from "./nexusApi";
 
+// ── Fallback demo heatmap data when backend is unreachable ────────────────────
+const DEMO_HEATMAP = {
+  success: true,
+  resources: [
+    // Critical Care
+    {
+      id: "res-icu",
+      category: "Critical Care",
+      name: "Intensive Care Units (ICU)",
+      capacityTotal: 10,
+      occupied: 9,
+      available: 1,
+      utilizationNow: 90,
+      forecast2h: 96,
+      forecast4h: 98,
+      forecast8h: 100,
+      rpi: "2.14",
+      signals: { pendingRequests: 3, predictedArrivals: 2, expectedDischarges: 1 },
+      actionRequired: "⚠ Alert: Transfer 2 stable ICU patients to HDU immediately"
+    },
+    {
+      id: "res-hdu",
+      category: "Critical Care",
+      name: "High Dependency Unit (HDU)",
+      capacityTotal: 8,
+      occupied: 6,
+      available: 2,
+      utilizationNow: 75,
+      forecast2h: 82,
+      forecast4h: 87,
+      forecast8h: 90,
+      rpi: "1.56",
+      signals: { pendingRequests: 2, predictedArrivals: 1, expectedDischarges: 1 },
+      actionRequired: "Monitor — approaching high utilization in 4h"
+    },
+    // Inpatient Wards
+    {
+      id: "res-gen-ward",
+      category: "Inpatient Wards",
+      name: "General Medicine Ward (Floor 3)",
+      capacityTotal: 40,
+      occupied: 32,
+      available: 8,
+      utilizationNow: 80,
+      forecast2h: 84,
+      forecast4h: 88,
+      forecast8h: 91,
+      rpi: "1.72",
+      signals: { pendingRequests: 5, predictedArrivals: 4, expectedDischarges: 3 },
+      actionRequired: "Prepare 3 discharge beds — 4 new admissions pending"
+    },
+    {
+      id: "res-cardio-ward",
+      category: "Inpatient Wards",
+      name: "Cardiology Ward (Floor 4)",
+      capacityTotal: 20,
+      occupied: 13,
+      available: 7,
+      utilizationNow: 65,
+      forecast2h: 70,
+      forecast4h: 73,
+      forecast8h: 75,
+      rpi: "1.18",
+      signals: { pendingRequests: 2, predictedArrivals: 2, expectedDischarges: 2 },
+      actionRequired: "Capacity adequate — 2 expected admissions post-OPD"
+    },
+    {
+      id: "res-ortho-ward",
+      category: "Inpatient Wards",
+      name: "Orthopedics Ward (Floor 5)",
+      capacityTotal: 18,
+      occupied: 9,
+      available: 9,
+      utilizationNow: 50,
+      forecast2h: 52,
+      forecast4h: 55,
+      forecast8h: 58,
+      rpi: "0.91",
+      signals: { pendingRequests: 1, predictedArrivals: 1, expectedDischarges: 2 },
+      actionRequired: "Low pressure — adequate availability"
+    },
+    // Surgical / OT
+    {
+      id: "res-ot",
+      category: "Surgical",
+      name: "Operating Theatres (OT Suites 1–8)",
+      capacityTotal: 8,
+      occupied: 6,
+      available: 2,
+      utilizationNow: 75,
+      forecast2h: 87,
+      forecast4h: 87,
+      forecast8h: 75,
+      rpi: "1.52",
+      signals: { pendingRequests: 3, predictedArrivals: 1, expectedDischarges: 2 },
+      actionRequired: "OT-4 & OT-7 available — 3 elective procedures queued"
+    },
+    {
+      id: "res-ot-emergency",
+      category: "Surgical",
+      name: "Emergency OT Suite",
+      capacityTotal: 2,
+      occupied: 1,
+      available: 1,
+      utilizationNow: 50,
+      forecast2h: 50,
+      forecast4h: 100,
+      forecast8h: 50,
+      rpi: "0.95",
+      signals: { pendingRequests: 1, predictedArrivals: 0, expectedDischarges: 1 },
+      actionRequired: "1 emergency OT on standby — trauma case expected from ER"
+    },
+    // Clinical Staff
+    {
+      id: "res-doctors",
+      category: "Clinical Staff",
+      name: "Attending Physicians & Specialists",
+      capacityTotal: 24,
+      occupied: 19,
+      available: 5,
+      utilizationNow: 79,
+      forecast2h: 84,
+      forecast4h: 88,
+      forecast8h: 71,
+      rpi: "1.61",
+      signals: { pendingRequests: 4, predictedArrivals: 3, expectedDischarges: 2 },
+      actionRequired: "Call on-call Dr. Mehta (Cardiology) for afternoon OPD surge"
+    },
+    {
+      id: "res-residents",
+      category: "Clinical Staff",
+      name: "Resident Doctors & Interns",
+      capacityTotal: 18,
+      occupied: 16,
+      available: 2,
+      utilizationNow: 88,
+      forecast2h: 92,
+      forecast4h: 94,
+      forecast8h: 80,
+      rpi: "1.91",
+      signals: { pendingRequests: 5, predictedArrivals: 2, expectedDischarges: 3 },
+      actionRequired: "⚠ High load — redistribute 2 residents to OPD from ward"
+    },
+    // Nursing Staff
+    {
+      id: "res-nurses-icu",
+      category: "Nursing Staff",
+      name: "ICU Nursing Team",
+      capacityTotal: 12,
+      occupied: 11,
+      available: 1,
+      utilizationNow: 91,
+      forecast2h: 95,
+      forecast4h: 96,
+      forecast8h: 83,
+      rpi: "2.22",
+      signals: { pendingRequests: 3, predictedArrivals: 1, expectedDischarges: 1 },
+      actionRequired: "🚨 Critical: Activate 2 additional ICU nurses from float pool"
+    },
+    {
+      id: "res-nurses-ward",
+      category: "Nursing Staff",
+      name: "General Ward Nursing Staff",
+      capacityTotal: 30,
+      occupied: 22,
+      available: 8,
+      utilizationNow: 73,
+      forecast2h: 77,
+      forecast4h: 80,
+      forecast8h: 70,
+      rpi: "1.41",
+      signals: { pendingRequests: 3, predictedArrivals: 4, expectedDischarges: 5 },
+      actionRequired: "Acceptable levels — review shift handover at 2 PM"
+    },
+    // Diagnostics
+    {
+      id: "res-lab",
+      category: "Diagnostics",
+      name: "Pathology & Laboratory (NABL)",
+      capacityTotal: 6,
+      occupied: 4,
+      available: 2,
+      utilizationNow: 67,
+      forecast2h: 74,
+      forecast4h: 82,
+      forecast8h: 60,
+      rpi: "1.31",
+      signals: { pendingRequests: 8, predictedArrivals: 5, expectedDischarges: 6 },
+      actionRequired: "14 samples pending — estimated TAT: 35 minutes"
+    },
+    {
+      id: "res-ct",
+      category: "Diagnostics",
+      name: "CT Scan Suite (64-Slice MDCT)",
+      capacityTotal: 2,
+      occupied: 2,
+      available: 0,
+      utilizationNow: 100,
+      forecast2h: 95,
+      forecast4h: 85,
+      forecast8h: 60,
+      rpi: "2.50",
+      signals: { pendingRequests: 4, predictedArrivals: 2, expectedDischarges: 2 },
+      actionRequired: "🚨 Both CT scanners at full capacity — 4 scans in queue"
+    },
+    {
+      id: "res-mri",
+      category: "Diagnostics",
+      name: "MRI Suite (3T Siemens Magnetom)",
+      capacityTotal: 1,
+      occupied: 1,
+      available: 0,
+      utilizationNow: 100,
+      forecast2h: 100,
+      forecast4h: 80,
+      forecast8h: 40,
+      rpi: "2.10",
+      signals: { pendingRequests: 3, predictedArrivals: 1, expectedDischarges: 1 },
+      actionRequired: "MRI booked till 3 PM — urgent cases routed to partner centre"
+    },
+    {
+      id: "res-xray",
+      category: "Diagnostics",
+      name: "Digital X-Ray & Fluoroscopy",
+      capacityTotal: 4,
+      occupied: 2,
+      available: 2,
+      utilizationNow: 50,
+      forecast2h: 58,
+      forecast4h: 62,
+      forecast8h: 45,
+      rpi: "0.88",
+      signals: { pendingRequests: 3, predictedArrivals: 2, expectedDischarges: 3 },
+      actionRequired: "Adequate capacity — walk-in patients accepted"
+    },
+    // Pharmacy
+    {
+      id: "res-pharmacy-iv",
+      category: "Pharmacy",
+      name: "IV Fluids & Infusion Stock",
+      capacityTotal: 100,
+      occupied: 82,
+      available: 18,
+      utilizationNow: 38,
+      forecast2h: 42,
+      forecast4h: 46,
+      forecast8h: 52,
+      rpi: "0.72",
+      signals: { pendingRequests: 12, predictedArrivals: 0, expectedDischarges: 0 },
+      actionRequired: "IV Normal Saline at 82% — reorder point in 6h"
+    },
+    {
+      id: "res-pharmacy-epi",
+      category: "Pharmacy",
+      name: "Emergency Epinephrine (Adrenaline)",
+      capacityTotal: 30,
+      occupied: 12,
+      available: 18,
+      utilizationNow: 74,
+      forecast2h: 80,
+      forecast4h: 86,
+      forecast8h: 92,
+      rpi: "1.48",
+      signals: { pendingRequests: 2, predictedArrivals: 1, expectedDischarges: 0 },
+      actionRequired: "⚠ Limited stock — expedite emergency resupply order"
+    },
+    {
+      id: "res-pharmacy-insulin",
+      category: "Pharmacy",
+      name: "Rapid-Acting Insulin (Novorapid)",
+      capacityTotal: 30,
+      occupied: 18,
+      available: 12,
+      utilizationNow: 92,
+      forecast2h: 94,
+      forecast4h: 96,
+      forecast8h: 98,
+      rpi: "2.31",
+      signals: { pendingRequests: 4, predictedArrivals: 2, expectedDischarges: 0 },
+      actionRequired: "🚨 Critical shortage — trigger emergency procurement now"
+    },
+    {
+      id: "res-pharmacy-abx",
+      category: "Pharmacy",
+      name: "Broad-Spectrum Antibiotics (Ceftriaxone)",
+      capacityTotal: 80,
+      occupied: 52,
+      available: 28,
+      utilizationNow: 45,
+      forecast2h: 50,
+      forecast4h: 55,
+      forecast8h: 60,
+      rpi: "0.81",
+      signals: { pendingRequests: 6, predictedArrivals: 0, expectedDischarges: 0 },
+      actionRequired: "Adequate stock — next scheduled replenishment at 5 PM"
+    },
+  ]
+};
+
 export default function ResourceHeatmapView() {
   const [heatmapData, setHeatmapData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,11 +328,14 @@ export default function ResourceHeatmapView() {
   const loadData = async () => {
     try {
       const data = await nexusApi.getResourceHeatmap();
-      if (data && data.success) {
+      if (data && data.success && data.resources && data.resources.length > 0) {
         setHeatmapData(data);
+      } else {
+        setHeatmapData(DEMO_HEATMAP);
       }
     } catch (e) {
-      console.error("Failed to load heatmap data", e);
+      console.error("Backend unavailable — using demo heatmap data", e);
+      setHeatmapData(DEMO_HEATMAP);
     } finally {
       setLoading(false);
     }
