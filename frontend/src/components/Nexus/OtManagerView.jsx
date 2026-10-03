@@ -981,52 +981,6 @@ export default function OtManagerView() {
                   </div>
                 </div>
 
-                {/* ─────────────────────────────────────────────────────────────
-                    Live Cost Calculation & Breakdown Box (User requirement)
-                ────────────────────────────────────────────────────────────── */}
-                {(() => {
-                  const rate = bookingOt.hourlyRate || SPECIALTY_DEFAULTS[bookingOt.specialty]?.baseRate || 650;
-                  const prep = bookingOt.sterilePrepFee || 120;
-                  const cost = calculateCost(rate, prep, durationMinutes, priority, includeAdvancedTech);
-
-                  return (
-                    <div className="bg-slate-50 p-3 rounded-xl border border-purple-200/70 space-y-2">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-black text-slate-800 flex items-center gap-1">
-                          <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
-                          Cost Transparency & Estimate:
-                        </span>
-                        <span className="text-sm font-black text-purple-900 bg-purple-100 px-2 py-0.5 rounded">
-                          Total Est: ${cost.total}
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10px] text-slate-600 pt-1 border-t border-slate-200">
-                        <div>
-                          <span className="text-slate-400 block">Suite Time ({durationMinutes}m):</span>
-                          <span className="font-bold text-slate-800">${cost.timeCost}</span>
-                        </div>
-                        <div>
-                          <span className="text-slate-400 block">Sterile Turnaround:</span>
-                          <span className="font-bold text-slate-800">${cost.prep}</span>
-                        </div>
-                        <div>
-                          <span className="text-slate-400 block">Tech / Navigation:</span>
-                          <span className="font-bold text-slate-800">${cost.techSurcharge}</span>
-                        </div>
-                        <div>
-                          <span className="text-slate-400 block">Anesthesia Support:</span>
-                          <span className="font-bold text-slate-800">${cost.anesthesiaCost}</span>
-                        </div>
-                      </div>
-
-                      <p className="text-[9px] text-slate-400 leading-tight">
-                        * Estimates include standard HEPA laminar airflow, monitoring, and sterile turnover. Insurance pre-authorization will be requested upon dispatch.
-                      </p>
-                    </div>
-                  );
-                })()}
-
                 {/* Action Buttons */}
                 <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
                   <button
