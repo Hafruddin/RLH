@@ -151,6 +151,32 @@ export default function DoctorDetail() {
   // Clerk hooks
   const { getToken, isLoaded: authLoaded } = useAuth();
   const { isSignedIn, user, isLoaded: userLoaded } = useUser();
+  const [userAppointments, setUserAppointments] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    async function fetchUserAppointments() {
+      if (!isSignedIn) return;
+      try {
+        const token = await getToken();
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch(`${API_BASE}/api/appointments/me`, { headers });
+        if (res.ok) {
+          const data = await res.json();
+          const list = data?.appointments || data?.data || (Array.isArray(data) ? data : []);
+          if (mounted && Array.isArray(list)) {
+            setUserAppointments(list);
+          }
+        }
+      } catch (e) {
+        console.warn("Could not fetch user appointments:", e);
+      }
+    }
+    fetchUserAppointments();
+    return () => {
+      mounted = false;
+    };
+  }, [isSignedIn, getToken]);
 
   useEffect(() => {
     setIsVisible(true);
@@ -235,6 +261,47 @@ export default function DoctorDetail() {
   const next7 = useMemo(() => getScheduleDates(doctor?.schedule), [doctor]);
   const fee = Number(doctor?.fee ?? doctor?.fees ?? 0);
 
+  const selectedDateISO = useMemo(() => {
+    if (!selectedDate) return "";
+    return selectedDate.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+  }, [selectedDate]);
+
+  const sameDayExistingAppointment = useMemo(() => {
+    if (!selectedDateISO || !doctor) return null;
+    const docIdStr = String(doctor._id || doctor.id || "").toLowerCase();
+    const docNameStr = String(doctor.name || "").toLowerCase().trim();
+
+    return userAppointments.find((a) => {
+      if (!a || a.status === "Canceled") return false;
+
+      let aDateStr = "";
+      if (a.date) {
+        if (typeof a.date === "string" && a.date.length === 10 && a.date.includes("-")) {
+          aDateStr = a.date;
+        } else {
+          try {
+            aDateStr = new Date(a.date).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+          } catch {
+            aDateStr = String(a.date);
+          }
+        }
+      }
+      if (aDateStr !== selectedDateISO) return false;
+
+      const aDocId = String(a.doctorId?._id || a.doctorId?.id || a.doctorId || "").toLowerCase();
+      const aDocName = String(a.doctorName || a.doctor || a.doctorId?.name || "").toLowerCase().trim();
+
+      const docIdMatch = docIdStr && aDocId && (aDocId === docIdStr);
+      const docNameMatch = docNameStr && aDocName && (
+        aDocName === docNameStr ||
+        aDocName.includes(docNameStr) ||
+        docNameStr.includes(aDocName)
+      );
+
+      return docIdMatch || docNameMatch;
+    });
+  }, [selectedDateISO, doctor, userAppointments]);
+
   const slots = useMemo(() => {
     if (!selectedDate || !doctor?.schedule) return [];
     const key = selectedDate.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
@@ -286,6 +353,17 @@ export default function DoctorDetail() {
         position: "top-center",
         autoClose: 2000,
       });
+      return;
+    }
+
+    if (sameDayExistingAppointment) {
+      toast.error(
+        `You already have an appointment with this doctor on this day (at ${sameDayExistingAppointment.time || "scheduled slot"}). Patients cannot book multiple appointments on the same day for the same doctor.`,
+        {
+          position: "top-center",
+          autoClose: 3500,
+        }
+      );
       return;
     }
 
@@ -744,6 +822,22 @@ export default function DoctorDetail() {
 
               {/* RIGHT COLUMN */}
               <div className={doctorDetailStyles.timeSlotsSection}>
+                {sameDayExistingAppointment && (
+                  <div className="mb-4 p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-start gap-2.5 shadow-2xs">
+                    <div className="w-5 h-5 rounded-full bg-amber-200 text-amber-800 flex items-center justify-center shrink-0 font-bold mt-0.5">
+                      !
+                    </div>
+                    <div className="space-y-1">
+                      <div className="font-bold text-amber-950">
+                        Appointment Already Booked on this Date
+                      </div>
+                      <p className="text-amber-800 leading-relaxed">
+                        You already have an active appointment scheduled with <strong>{doctor?.name}</strong> on this date ({selectedDateISO}) at <strong>{sameDayExistingAppointment.time}</strong>. Hospital policy does not permit booking multiple appointments on the same day for the same doctor.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <h3 className={doctorDetailStyles.timeSlotsTitle}>
                   <Clock className={doctorDetailStyles.timeSlotsIcon} />{" "}
                   Available Time Slots
@@ -875,9 +969,9 @@ export default function DoctorDetail() {
 
                   <button
                     onClick={handleBooking}
-                    disabled={!selectedDate || !selectedSlot || isSubmitting}
+                    disabled={!selectedDate || !selectedSlot || isSubmitting || Boolean(sameDayExistingAppointment)}
                     className={`${doctorDetailStyles.bookingButton} ${
-                      !selectedDate || !selectedSlot || isSubmitting
+                      !selectedDate || !selectedSlot || isSubmitting || Boolean(sameDayExistingAppointment)
                         ? doctorDetailStyles.bookingButtonDisabled
                         : doctorDetailStyles.bookingButtonEnabled
                     }`}
@@ -885,7 +979,11 @@ export default function DoctorDetail() {
                     <div className={doctorDetailStyles.bookingButtonContent}>
                       <Phone className={doctorDetailStyles.bookingIcon} />
                       <span>
-                        {isSubmitting ? "Booking..." : "Confirm Booking"}
+                        {sameDayExistingAppointment
+                          ? "Already Booked for this Day"
+                          : isSubmitting
+                          ? "Booking..."
+                          : "Confirm Booking"}
                       </span>
                     </div>
                   </button>

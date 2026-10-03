@@ -134,8 +134,23 @@ export async function bookAppointmentTool(req, res) {
     const effectivePatientName = patientName || "Rahul Kumar";
     const effectiveMobile = "+919876543210";
     const effectiveDate = date || new Date(Date.now() + 86400000).toISOString().split("T")[0];
-    const effectiveTime = time || "10:30 AM";
     const effectiveFee = Number(doctor.fee) || 700;
+
+    // Check same doctor, same day duplicate
+    const existingSameDay = await Appointment.findOne({
+      $or: [{ doctorId: doctor._id }, { doctorName: doctor.name }],
+      $or: [{ createdBy: effectivePatientId }, { mobile: effectiveMobile }],
+      date: effectiveDate,
+      status: { $ne: "Canceled" }
+    });
+
+    if (existingSameDay) {
+      return res.status(409).json({
+        success: false,
+        errorCode: "SAME_DAY_DUPLICATE",
+        message: `Patient already has an appointment with ${doctor.name} on ${effectiveDate} at ${existingSameDay.time}. Patients cannot book multiple appointments on the same day for the same doctor.`
+      });
+    }
 
     // Create real appointment in MongoDB matching schema
     const appointment = new Appointment({

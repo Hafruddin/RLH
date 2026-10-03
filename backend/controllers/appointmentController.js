@@ -217,18 +217,20 @@ export const createAppointment = async (req, res) => {
         return res.status(400).json({ success: false, message: "fee must be a valid number" });
       }
 
-      // Check duplicates in mock memory
+      // Check same doctor, same day duplicate in mock memory
       const mockAppts = getMockAppointments();
-      const existing = mockAppts.find(
+      const existingSameDay = mockAppts.find(
         (a) =>
-          String(a.doctorId) === String(doctorId) &&
-          String(a.createdBy) === String(clerkUserId) &&
-          String(a.date) === String(date) &&
-          String(a.time) === String(time) &&
+          (String(a.doctorId) === String(doctorId) || (doctorNameFromBody && String(a.doctorName || a.doctor) === String(doctorNameFromBody))) &&
+          (String(a.createdBy) === String(clerkUserId) || (mobile && String(a.mobile).trim() === String(mobile).trim())) &&
+          String(a.date).trim() === String(date).trim() &&
           a.status !== "Canceled"
       );
-      if (existing) {
-        return res.status(409).json({ success: false, message: "You already have an appointment at this slot." });
+      if (existingSameDay) {
+        return res.status(409).json({
+          success: false,
+          message: `You already have an appointment with this doctor on ${date} (at ${existingSameDay.time}). Patients cannot book multiple appointments on the same day for the same doctor.`,
+        });
       }
 
       const doctor = getMockDoctorById(doctorId, req);
@@ -375,19 +377,36 @@ export const createAppointment = async (req, res) => {
       }
     }
 
-    // Duplicate booking prevention
-    const existingBooking = await Appointment.findOne({
-      doctorId,
-      createdBy: clerkUserId,
-      date: String(date),
-      time: String(time),
-      status: { $ne: "Canceled" },
+    // Same-day, same-doctor duplicate booking prevention
+    const doctorFilter = [];
+    if (doctorId && mongoose.Types.ObjectId.isValid(doctorId)) {
+      doctorFilter.push({ doctorId });
+    }
+    if (doctorNameFromBody) {
+      doctorFilter.push({ doctorName: doctorNameFromBody.trim() });
+    }
+    if (doctorFilter.length === 0) {
+      doctorFilter.push({ doctorId });
+    }
+
+    const patientFilter = [{ createdBy: clerkUserId }];
+    if (mobile) {
+      patientFilter.push({ mobile: String(mobile).trim() });
+    }
+
+    const existingSameDay = await Appointment.findOne({
+      $or: doctorFilter,
+      $and: [
+        { $or: patientFilter },
+        { date: String(date).trim() },
+        { status: { $ne: "Canceled" } }
+      ]
     }).lean();
 
-    if (existingBooking) {
+    if (existingSameDay) {
       return res.status(409).json({
         success: false,
-        message: "You already have an appointment with this doctor at the selected date and time.",
+        message: `You already have an appointment with this doctor on ${date} (at ${existingSameDay.time}). Patients cannot book multiple appointments on the same day for the same doctor.`,
       });
     }
 

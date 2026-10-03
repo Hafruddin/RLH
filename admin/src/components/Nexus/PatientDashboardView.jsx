@@ -1,5 +1,5 @@
 // frontend/src/components/Nexus/PatientDashboardView.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Activity,
   AlertCircle,
@@ -121,6 +121,23 @@ export default function PatientDashboardView({ activeTab = "patient-dashboard", 
   const [bookingType, setBookingType] = useState("In-Person");
   const [bookingReason, setBookingReason] = useState("Routine follow-up for mild chest tightness and reviewing recent ECG reports");
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
+  const [bookingError, setBookingError] = useState("");
+  const [existingAppointments, setExistingAppointments] = useState([
+    {
+      id: "APT-101",
+      doctorName: "Dr. Sarah Johnson",
+      date: "2026-10-03",
+      time: "11:00 AM",
+      status: "Confirmed",
+    },
+    {
+      id: "APT-102",
+      doctorName: "Dr. Aniket Roy",
+      date: "2026-10-03",
+      time: "04:30 PM",
+      status: "Confirmed",
+    },
+  ]);
 
   // 6. Persistent 8-Stage Journey Events
   const [journeyEvents, setJourneyEvents] = useState([
@@ -335,9 +352,36 @@ export default function PatientDashboardView({ activeTab = "patient-dashboard", 
     setHelpResponse(result);
   };
 
+  const sameDayBookingConflict = useMemo(() => {
+    if (!bookingDoctor || !bookingDate) return null;
+    const docClean = bookingDoctor.toLowerCase().replace(/[^a-z]/g, "");
+    return existingAppointments.find((a) => {
+      if (a.status === "Canceled") return false;
+      const aDocClean = (a.doctorName || "").toLowerCase().replace(/[^a-z]/g, "");
+      const sameDoc = aDocClean.includes(docClean) || docClean.includes(aDocClean);
+      const sameDate = a.date === bookingDate;
+      return sameDoc && sameDate;
+    });
+  }, [bookingDoctor, bookingDate, existingAppointments]);
+
   // Appointment Submission
   const handleConfirmBooking = (e) => {
     e.preventDefault();
+    if (sameDayBookingConflict) {
+      setBookingError(
+        `Patients cannot book multiple appointments on the same day for the same doctor. You already have an appointment with ${bookingDoctor} on ${bookingDate} at ${sameDayBookingConflict.time}.`
+      );
+      return;
+    }
+    setBookingError("");
+    const newApt = {
+      id: `APT-${Date.now()}`,
+      doctorName: bookingDoctor,
+      date: bookingDate,
+      time: bookingSlot,
+      status: "Confirmed",
+    };
+    setExistingAppointments((prev) => [newApt, ...prev]);
     setBookingConfirmed(true);
     setTimeout(() => {
       setBookingConfirmed(false);
@@ -853,6 +897,25 @@ export default function PatientDashboardView({ activeTab = "patient-dashboard", 
             </div>
           )}
 
+          {sameDayBookingConflict && (
+            <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-start gap-2.5 shadow-2xs">
+              <span className="text-base leading-none">⚠️</span>
+              <div className="space-y-0.5">
+                <p className="font-extrabold text-amber-950">Same-Day Appointment Restriction</p>
+                <p className="text-amber-800 font-medium leading-relaxed">
+                  You already have an active appointment scheduled with <strong>{bookingDoctor}</strong> on <strong>{bookingDate}</strong> (at {sameDayBookingConflict.time}). Hospital policy does not permit booking multiple appointments on the same day for the same doctor.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {bookingError && (
+            <div className="p-4 rounded-xl bg-rose-50 border border-rose-300 text-rose-900 text-xs font-bold flex items-center gap-2">
+              <span className="text-base leading-none">🚫</span>
+              <span>{bookingError}</span>
+            </div>
+          )}
+
           <form onSubmit={handleConfirmBooking} className="space-y-4 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -950,9 +1013,16 @@ export default function PatientDashboardView({ activeTab = "patient-dashboard", 
               </span>
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white font-black text-xs shadow-md transition cursor-pointer"
+                disabled={Boolean(sameDayBookingConflict)}
+                className={`px-6 py-2.5 rounded-xl font-black text-xs shadow-md transition ${
+                  sameDayBookingConflict
+                    ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                    : "bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white cursor-pointer"
+                }`}
               >
-                Confirm Appointment & Generate Token →
+                {sameDayBookingConflict
+                  ? "Already Booked for this Day"
+                  : "Confirm Appointment & Generate Token →"}
               </button>
             </div>
           </form>

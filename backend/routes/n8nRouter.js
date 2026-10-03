@@ -181,6 +181,20 @@ n8nRouter.post(
         .status(404)
         .json({ success: false, errorCode: "DOCTOR_NOT_FOUND", message: "Doctor not found" });
 
+    // Same-day, same-doctor duplicate check
+    const sameDay = await Appointment.findOne({
+      doctorId,
+      $or: [{ mobile: String(mobile).trim() }, { patientName: String(patientName).trim() }],
+      date: String(date),
+      status: { $ne: "Canceled" },
+    }).lean();
+    if (sameDay)
+      return res.status(409).json({
+        success: false,
+        errorCode: "SAME_DAY_DUPLICATE",
+        message: `You already have an appointment with this doctor on ${date} (at ${sameDay.time}). Patients cannot book multiple appointments on the same day for the same doctor.`,
+      });
+
     const existing = await Appointment.findOne({
       doctorId,
       date: String(date),
