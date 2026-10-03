@@ -76,6 +76,7 @@ export default function Navbar() {
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Doctors", href: "/doctors" },
+    { label: "Clinical Case", href: "/clinical-case" },
     { label: "Services", href: "/services" },
     { label: "Appointments", href: "/appointments" },
     { label: "Contact", href: "/contact" },

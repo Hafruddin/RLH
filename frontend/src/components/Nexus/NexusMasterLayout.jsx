@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
+  ClipboardList,
   Clock,
   Compass,
   Cpu,
@@ -78,6 +79,7 @@ import SmartOpQueueView from "./SmartOpQueueView";
 import SecurityPrivacyCenterView from "./SecurityPrivacyCenterView";
 import AiMlStrategyView from "./AiMlStrategyView";
 import Round2JuryDemoView from "./Round2JuryDemoView";
+import ClinicalCaseTakingView from "./ClinicalCaseTakingView";
 
 // Role-Specific Views
 import PatientDashboardView from "./PatientDashboardView";
@@ -210,6 +212,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
     if (currentRole === "DOCTOR") {
       return [
         { id: "doctor-dashboard", label: "Doctor Dashboard", icon: Stethoscope, badge: "OPD Live" },
+        { id: "clinical-case", label: "Clinical Case Taking", icon: ClipboardList, badge: "EHR" },
         { id: "smart-op-queues", label: "Smart OP Queues", icon: Compass, badge: "Auto-Routing" },
         { id: "dynamic-scheduling", label: "Dynamic Scheduling", icon: Cpu, badge: "CP-SAT" },
         { id: "resource-heatmap", label: "Resource Heatmap", icon: Flame, badge: "Live" },
@@ -235,6 +238,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
     // HOSPITAL ADMIN (Full 23-Section Operational Command)
     return [
       { id: "overview", label: "Command Center", icon: Radio, badge: "LIVE" },
+      { id: "clinical-case", label: "Clinical Case Taking", icon: ClipboardList, badge: "EHR" },
       { id: "resource-heatmap", label: "Resource Heatmap", icon: Flame, badge: "RPI Live" },
       { id: "dynamic-scheduling", label: "Dynamic Scheduling", icon: Cpu, badge: "CP-SAT" },
       { id: "smart-op-queues", label: "Smart OP Queues", icon: Compass, badge: "Virtual" },
@@ -641,6 +645,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
           {activeTab === "smart-op-queues" && currentRole !== "PATIENT" && <SmartOpQueueView />}
           {activeTab === "security-privacy" && currentRole !== "PATIENT" && currentRole !== "STAFF" && <SecurityPrivacyCenterView />}
           {activeTab === "ai-ml-strategy" && <AiMlStrategyView />}
+          {activeTab === "clinical-case" && <ClinicalCaseTakingView />}
 
           {/* 1. PATIENT PORTAL VIEWS */}
           {currentRole === "PATIENT" && (
