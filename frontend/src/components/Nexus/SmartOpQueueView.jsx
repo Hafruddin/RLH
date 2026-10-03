@@ -226,8 +226,8 @@ const DEMO_JOURNEYS = [
 ];
 
 export default function SmartOpQueueView() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState({ success: true, activeJourneys: DEMO_JOURNEYS });
+  const [loading, setLoading] = useState(false);
   const [selectedJourneyId, setSelectedJourneyId] = useState("JRN-2026-8812");
   const [actionSuccess, setActionSuccess] = useState("");
 

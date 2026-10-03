@@ -136,7 +136,7 @@ const DEMO_HEATMAP = {
     {
       id: "res-doctors",
       category: "Clinical Staff",
-      name: "Attending Physicians & Specialists",
+      name: "Attending Physicians & Specialists (Cardio, Neuro, Ortho)",
       capacityTotal: 24,
       occupied: 19,
       available: 5,
@@ -149,9 +149,39 @@ const DEMO_HEATMAP = {
       actionRequired: "Call on-call Dr. Mehta (Cardiology) for afternoon OPD surge"
     },
     {
+      id: "res-surgeons",
+      category: "Clinical Staff",
+      name: "Lead General & Trauma Surgeons (OT On-Duty)",
+      capacityTotal: 8,
+      occupied: 7,
+      available: 1,
+      utilizationNow: 88,
+      forecast2h: 92,
+      forecast4h: 75,
+      forecast8h: 60,
+      rpi: "1.82",
+      signals: { pendingRequests: 2, predictedArrivals: 1, expectedDischarges: 2 },
+      actionRequired: "1 surgeon on emergency standby for polytrauma case"
+    },
+    {
+      id: "res-anesthetists",
+      category: "Clinical Staff",
+      name: "Consultant Anesthesiologists",
+      capacityTotal: 6,
+      occupied: 5,
+      available: 1,
+      utilizationNow: 83,
+      forecast2h: 88,
+      forecast4h: 88,
+      forecast8h: 67,
+      rpi: "1.74",
+      signals: { pendingRequests: 2, predictedArrivals: 1, expectedDischarges: 1 },
+      actionRequired: "Covering OT-1 through OT-5; relief scheduled at 3:00 PM"
+    },
+    {
       id: "res-residents",
       category: "Clinical Staff",
-      name: "Resident Doctors & Interns",
+      name: "Resident Medical Officers & Interns",
       capacityTotal: 18,
       occupied: 16,
       available: 2,
@@ -167,7 +197,7 @@ const DEMO_HEATMAP = {
     {
       id: "res-nurses-icu",
       category: "Nursing Staff",
-      name: "ICU Nursing Team",
+      name: "ICU Critical Care Nursing Team (1:1 Ratio)",
       capacityTotal: 12,
       occupied: 11,
       available: 1,
@@ -182,7 +212,7 @@ const DEMO_HEATMAP = {
     {
       id: "res-nurses-ward",
       category: "Nursing Staff",
-      name: "General Ward Nursing Staff",
+      name: "General & Inpatient Ward Nurses (Floor 2–5)",
       capacityTotal: 30,
       occupied: 22,
       available: 8,
@@ -193,6 +223,36 @@ const DEMO_HEATMAP = {
       rpi: "1.41",
       signals: { pendingRequests: 3, predictedArrivals: 4, expectedDischarges: 5 },
       actionRequired: "Acceptable levels — review shift handover at 2 PM"
+    },
+    {
+      id: "res-nurses-ot",
+      category: "Nursing Staff",
+      name: "Surgical OT Scrub & Circulating Nurses",
+      capacityTotal: 10,
+      occupied: 8,
+      available: 2,
+      utilizationNow: 80,
+      forecast2h: 85,
+      forecast4h: 90,
+      forecast8h: 70,
+      rpi: "1.65",
+      signals: { pendingRequests: 2, predictedArrivals: 1, expectedDischarges: 2 },
+      actionRequired: "Full team deployed across OT suites 1–4"
+    },
+    {
+      id: "res-nurses-er",
+      category: "Nursing Staff",
+      name: "Triage & Emergency Room Nurses",
+      capacityTotal: 14,
+      occupied: 10,
+      available: 4,
+      utilizationNow: 71,
+      forecast2h: 78,
+      forecast4h: 85,
+      forecast8h: 64,
+      rpi: "1.38",
+      signals: { pendingRequests: 4, predictedArrivals: 3, expectedDischarges: 2 },
+      actionRequired: "Rapid triage active; 2 nurses on ambulance intake"
     },
     // Diagnostics
     {
@@ -320,8 +380,8 @@ const DEMO_HEATMAP = {
 };
 
 export default function ResourceHeatmapView() {
-  const [heatmapData, setHeatmapData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [heatmapData, setHeatmapData] = useState(DEMO_HEATMAP);
+  const [loading, setLoading] = useState(false);
   const [selectedHorizon, setSelectedHorizon] = useState("now"); // "now" | "2h" | "4h" | "8h"
   const [selectedCategory, setSelectedCategory] = useState("ALL");
 

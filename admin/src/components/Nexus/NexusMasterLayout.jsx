@@ -197,7 +197,6 @@ export default function NexusMasterLayout({ initialRole = null }) {
     if (currentRole === "PATIENT") {
       return [
         { id: "patient-dashboard", label: "Patient Dashboard", icon: User },
-        { id: "smart-op-queues", label: "My Virtual Queue & Journey", icon: Compass, badge: "Live ETA" },
         { id: "security-privacy", label: "My Privacy & Consent", icon: ShieldCheck, badge: "DPDP" },
         { id: "visit-center", label: "Unified Visit Center", icon: Activity },
         { id: "patient-registration", label: "Patient Registration", icon: FileText },
@@ -226,7 +225,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
     if (currentRole === "STAFF") {
       return [
         { id: "staff-dashboard", label: "Task Inbox & Dashboard", icon: UserCheck, badge: "Active" },
-        { id: "smart-op-queues", label: "Virtual Queues & ETA", icon: Compass, badge: "Live" },
+        { id: "smart-op-queues", label: "Smart OP & Virtual Queue Management", icon: Compass, badge: "Live" },
         { id: "resource-heatmap", label: "Resource Heatmap", icon: Flame, badge: "RPI" },
         { id: "security-privacy", label: "Emergency Access", icon: ShieldCheck, badge: "Break-Glass" },
         { id: "transfers", label: "Patient Transfers", icon: Truck, badge: "5 Stages" },
@@ -641,7 +640,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
           {activeTab === "jury-demo" && <Round2JuryDemoView />}
           {activeTab === "resource-heatmap" && <ResourceHeatmapView />}
           {activeTab === "dynamic-scheduling" && <DynamicSchedulingView />}
-          {activeTab === "smart-op-queues" && <SmartOpQueueView />}
+          {activeTab === "smart-op-queues" && currentRole !== "PATIENT" && <SmartOpQueueView />}
           {activeTab === "security-privacy" && <SecurityPrivacyCenterView />}
           {activeTab === "ai-ml-strategy" && <AiMlStrategyView />}
 
@@ -650,8 +649,8 @@ export default function NexusMasterLayout({ initialRole = null }) {
             <>
               {activeTab === "hospital-simulator" ? (
                 <SimulationStudio />
-              ) : activeTab === "jury-demo" || activeTab === "resource-heatmap" || activeTab === "dynamic-scheduling" || activeTab === "smart-op-queues" || activeTab === "security-privacy" || activeTab === "ai-ml-strategy" ? null : (
-                <PatientDashboardView activeTab={activeTab} setActiveTab={setActiveTab} />
+              ) : activeTab === "jury-demo" || activeTab === "resource-heatmap" || activeTab === "dynamic-scheduling" || activeTab === "security-privacy" || activeTab === "ai-ml-strategy" ? null : (
+                <PatientDashboardView activeTab={activeTab === "smart-op-queues" ? "patient-dashboard" : activeTab} setActiveTab={setActiveTab} />
               )}
             </>
           )}
