@@ -49,7 +49,9 @@ import {
   X,
   Zap,
   Flame,
-  Brain
+  Brain,
+  IndianRupee,
+  Landmark
 } from "lucide-react";
 
 // Existing Views
@@ -80,6 +82,7 @@ import SecurityPrivacyCenterView from "./SecurityPrivacyCenterView";
 import AiMlStrategyView from "./AiMlStrategyView";
 import Round2JuryDemoView from "./Round2JuryDemoView";
 import ClinicalCaseTakingView from "./ClinicalCaseTakingView";
+import HospitalRevenueView from "./HospitalRevenueView";
 
 // Role-Specific Views
 import PatientDashboardView from "./PatientDashboardView";
@@ -238,6 +241,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
     // HOSPITAL ADMIN (Full 23-Section Operational Command)
     return [
       { id: "overview", label: "Command Center", icon: Radio, badge: "LIVE" },
+      { id: "revenue", label: "Hospital Revenue", icon: IndianRupee, badge: "₹4.82 Cr" },
       { id: "clinical-case", label: "Clinical Case Taking", icon: ClipboardList, badge: "EHR" },
       { id: "resource-heatmap", label: "Resource Heatmap", icon: Flame, badge: "RPI Live" },
       { id: "dynamic-scheduling", label: "Dynamic Scheduling", icon: Cpu, badge: "CP-SAT" },
@@ -639,6 +643,7 @@ export default function NexusMasterLayout({ initialRole = null }) {
         {/* Right Main Content Panel */}
         <main className="flex-1 bg-slate-100 text-slate-900 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {/* Clinical Optimization & Orchestration Module Views */}
+          {activeTab === "revenue" && <HospitalRevenueView />}
           {activeTab === "jury-demo" && <Round2JuryDemoView />}
           {activeTab === "resource-heatmap" && <ResourceHeatmapView />}
           {activeTab === "dynamic-scheduling" && <DynamicSchedulingView />}
