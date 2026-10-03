@@ -151,4 +151,49 @@ nexusRouter.get("/integration/fhir/observation/:id", getFhirObservationResource)
 // AI Operations Copilot
 nexusRouter.post("/copilot/chat", copilotQuery);
 
+// ─────────────────────────────────────────────────────────────
+// Round 2 Modules (Jury 25 Marks Specifications)
+// ─────────────────────────────────────────────────────────────
+import {
+  getResourceHeatmap,
+  solveDynamicSchedule,
+  allocateScheduleSlot,
+  getOpQueues,
+  orderDiagnostics,
+  completeDiagnosticTest,
+  reviewAndPrescribe,
+  getSecurityOverview,
+  requestBreakGlass,
+  revokeBreakGlass,
+  toggleConsent,
+  getAiMlStrategy,
+  runDemoStep
+} from "../controllers/nexusRound2Controller.js";
+
+// Module 1: Dynamic Scheduling & Time Dependency Engine
+nexusRouter.post("/scheduling/solve", solveDynamicSchedule);
+nexusRouter.post("/scheduling/allocate", allocateScheduleSlot);
+
+// Module 2: Resource Heatmap (Real-Time & Predictive)
+nexusRouter.get("/heatmap", getResourceHeatmap);
+
+// Module 3: Smart OP & Virtual Dynamic Queues
+nexusRouter.get("/op-queues", getOpQueues);
+nexusRouter.post("/op-queues/order-diagnostics", orderDiagnostics);
+nexusRouter.post("/op-queues/complete-test", completeDiagnosticTest);
+nexusRouter.post("/op-queues/review", reviewAndPrescribe);
+
+// Module 4: Security & Patient Privacy Center (Break-Glass & RBAC)
+nexusRouter.get("/security/overview", getSecurityOverview);
+nexusRouter.post("/security/break-glass/request", requestBreakGlass);
+nexusRouter.post("/security/break-glass/:sessionId/revoke", revokeBreakGlass);
+nexusRouter.post("/security/consent/toggle", toggleConsent);
+
+// Module 5: AI/ML Strategy
+nexusRouter.get("/ml/strategy", getAiMlStrategy);
+nexusRouter.get("/ml/models", getAiMlStrategy);
+
+// Module 6: 13-Step Killer Round 2 Demo Runner
+nexusRouter.post("/demo/run-step", runDemoStep);
+
 export default nexusRouter;

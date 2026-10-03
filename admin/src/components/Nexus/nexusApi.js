@@ -999,5 +999,97 @@ export const nexusApi = {
     });
     if (data && data.success) return data;
     return this.runSimulation(scenario);
+  },
+
+  // ─── ROUND 2 CORE APIS (Jury 25 Marks Specifications) ───
+  async getResourceHeatmap() {
+    const data = await safeFetch("/api/nexus/heatmap");
+    return data || null;
+  },
+
+  async solveDynamicSchedule(params) {
+    const data = await safeFetch("/api/nexus/scheduling/solve", {
+      method: "POST",
+      body: JSON.stringify(params)
+    });
+    return data || null;
+  },
+
+  async allocateScheduleSlot(slotId) {
+    const data = await safeFetch("/api/nexus/scheduling/allocate", {
+      method: "POST",
+      body: JSON.stringify({ slotId })
+    });
+    return data || null;
+  },
+
+  async getOpQueues() {
+    const data = await safeFetch("/api/nexus/op-queues");
+    return data || null;
+  },
+
+  async orderDiagnostics(params) {
+    const data = await safeFetch("/api/nexus/op-queues/order-diagnostics", {
+      method: "POST",
+      body: JSON.stringify(params)
+    });
+    return data || null;
+  },
+
+  async completeDiagnosticTest(params) {
+    const data = await safeFetch("/api/nexus/op-queues/complete-test", {
+      method: "POST",
+      body: JSON.stringify(params)
+    });
+    return data || null;
+  },
+
+  async reviewAndPrescribe(params) {
+    const data = await safeFetch("/api/nexus/op-queues/review", {
+      method: "POST",
+      body: JSON.stringify(params)
+    });
+    return data || null;
+  },
+
+  async getSecurityOverview() {
+    const data = await safeFetch("/api/nexus/security/overview");
+    return data || null;
+  },
+
+  async requestBreakGlass(params) {
+    const data = await safeFetch("/api/nexus/security/break-glass/request", {
+      method: "POST",
+      body: JSON.stringify(params)
+    });
+    return data || null;
+  },
+
+  async revokeBreakGlass(sessionId) {
+    const data = await safeFetch(`/api/nexus/security/break-glass/${sessionId}/revoke`, {
+      method: "POST"
+    });
+    return data || null;
+  },
+
+  async toggleConsent(params) {
+    const data = await safeFetch("/api/nexus/security/consent/toggle", {
+      method: "POST",
+      body: JSON.stringify(params)
+    });
+    return data || null;
+  },
+
+  async getAiMlStrategy() {
+    const data = await safeFetch("/api/nexus/ml/strategy");
+    return data || null;
+  },
+
+  async runDemoStep(step) {
+    const data = await safeFetch("/api/nexus/demo/run-step", {
+      method: "POST",
+      body: JSON.stringify({ step })
+    });
+    return data || null;
   }
 };

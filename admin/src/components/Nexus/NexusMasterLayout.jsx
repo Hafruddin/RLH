@@ -40,13 +40,16 @@ import {
   Sparkles,
   Stethoscope,
   TrendingUp,
+  Trophy,
   Truck,
   User,
   UserCheck,
   Users,
   Workflow,
   X,
-  Zap
+  Zap,
+  Flame,
+  Brain
 } from "lucide-react";
 
 // Existing Views
@@ -68,6 +71,14 @@ import DependencyGraphView from "./DependencyGraphView";
 import RecommendationsView from "./RecommendationsView";
 import PatientTransferView from "./PatientTransferView";
 import ConflictResolutionView from "./ConflictResolutionView";
+
+// Round 2 Modules (Jury 25 Marks Specifications)
+import ResourceHeatmapView from "./ResourceHeatmapView";
+import DynamicSchedulingView from "./DynamicSchedulingView";
+import SmartOpQueueView from "./SmartOpQueueView";
+import SecurityPrivacyCenterView from "./SecurityPrivacyCenterView";
+import AiMlStrategyView from "./AiMlStrategyView";
+import Round2JuryDemoView from "./Round2JuryDemoView";
 
 // Role-Specific Views
 import PatientDashboardView from "./PatientDashboardView";
@@ -187,6 +198,9 @@ export default function NexusMasterLayout({ initialRole = null }) {
     if (currentRole === "PATIENT") {
       return [
         { id: "patient-dashboard", label: "Patient Dashboard", icon: User },
+        { id: "smart-op-queues", label: "My Virtual Queue & Journey", icon: Compass, badge: "Live ETA" },
+        { id: "security-privacy", label: "My Privacy & Consent", icon: ShieldCheck, badge: "DPDP" },
+        { id: "jury-demo", label: "Round 2 Demo", icon: Trophy, badge: "25 Marks ⭐" },
         { id: "visit-center", label: "Unified Visit Center", icon: Activity },
         { id: "patient-registration", label: "Patient Registration", icon: FileText },
         { id: "book-appointment", label: "Book Appointment", icon: Calendar },
@@ -200,6 +214,11 @@ export default function NexusMasterLayout({ initialRole = null }) {
     if (currentRole === "DOCTOR") {
       return [
         { id: "doctor-dashboard", label: "Doctor Dashboard", icon: Stethoscope, badge: "OPD Live" },
+        { id: "smart-op-queues", label: "Smart OP Queues", icon: Compass, badge: "Auto-Routing" },
+        { id: "dynamic-scheduling", label: "Dynamic Scheduling", icon: Cpu, badge: "CP-SAT" },
+        { id: "resource-heatmap", label: "Resource Heatmap", icon: Flame, badge: "Live" },
+        { id: "security-privacy", label: "Patient Privacy & Consent", icon: ShieldCheck, badge: "ABAC" },
+        { id: "jury-demo", label: "Round 2 Demo", icon: Trophy, badge: "25 Marks ⭐" },
         { id: "ot", label: "Operating Theatres", icon: Activity, badge: "8 Suites" },
         { id: "diagnostics", label: "Diagnostic Orders", icon: Microscope, badge: "Imaging" },
         { id: "journey", label: "Patient Clinical Journey", icon: Compass, badge: "EHR" },
@@ -210,14 +229,24 @@ export default function NexusMasterLayout({ initialRole = null }) {
     if (currentRole === "STAFF") {
       return [
         { id: "staff-dashboard", label: "Task Inbox & Dashboard", icon: UserCheck, badge: "Active" },
+        { id: "smart-op-queues", label: "Virtual Queues & ETA", icon: Compass, badge: "Live" },
+        { id: "resource-heatmap", label: "Resource Heatmap", icon: Flame, badge: "RPI" },
+        { id: "security-privacy", label: "Emergency Access", icon: ShieldCheck, badge: "Break-Glass" },
         { id: "transfers", label: "Patient Transfers", icon: Truck, badge: "5 Stages" },
         { id: "equipment", label: "Life Support Equipment", icon: HeartPulse, badge: "20 Assets" },
+        { id: "jury-demo", label: "Round 2 Demo", icon: Trophy, badge: "25 Marks ⭐" },
         { id: "copilot", label: "Staff Assistant", icon: Cpu, badge: "AI" }
       ];
     }
 
-    // HOSPITAL ADMIN (Full 17-Section Operational Command)
+    // HOSPITAL ADMIN (Full 23-Section Operational Command)
     return [
+      { id: "jury-demo", label: "Round 2 Jury Demo", icon: Trophy, badge: "25 Marks ⭐" },
+      { id: "resource-heatmap", label: "Resource Heatmap", icon: Flame, badge: "RPI Live" },
+      { id: "dynamic-scheduling", label: "Dynamic Scheduling", icon: Cpu, badge: "CP-SAT" },
+      { id: "smart-op-queues", label: "Smart OP Queues", icon: Compass, badge: "Virtual" },
+      { id: "security-privacy", label: "Security & Privacy", icon: ShieldCheck, badge: "Break-Glass" },
+      { id: "ai-ml-strategy", label: "AI/ML Strategy", icon: Brain, badge: "6 Models" },
       { id: "overview", label: "Command Center", icon: Radio, badge: "LIVE" },
       { id: "recommendations", label: "Approvals & Recommendations", icon: ShieldCheck, badge: "Decision" },
       { id: "dependencies", label: "Dependency & Cascade Graph", icon: Network, badge: "Graph" },
@@ -562,6 +591,24 @@ export default function NexusMasterLayout({ initialRole = null }) {
               </span>
             </button>
 
+            {/* Round 2 Jury Demo Button (25 Marks) */}
+            <button
+              onClick={() => setActiveTab("jury-demo")}
+              className={`w-full mt-2 p-3 rounded-xl border transition-all text-left flex items-center justify-between group cursor-pointer ${
+                activeTab === "jury-demo"
+                  ? "bg-[#2d1b06] border-amber-400 shadow-md ring-1 ring-amber-400/50"
+                  : "bg-[#1f1304] border-amber-800/40 hover:border-amber-500/60"
+              }`}
+            >
+              <div className="flex items-center gap-2 text-xs font-black text-amber-400">
+                <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-slate-100 group-hover:text-amber-300">Round 2 Jury Demo</span>
+              </div>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-500/30">
+                25 MARKS ⭐
+              </span>
+            </button>
+
             {/* Section Category Title */}
             <div className="mt-6 px-1 text-[11px] font-black uppercase text-slate-400 tracking-wider">
               {currentRole === "PATIENT"
@@ -610,12 +657,20 @@ export default function NexusMasterLayout({ initialRole = null }) {
 
         {/* Right Main Content Panel */}
         <main className="flex-1 bg-slate-100 text-slate-900 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          {/* Universal Round 2 Core Module Views (25 Marks) */}
+          {activeTab === "jury-demo" && <Round2JuryDemoView />}
+          {activeTab === "resource-heatmap" && <ResourceHeatmapView />}
+          {activeTab === "dynamic-scheduling" && <DynamicSchedulingView />}
+          {activeTab === "smart-op-queues" && <SmartOpQueueView />}
+          {activeTab === "security-privacy" && <SecurityPrivacyCenterView />}
+          {activeTab === "ai-ml-strategy" && <AiMlStrategyView />}
+
           {/* 1. PATIENT PORTAL VIEWS */}
           {currentRole === "PATIENT" && (
             <>
               {activeTab === "hospital-simulator" ? (
                 <SimulationStudio />
-              ) : (
+              ) : activeTab === "jury-demo" || activeTab === "resource-heatmap" || activeTab === "dynamic-scheduling" || activeTab === "smart-op-queues" || activeTab === "security-privacy" || activeTab === "ai-ml-strategy" ? null : (
                 <PatientDashboardView activeTab={activeTab} setActiveTab={setActiveTab} />
               )}
             </>
