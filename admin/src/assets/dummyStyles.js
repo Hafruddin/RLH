@@ -489,83 +489,90 @@ export const doctorListStyles = {
 
 // Add to the existing dummyStyles.js file
 export const navbarStyles = {
-  // Layout styles
-  header: "relative font-serif",
-  navContainer: "mx-auto max-w-7xl lg:px-7 xl:px-2 px-4 py-5",
-  flexContainer: "flex items-center justify-between",
+  // Main container
+  navbarContainer: "sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-emerald-100 transition-transform duration-500",
+  navbarHidden: "-translate-y-full",
+  navbarVisible: "translate-y-0",
   
-  // Logo section styles
-  logoContainer: "flex items-center gap-2",
-  logoImage: "w-18 h-18 rounded-full",
-  logoLink: "text-3xl xl:block lg:text-xs xl:text-xl font-bold text-green-700",
-  logoSubtext: "text-xs xl:block text-gray-500",
+  // Border animation
+  navbarBorder: "navbar-border",
   
-  // Center navigation (desktop)
-  centerNavContainer: "hidden lg:flex items-center justify-center relative",
-  glowEffect: "glow relative rounded-3xl p-1 bg-linear-to-r from-emerald-100 via-emerald-200 to-emerald-100",
-  centerNavInner: "relative flex items-center",
-  centerNavScrollContainer: "center-inner relative whitespace-nowrap rounded-3xl bg-white/95 lg:px-2 px-4 py-2 flex items-center gap-2 shadow-lg border border-gray-100 overflow-x-auto",
+  // Content wrapper
+  contentWrapper: "max-w-[1440px] font-[pacifico] mx-auto px-2 sm:px-4 lg:px-6",
+  flexContainer: "flex items-center justify-between h-20 gap-2 xl:gap-4",
   
-  // Center nav items
-  centerNavItemBase: "relative flex flex-col lg:text-xs lg:-mx-2 xl:text-md items-center gap-1 px-3 py-2 rounded-lg transition-all text-sm",
-  centerNavItemActive: "text-emerald-400 font-semibold",
-  centerNavItemInactive: "text-gray-700 hover:text-emerald-600",
+  // Logo section
+  logoLink: "flex items-center gap-2 sm:gap-2.5 shrink-0 -ml-2 sm:-ml-3 lg:-ml-4 group",
+  logoContainer: "relative w-12 h-12 sm:w-14 sm:h-14 lg:w-14 lg:h-14 shrink-0",
+  logoImageWrapper: "relative flex items-center justify-center overflow-hidden p-0.5 h-full w-full",
+  logoImage: "w-11 h-11 sm:w-13 sm:h-13 lg:w-13 lg:h-13 object-contain shrink-0",
+  logoTextContainer: "shrink-0 whitespace-nowrap",
+  logoTitle: "text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-emerald-600 to-green-600 tracking-tight whitespace-nowrap",
+  logoSubtitle: "text-[10px] sm:text-xs text-gray-500 whitespace-nowrap block",
   
-  // Right section styles
-  rightContainer: "flex items-center gap-3",
-  signOutButton: "hidden lg:mx-1 lg:text-xs whitespace-nowrap xl:mx-1 lg:-mr-6 xl:mr-5 lg:flex px-4 py-2 cursor-pointer rounded-full bg-amber-500 text-white text-sm items-center gap-2 shadow-sm",
-  loginButton: "px-3 py-2 cursor-pointer rounded-full border bg-white text-emerald-600 text-sm shadow-sm",
+  // Desktop navigation
+  desktopNav: "hidden lg:flex items-center justify-center shrink-0 mx-1 xl:mx-3",
+  navItemsContainer: "flex gap-0.5 xl:gap-1 bg-white border border-emerald-200 p-1 rounded-full shadow-md",
+  navItem: "nav-item px-3 xl:px-4 py-2 rounded-full text-xs xl:text-sm font-semibold transition-all duration-300 whitespace-nowrap",
+  navItemActive: "active",
+  navItemInactive: "text-gray-700 hover:text-emerald-600",
   
-  // Mobile menu button
-  mobileMenuButton: "lg:hidden p-2 rounded-full bg-white shadow",
+  // Right side
+  rightContainer: "flex items-center gap-1.5 xl:gap-2 shrink-0",
   
-  // Mobile menu overlay
-  mobileOverlay: "fixed inset-0 z-10 lg:hidden",
+  // Signed out buttons
+  doctorButton: "btn-add hidden lg:inline-flex items-center gap-1 px-2.5 xl:px-3 py-1.5 xl:py-2 rounded-full text-xs font-semibold text-gray-700 hover:text-emerald-700 transition-all duration-200 shrink-0",
+  doctorIcon: "w-4 h-4 text-emerald-600",
+  doctorText: "whitespace-nowrap font-medium",
+
+  adminButton: "btn-add hidden lg:inline-flex items-center gap-1 px-2.5 xl:px-3 py-1.5 xl:py-2 rounded-full text-xs font-semibold text-gray-700 hover:text-emerald-700 transition-all duration-200 shrink-0",
+  adminIcon: "w-4 h-4 text-emerald-600",
+  adminText: "whitespace-nowrap font-medium",
+
+  doctorAdminButton: "btn-add hidden lg:inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-semibold transition-transform duration-200",
+  doctorAdminIcon: "w-4 h-4",
+  doctorAdminText: "hidden lg:text-xs lg:whitespace-nowrap sm:inline-block",
+  loginButton: "btn-login hidden lg:flex text-xs items-center gap-1 bg-gradient-to-r from-emerald-500 to-green-600 text-white px-3 xl:px-4 py-1.5 xl:py-2 rounded-full font-semibold hover:shadow-xl transition-all duration-300 cursor-pointer shrink-0",
+  loginIcon: "w-4 h-4",
+  loginText: "whitespace-nowrap font-medium",
   
-  // Mobile menu container
-  mobileMenuContainer: "mt-3 lg:hidden z-20 relative",
-  mobileMenuInner: "rounded-xl bg-white shadow-md p-3 space-y-2 border",
+  // Mobile toggle
+  mobileToggle: "lg:hidden p-2.5 rounded-lg hover:bg-emerald-50 transition-colors",
+  toggleIcon: "w-6 h-6 text-gray-900",
   
-  // Mobile menu items
-  mobileItemBase: "flex items-center gap-3 px-2 py-2 rounded-md",
-  mobileItemActive: "bg-emerald-50 text-emerald-600",
-  mobileItemInactive: "hover:bg-gray-50",
+  // Mobile menu
+  mobileMenu: "mobile-menu lg:hidden pb-4 space-y-2 border-t border-emerald-100 pt-4",
+  mobileMenuItem: "block px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300",
+  mobileMenuItemActive: "bg-emerald-500 text-white",
+  mobileMenuItemInactive: "text-gray-700 hover:bg-emerald-50 hover:text-emerald-600",
   
-  // Mobile auth section
-  mobileAuthContainer: "pt-2 border-t mt-2",
-  mobileSignOutButton: "w-full py-2 rounded-full border bg-amber-500 text-white font-medium",
-  mobileLoginButton: "w-full cursor-pointer py-2 rounded-full border bg-white text-emerald-600 font-medium",
+  // Mobile signed out buttons
+  mobileDoctorButton: "w-full flex items-center justify-center gap-2 py-2.5 rounded-full border border-emerald-200 bg-white text-sm font-semibold text-gray-700 hover:bg-emerald-50 transition-all",
+  mobileAdminButton: "w-full flex items-center justify-center gap-2 py-2.5 rounded-full border border-emerald-200 bg-white text-sm font-semibold text-gray-700 hover:bg-emerald-50 transition-all",
+  mobileDoctorAdminButton: "w-full flex items-center justify-center gap-2 py-2.5 rounded-full border border-emerald-200 bg-white text-sm font-semibold hover:bg-emerald-50 transition-all",
+  mobileLoginContainer: "w-full mt-2",
+  mobileLoginButton: "w-full cursor-pointer md:rounded-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white py-2.5 rounded-lg font-semibold hover:shadow-lg transition-all",
   
-  // Indicator (for active navigation)
-  indicator: "absolute bottom-0 left-0 h-0.5 bg-emerald-400 transition-all duration-300 ease-out rounded-full",
-  
-  // Cursor utilities
-  cursorPointer: "cursor-pointer",
-  
-  // Text colors
-  textGreen700: "text-green-700",
-  textGray500: "text-gray-500",
-  textGray700: "text-gray-700",
-  textEmerald600: "text-emerald-600",
-  textEmerald400: "text-emerald-400",
-  textWhite: "text-white",
-  
-  // Background colors
-  bgWhite: "bg-white",
-  bgAmber500: "bg-amber-500",
-  bgEmerald50: "bg-emerald-50",
-  bgEmerald100: "bg-emerald-100",
-  bgEmerald200: "bg-emerald-200",
-  
-  // Border colors
-  borderGray100: "border-gray-100",
-  borderEmerald100: "border-emerald-100",
-  
-  // Shadow
-  shadow: "shadow",
-  shadowMd: "shadow-md",
-  shadowLg: "shadow-lg",
-  shadowSm: "shadow-sm",
+  // Animation styles (to be added via style tag)
+  animationStyles: `
+    @keyframes borderFlow {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+    .navbar-border {
+      height: 2px;
+      background: linear-gradient(90deg, #10b981, #34d399, #059669, #10b981);
+      background-size: 300% 100%;
+      animation: borderFlow 6s ease infinite;
+    }
+  `,
 };
 
 

@@ -606,41 +606,41 @@ export const navbarStyles = {
   navbarBorder: "navbar-border",
   
   // Content wrapper
-  contentWrapper: "max-w-7xl font-[pacifico] md:px-2 mx-auto px-4 sm:px-6 lg:px-8",
-  flexContainer: "flex items-center justify-between h-20",
+  contentWrapper: "max-w-[1440px] font-[pacifico] mx-auto px-2 sm:px-4 lg:px-6",
+  flexContainer: "flex items-center justify-between h-20 gap-2 xl:gap-4",
   
   // Logo section
-  logoLink: "flex items-center gap-3 -ml-3 sm:-ml-4",
-  logoContainer: "relative group w-20 h-20 sm:w-24 sm:h-24 lg:w-15 lg:h-15 xl:w-32 xl:h-32",
-  logoImageWrapper: "relative flex items-center justify-center overflow-hidden p-2 mx-1 h-full w-full",
-  logoImage: "w-14 h-14 sm:w-18 sm:h-18 lg:w-15 lg:h-15 xl:w-24 xl:h-24 md:w-20 md:h-20 object-contain",
-  logoTextContainer: "block sm:block",
-  logoTitle: "text-2xl md:text-2xl lg:text-2xl xl:text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-emerald-600 to-green-600 tracking-tight",
-  logoSubtitle: "text-xs lg:text-xs text-gray-500",
+  logoLink: "flex items-center gap-2 sm:gap-2.5 shrink-0 -ml-2 sm:-ml-3 lg:-ml-4 group",
+  logoContainer: "relative w-12 h-12 sm:w-14 sm:h-14 lg:w-14 lg:h-14 shrink-0",
+  logoImageWrapper: "relative flex items-center justify-center overflow-hidden p-0.5 h-full w-full",
+  logoImage: "w-11 h-11 sm:w-13 sm:h-13 lg:w-13 lg:h-13 object-contain shrink-0",
+  logoTextContainer: "shrink-0 whitespace-nowrap",
+  logoTitle: "text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-emerald-600 to-green-600 tracking-tight whitespace-nowrap",
+  logoSubtitle: "text-[10px] sm:text-xs text-gray-500 whitespace-nowrap block",
   
   // Desktop navigation
-  desktopNav: "hidden lg:-mx-5 lg:flex items-center gap-2",
-  navItemsContainer: "flex gap-1 bg-white border border-emerald-200 p-1 rounded-full shadow-lg",
-  navItem: "nav-item px-5 md:px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300",
+  desktopNav: "hidden lg:flex items-center justify-center shrink-0 mx-1 xl:mx-3",
+  navItemsContainer: "flex gap-0.5 xl:gap-1 bg-white border border-emerald-200 p-1 rounded-full shadow-md",
+  navItem: "nav-item px-3 xl:px-4 py-2 rounded-full text-xs xl:text-sm font-semibold transition-all duration-300 whitespace-nowrap",
   navItemActive: "active",
   navItemInactive: "text-gray-700 hover:text-emerald-600",
   
   // Right side
-  rightContainer: "flex items-center gap-2 lg:gap-2.5",
+  rightContainer: "flex items-center gap-1.5 xl:gap-2 shrink-0",
   
   // Signed out buttons
-  doctorButton: "btn-add hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold text-gray-700 hover:text-emerald-700 transition-all duration-200",
+  doctorButton: "btn-add hidden lg:inline-flex items-center gap-1 px-2.5 xl:px-3 py-1.5 xl:py-2 rounded-full text-xs font-semibold text-gray-700 hover:text-emerald-700 transition-all duration-200 shrink-0",
   doctorIcon: "w-4 h-4 text-emerald-600",
   doctorText: "whitespace-nowrap font-medium",
 
-  adminButton: "btn-add hidden lg:inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold text-gray-700 hover:text-emerald-700 transition-all duration-200",
+  adminButton: "btn-add hidden lg:inline-flex items-center gap-1 px-2.5 xl:px-3 py-1.5 xl:py-2 rounded-full text-xs font-semibold text-gray-700 hover:text-emerald-700 transition-all duration-200 shrink-0",
   adminIcon: "w-4 h-4 text-emerald-600",
   adminText: "whitespace-nowrap font-medium",
 
   doctorAdminButton: "btn-add hidden lg:inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-semibold transition-transform duration-200",
   doctorAdminIcon: "w-4 h-4",
   doctorAdminText: "hidden lg:text-xs lg:whitespace-nowrap sm:inline-block",
-  loginButton: "btn-login hidden lg:flex text-xs items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white px-4 py-2 rounded-full font-semibold hover:shadow-xl transition-all duration-300 cursor-pointer",
+  loginButton: "btn-login hidden lg:flex text-xs items-center gap-1 bg-gradient-to-r from-emerald-500 to-green-600 text-white px-3 xl:px-4 py-1.5 xl:py-2 rounded-full font-semibold hover:shadow-xl transition-all duration-300 cursor-pointer shrink-0",
   loginIcon: "w-4 h-4",
   loginText: "whitespace-nowrap font-medium",
   
