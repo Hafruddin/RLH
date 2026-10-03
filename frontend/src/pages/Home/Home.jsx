@@ -2,7 +2,6 @@ import React from 'react'
 import Navbar from '../../components/Navbar/Navbar'
 import Banner from '../../components/Banner/Banner'
 import Certification from '../../components/Certification/Certification'
-import HomePatientSections from '../../components/Nexus/HomePatientSections'
 import HomeDoctors from '../../components/HomeDoctors/HomeDoctors'
 import Testimonial from '../../components/Testimonial/Testimonial'
 import AiAssistant from '../../components/AiAssistant/AiAssistant'
@@ -15,7 +14,6 @@ const Home = () => {
         <Navbar/>
         <Banner/>
         <Certification/>
-        <HomePatientSections/>
         <HomeDoctors/>
         <Testimonial/>
         <AiAssistant/>
