@@ -45,6 +45,7 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
   const recognitionRef = useRef(null);
   const accumulatedTranscriptRef = useRef("");
   const synthRef = useRef(null);
+  const activeUtteranceRef = useRef(null);
   const chatScrollRef = useRef(null);
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
@@ -574,33 +575,83 @@ function NexusVoiceAgentInner({ initialContext = {}, defaultOpen = false }) {
     const normalizedText = normalizeSpokenText(text, lang);
 
     const utterance = new SpeechSynthesisUtterance(normalizedText);
+    activeUtteranceRef.current = utterance;
+    if (typeof window !== "undefined") window._nexusActiveUtterance = utterance;
+
     utterance.lang = profile.locale || getLangLocale(lang);
-    utterance.rate = profile.rate || 0.92; // Softer, slower, natural cadence (0.90-0.92)
+    utterance.rate = profile.rate || 0.98; // Natural, clear conversational pace (eliminates distortion & slurring)
     utterance.pitch = profile.pitch || 1.0;
+    utterance.volume = 1.0; // Full clear volume
 
     try {
       const voices = synthRef.current.getVoices();
       if (voices && voices.length > 0) {
-        const matched = voices.find(
+        const targetLocale = (profile.locale || getLangLocale(lang)).toLowerCase();
+        const langPrefix = lang.toLowerCase();
+
+        // Filter voices for this language
+        const matchedVoices = voices.filter(
           (v) =>
-            v.lang.toLowerCase() === utterance.lang.toLowerCase() ||
-            v.lang.toLowerCase().startsWith(lang.toLowerCase())
+            v.lang.toLowerCase() === targetLocale ||
+            v.lang.toLowerCase().replace("_", "-") === targetLocale ||
+            v.lang.toLowerCase().startsWith(langPrefix)
         );
-        if (matched) {
-          utterance.voice = matched;
+
+        if (matchedVoices.length > 0) {
+          // Score voice by clarity, neural naturalness and enunciation
+          const scoreVoice = (v) => {
+            const name = (v.name || "").toLowerCase();
+            let score = 0;
+            // High definition / natural clarity voices
+            if (name.includes("natural")) score += 100;
+            if (name.includes("neural")) score += 90;
+            if (name.includes("google")) score += 80;
+            if (name.includes("premium")) score += 70;
+            if (name.includes("enhanced")) score += 60;
+            if (name.includes("samantha") || name.includes("karen") || name.includes("daniel") || name.includes("serena")) score += 50;
+            if (name.includes("jenny") || name.includes("aria") || name.includes("guy")) score += 50;
+            if (name.includes("lekha") || name.includes("swara") || name.includes("neerja") || name.includes("valluvar")) score += 50;
+            if (v.lang.toLowerCase() === targetLocale) score += 20;
+            if (v.default) score += 10;
+            // Filter out novelty voices that sound metallic or robotic
+            if (name.includes("bad news") || name.includes("bahh") || name.includes("albert") || name.includes("bells") || 
+                name.includes("boing") || name.includes("bubbles") || name.includes("cellos") || name.includes("deranged") || 
+                name.includes("good news") || name.includes("hysterical") || name.includes("pipe organ") || name.includes("trinoids") || 
+                name.includes("whisper") || name.includes("zarvox") || name.includes("fred") || name.includes("junior")) {
+              score -= 500;
+            }
+            return score;
+          };
+
+          const bestVoice = [...matchedVoices].sort((a, b) => scoreVoice(b) - scoreVoice(a))[0];
+          if (bestVoice) {
+            utterance.voice = bestVoice;
+          }
         }
       }
     } catch (_) {}
 
-    utterance.onstart = () => setVoiceState("SPEAKING");
-    utterance.onend = () => setVoiceState("IDLE");
-    utterance.onerror = () => setVoiceState("IDLE");
+    utterance.onstart = () => {
+      setVoiceState("SPEAKING");
+    };
+    utterance.onend = () => {
+      activeUtteranceRef.current = null;
+      if (typeof window !== "undefined") window._nexusActiveUtterance = null;
+      setVoiceState("IDLE");
+    };
+    utterance.onerror = (e) => {
+      console.warn("Utterance speech finished or interrupted:", e);
+      activeUtteranceRef.current = null;
+      if (typeof window !== "undefined") window._nexusActiveUtterance = null;
+      setVoiceState("IDLE");
+    };
 
     try {
       synthRef.current.resume();
       synthRef.current.speak(utterance);
     } catch (e) {
       console.warn("Speech synthesis trigger error:", e);
+      activeUtteranceRef.current = null;
       setVoiceState("IDLE");
     }
   }

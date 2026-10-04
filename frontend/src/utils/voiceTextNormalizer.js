@@ -7,10 +7,10 @@ export const VOICE_PROFILES = {
     code: "en",
     locale: "en-US",
     nativeLabel: "English",
-    rate: 0.92, // Slower, clearer cadence for healthcare clarity
+    rate: 0.98, // Natural conversational cadence for crystal clarity
     pitch: 1.0,
-    stability: 0.75,
-    similarityBoost: 0.85,
+    stability: 0.85,
+    similarityBoost: 0.90,
     voiceId: "21m00Tcm4TlvDq8ikWAM", // Rachel / Calm Healthcare
     modelId: "eleven_multilingual_v2"
   },
@@ -18,9 +18,9 @@ export const VOICE_PROFILES = {
     code: "ta",
     locale: "ta-IN",
     nativeLabel: "தமிழ்",
-    rate: 0.90, // Slower for clear Tamil syllables
+    rate: 0.95, // Clear articulated Tamil syllables
     pitch: 1.0,
-    stability: 0.75,
+    stability: 0.80,
     similarityBoost: 0.85,
     voiceId: "pFZP5JQG7iQjIQuC4Bku", // Lily / Warm
     modelId: "eleven_multilingual_v2"
@@ -29,9 +29,9 @@ export const VOICE_PROFILES = {
     code: "hi",
     locale: "hi-IN",
     nativeLabel: "हिन्दी",
-    rate: 0.92,
+    rate: 0.96, // Clear, polite Hindi articulation
     pitch: 1.0,
-    stability: 0.75,
+    stability: 0.80,
     similarityBoost: 0.85,
     voiceId: "EXAVITQu4vr4xnSDxMaL", // Bella / Clear
     modelId: "eleven_multilingual_v2"
@@ -40,9 +40,9 @@ export const VOICE_PROFILES = {
     code: "te",
     locale: "te-IN",
     nativeLabel: "తెలుగు",
-    rate: 0.90,
+    rate: 0.95,
     pitch: 1.0,
-    stability: 0.75,
+    stability: 0.80,
     similarityBoost: 0.85,
     voiceId: "MF3mGyEYCl7XYWbV9V6O", // Elli / Soft
     modelId: "eleven_multilingual_v2"
@@ -51,9 +51,9 @@ export const VOICE_PROFILES = {
     code: "kn",
     locale: "kn-IN",
     nativeLabel: "ಕನ್ನಡ",
-    rate: 0.90,
+    rate: 0.95,
     pitch: 1.0,
-    stability: 0.75,
+    stability: 0.80,
     similarityBoost: 0.85,
     voiceId: "AZnzlk1XvdvUeBnXmlld", // Domi / Empathetic
     modelId: "eleven_multilingual_v2"
@@ -62,9 +62,9 @@ export const VOICE_PROFILES = {
     code: "ml",
     locale: "ml-IN",
     nativeLabel: "മലയാളം",
-    rate: 0.90,
+    rate: 0.95,
     pitch: 1.0,
-    stability: 0.75,
+    stability: 0.80,
     similarityBoost: 0.85,
     voiceId: "ThT5KcBeYPX3keUQqHPh", // Dorothy / Reassuring
     modelId: "eleven_multilingual_v2"
@@ -73,9 +73,9 @@ export const VOICE_PROFILES = {
     code: "mr",
     locale: "mr-IN",
     nativeLabel: "मराठी",
-    rate: 0.92,
+    rate: 0.96,
     pitch: 1.0,
-    stability: 0.75,
+    stability: 0.80,
     similarityBoost: 0.85,
     voiceId: "oWAxZDxUJAwQ20JZT4v2", // Freya / Professional
     modelId: "eleven_multilingual_v2"
@@ -84,9 +84,9 @@ export const VOICE_PROFILES = {
     code: "bn",
     locale: "bn-IN",
     nativeLabel: "বাংলা",
-    rate: 0.92,
+    rate: 0.96,
     pitch: 1.0,
-    stability: 0.75,
+    stability: 0.80,
     similarityBoost: 0.85,
     voiceId: "XrExE9yKIg1WjnnlVkGX", // Matilda / Warm
     modelId: "eleven_multilingual_v2"
@@ -225,23 +225,42 @@ export const PRONUNCIATION_LEXICON = {
   },
   en: {
     "Dr.": "Doctor ",
+    "ICU-101": "I C U 1 0 1",
+    "ICU-102": "I C U 1 0 2",
     "ICU-06": "I C U zero six",
     "WARD-ICU": "I C U Ward",
     "V-04": "Ventilator zero four",
-    "P-1005": "P one zero zero five",
+    "PID-10101": "Patient ID P I D 1 0 1 0 1",
+    "PID-20104": "Patient ID P I D 2 0 1 0 4",
+    "PID-10203": "Patient ID P I D 1 0 2 0 3",
+    "PID-30101": "Patient ID P I D 3 0 1 0 1",
+    "P-1005": "Patient P 1 0 0 5",
+    "P-101": "Patient P 1 0 1",
+    "VST-2026-8812": "Visit V S T 2026 8812",
+    "VST-2026-7041": "Visit V S T 2026 7041",
+    "VST-2025-4190": "Visit V S T 2025 4190",
+    "OT-1": "Operating Theatre 1",
+    "OT-2": "Operating Theatre 2",
+    "OT-3": "Operating Theatre 3",
     "OT-01": "Operating Theatre one",
     "N-07": "Nurse zero seven",
-    "SpO2": "S P O two",
+    "SpO2": "S P O 2 oxygen saturation",
     "ECG": "E C G",
     "MRI": "M R I",
     "CT": "C T scan",
     "CBC": "C B C blood test",
     "EHR": "E H R",
     "EMR": "E M R",
+    "OPD": "out-patient department",
+    "ABHA": "Abha",
+    "bpm": "beats per minute",
+    "mmHg": "millimeters of mercury",
+    "mg/dL": "milligrams per deciliter",
+    "LVEF": "Left Ventricular Ejection Fraction",
     "RTLS": "Real Time Location System",
-    "10:30 AM": "ten thirty A M",
-    "11:45 AM": "eleven forty-five A M",
-    "2:30 PM": "two thirty P M",
+    "10:30 AM": "10:30 A M",
+    "11:45 AM": "11:45 A M",
+    "2:30 PM": "2:30 P M",
     "%": " percent"
   }
 };

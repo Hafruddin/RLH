@@ -45,7 +45,7 @@ import {
   Zap
 } from "lucide-react";
 import { nexusApi } from "./nexusApi";
-import { generatePrescriptionPdf } from "../../utils/prescriptionPdfGenerator";
+import { generatePrescriptionPdf, generateEncounterPdf } from "../../utils/prescriptionPdfGenerator";
 
 export default function PatientDashboardView({ activeTab = "patient-dashboard", setActiveTab }) {
   // 1. Authoritative Patient Profile Data (Harsh Tripathi, P-101)
@@ -297,6 +297,28 @@ export default function PatientDashboardView({ activeTab = "patient-dashboard", 
       setTimeout(() => setDownloadSuccess(false), 4000);
     } catch (e) {
       console.error("PDF generation failed:", e);
+    }
+  };
+
+  // Historic Clinical Encounter PDF Download Handler
+  const [encounterDownloadToast, setEncounterDownloadToast] = useState("");
+  const handleDownloadEncounterPdf = (encounterData) => {
+    try {
+      generateEncounterPdf({
+        ...encounterData,
+        patient: {
+          name: patientData.name || "Harsh Tripathi",
+          id: patientData.patientId || "P-101",
+          abha: patientData.abhaId || "91-8273-4412-9901",
+          age: patientData.age || 34,
+          gender: patientData.gender || "Male",
+          bloodGroup: patientData.bloodGroup || "O+"
+        }
+      });
+      setEncounterDownloadToast(`✓ Clinical Encounter PDF "${encounterData.visitId}" downloaded successfully!`);
+      setTimeout(() => setEncounterDownloadToast(""), 4000);
+    } catch (e) {
+      console.error("Encounter PDF generation failed:", e);
     }
   };
 
@@ -756,30 +778,73 @@ export default function PatientDashboardView({ activeTab = "patient-dashboard", 
             <div className="mt-6 space-y-3">
               <h4 className="text-sm font-extrabold text-slate-900">Past Completed Hospital Encounters</h4>
               <div className="space-y-2">
-                <div className="p-3.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between text-xs hover:border-slate-300 transition">
+                <div className="p-3.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between text-xs hover:border-slate-300 transition shadow-2xs">
                   <div>
                     <div className="font-bold text-slate-900">Annual Routine Cardiac Evaluation (VST-2026-7041)</div>
                     <div className="text-slate-500">15 Aug 2026 · Dr. Sarah Johnson · Status: COMPLETED</div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold flex items-center gap-1 cursor-pointer">
-                      <Download className="w-3.5 h-3.5" /> PDF
+                    <button
+                      onClick={() =>
+                        handleDownloadEncounterPdf({
+                          visitId: "VST-2026-7041",
+                          title: "Annual Routine Cardiac Evaluation",
+                          date: "15 Aug 2026",
+                          doctor: "Dr. Sarah Johnson",
+                          department: "Department of Cardiology & Vascular Medicine",
+                          status: "COMPLETED & DIGITALLY VERIFIED",
+                          findings:
+                            "Patient presented for annual cardiovascular screening. Vital signs within normal therapeutic target ranges (BP 122/80 mmHg, HR 72 bpm, SpO2 99%). Resting 12-lead ECG confirmed normal sinus rhythm without ischemic ST-T changes. Transthoracic 2D Echocardiogram demonstrated preserved left ventricular ejection fraction (LVEF 62%) with normal chamber dimensions. No regional wall motion abnormalities or significant valvular regurgitation.",
+                          diagnosis: "Stable Cardiovascular Status • No Evidence of Acute Coronary Syndrome",
+                          recommendations:
+                            "Continue regular moderate aerobic physical activity (30 minutes daily). Maintain balanced low-sodium heart-healthy diet. Routine follow-up in 12 months unless intercurrent symptoms arise."
+                        })
+                      }
+                      className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-lg font-bold flex items-center gap-1.5 transition cursor-pointer border border-slate-300/60 active:scale-95"
+                    >
+                      <Download className="w-3.5 h-3.5 text-blue-600" />
+                      <span>PDF</span>
                     </button>
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between text-xs hover:border-slate-300 transition">
+                <div className="p-3.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between text-xs hover:border-slate-300 transition shadow-2xs">
                   <div>
                     <div className="font-bold text-slate-900">Dermatology Skin Allergy Review (VST-2025-4190)</div>
                     <div className="text-slate-500">03 Dec 2025 · Dr. Aniket Roy · Status: COMPLETED</div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold flex items-center gap-1 cursor-pointer">
-                      <Download className="w-3.5 h-3.5" /> PDF
+                    <button
+                      onClick={() =>
+                        handleDownloadEncounterPdf({
+                          visitId: "VST-2025-4190",
+                          title: "Dermatology Skin Allergy Review",
+                          date: "03 Dec 2025",
+                          doctor: "Dr. Aniket Roy",
+                          department: "Dermatology & Allergy Clinic",
+                          status: "COMPLETED & DIGITALLY VERIFIED",
+                          findings:
+                            "Patient presented for follow-up review of contact dermatitis on bilateral forearms. Physical inspection reveals complete epidermal healing without residual erythema, scaling, or pruritic papules. Patch test showed mild sensitivity to synthetic fragrances; avoided successfully.",
+                          diagnosis: "Resolved Allergic Contact Dermatitis • Clear Skin Status",
+                          recommendations:
+                            "Continue fragrance-free ceramide barrier moisturizing lotion twice daily. Discontinue topical corticosteroids as acute lesions have fully cleared. Routine follow-up on PRN basis."
+                        })
+                      }
+                      className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-lg font-bold flex items-center gap-1.5 transition cursor-pointer border border-slate-300/60 active:scale-95"
+                    >
+                      <Download className="w-3.5 h-3.5 text-blue-600" />
+                      <span>PDF</span>
                     </button>
                   </div>
                 </div>
               </div>
+
+              {encounterDownloadToast && (
+                <div className="mt-3 p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-xs font-bold text-emerald-900 flex items-center gap-2 animate-bounce">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{encounterDownloadToast}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
